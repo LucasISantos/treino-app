@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Controle de Treinos</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
   <link rel="manifest" href="manifest.json">
@@ -11,140 +11,133 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Controle de Treinos">
   <style>
-    :root{
-      --bg:#08101d; --card:#111827; --card2:#0f172a; --text:#e5e7eb; --muted:#94a3b8;
-      --line:#253247; --accent:#38bdf8; --ok:#22c55e; --warn:#f59e0b; --danger:#ef4444;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#08101d,#111827);color:var(--text);padding:18px}
-    .wrap{max-width:1100px;margin:0 auto}
-    h1{margin:0 0 6px;font-size:28px}.sub{color:var(--muted);margin-bottom:16px}
-    .grid{display:grid;gap:14px}.g2{grid-template-columns:1.1fr .9fr}@media (max-width:900px){.g2{grid-template-columns:1fr}}
-    .card{background:rgba(17,24,39,.94);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.22)}
-    .title{font-size:18px;font-weight:800;margin-bottom:10px}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap}.tab,.btn{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:700}
-    .tab.active{background:var(--accent);color:#062133;border-color:var(--accent)} .btn.primary{background:var(--accent);color:#062133;border-color:var(--accent)}
-    .btn.ok{background:var(--ok);color:#06250d;border-color:var(--ok)} .btn.warn{background:var(--warn);color:#2b1801;border-color:var(--warn)}
-    .muted{color:var(--muted)} input,select{width:100%;background:#0b1220;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-    input[type="checkbox"]{width:auto;transform:scale(1.15)} .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}@media (max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}}
-    .stat{background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:12px}.stat small{display:block;color:var(--muted)}.stat strong{display:block;margin-top:6px;font-size:24px}
-    .exercise{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1.7fr .65fr .9fr .8fr;gap:10px;align-items:center}
-    .exercise:first-of-type{border-top:none}@media (max-width:760px){.exercise{grid-template-columns:1fr 1fr}.exercise>div:first-child{grid-column:1/-1}}
-    .ename{font-weight:800}.emeta{font-size:13px;color:var(--muted);margin-top:4px}
+    :root{--text:#e5e7eb;--muted:#94a3b8;--line:#253247;--accent:#38bdf8;--ok:#22c55e;--warn:#f59e0b;--safeBottom:env(safe-area-inset-bottom,0px);--navH:84px}
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#08101d,#111827);color:var(--text);padding:18px 16px calc(var(--navH) + var(--safeBottom) + 16px)}
+    .wrap{max-width:760px;margin:0 auto}
+    h1{margin:0 0 6px;font-size:28px}.sub{color:var(--muted);margin-bottom:14px;line-height:1.4}
+    .card{background:rgba(17,24,39,.96);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.22);margin-bottom:14px}
+    .title{font-size:19px;font-weight:800;margin-bottom:12px}.muted{color:var(--muted)}.note{font-size:13px;color:var(--muted);line-height:1.45}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{border:1px solid var(--line);background:#0f172a;color:var(--text);border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:800;font-size:16px}
+    .btn.primary{background:var(--accent);color:#062133;border-color:var(--accent)} .btn.ok{background:var(--ok);color:#06250d;border-color:var(--ok)} .btn.warn{background:var(--warn);color:#2b1801;border-color:var(--warn)}
+    .input-grid{display:grid;grid-template-columns:1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+    .field label{font-size:15px;color:var(--muted);font-weight:700;line-height:1.25}
+    input{width:100%;min-width:0;background:#0b1220;color:var(--text);border:1px solid var(--line);border-radius:16px;padding:14px 16px;font-size:18px;appearance:none;-webkit-appearance:none}
+    input[type='checkbox']{width:auto;transform:scale(1.15)} input[type='date']{min-height:56px}
+    .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#0b1220;border:1px solid var(--line);border-radius:16px;padding:12px}.stat small{display:block;color:var(--muted)}.stat strong{display:block;margin-top:6px;font-size:22px}
     .progress{width:100%;height:12px;background:#0b1220;border-radius:999px;overflow:hidden;border:1px solid var(--line)} .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--ok))}
-    .list{max-height:340px;overflow:auto;padding-right:4px} table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px}
-    th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}.pill{font-size:12px;padding:5px 9px;border-radius:999px;display:inline-block;background:#0b1220;border:1px solid var(--line)}
-    .okpill{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35)} .partpill{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.35)}
-    .note{font-size:13px;color:var(--muted);line-height:1.45}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}.tab{border:1px solid var(--line);background:#0f172a;color:var(--text);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800}.tab.active{background:var(--accent);color:#062133;border-color:var(--accent)}
+    .list{max-height:48vh;overflow:auto;padding-right:4px}.exercise{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr;gap:10px}.exercise:first-of-type{border-top:none}.ename{font-weight:800}.emeta{font-size:13px;color:var(--muted);margin-top:4px}
+    .exercise-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.exercise-check{display:flex;align-items:center;gap:8px;font-weight:700;background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:12px}
+    table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top} th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+    .pill{font-size:12px;padding:5px 9px;border-radius:999px;display:inline-block;background:#0b1220;border:1px solid var(--line)} .hidden{display:none!important}
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(10px + var(--safeBottom));background:rgba(8,16,29,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line);z-index:1000}
+    .bottom-nav-inner{max-width:760px;margin:0 auto;background:rgba(17,24,39,.96);border:1px solid var(--line);border-radius:22px;padding:6px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+    .nav-btn{border:none;background:transparent;color:var(--muted);border-radius:16px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800}
+    .nav-btn.active{background:#0b1220;color:var(--text)} .nav-icon{font-size:22px;line-height:1}
   </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Controle de Treinos</h1>
-  <div class="sub">Agora com leitura melhor para PDFs no formato “Treino A / B / C” e também “Dia Extra (opcional)”.</div>
+  <div class="sub">Layout ajustado para iPhone, com áreas separadas no menu inferior: importar, meta, execução e histórico.</div>
 
-  <div class="grid g2">
-    <div class="card">
-      <div class="title">1) Importar treino do PDF</div>
-      <div class="row" style="margin-bottom:10px">
-        <input type="file" id="pdfFile" accept="application/pdf" />
-        <button class="btn primary" id="importPdfBtn">Ler PDF</button>
-        <button class="btn" id="loadDefaultBtn">Usar treino padrão</button>
-      </div>
-      <div class="note">Melhorei o leitor para reconhecer melhor linhas como “Treino A – ...” e “Dia Extra (opcional)”. Se o PDF for escaneado como imagem, ainda pode falhar.</div>
-      <div id="importStatus" class="muted" style="margin-top:10px"></div>
-    </div>
-
-    <div class="card">
-      <div class="title">2) Meta e período</div>
-      <div class="row" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px">
-        <div><label class="muted">Meta de treinos por semana</label><input type="number" min="1" max="14" id="weeklyGoal" /></div>
-        <div><label class="muted">Início do ciclo</label><input type="date" id="cycleStart" /></div>
-        <div><label class="muted">Semanas no ciclo</label><input type="number" min="1" max="20" id="cycleWeeks" /></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <button class="btn ok" id="saveGoalsBtn">Salvar meta</button>
-        <button class="btn warn" id="resetHistoryBtn">Zerar histórico</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:14px">
+  <div class="card">
     <div class="stats">
       <div class="stat"><small>Treino atual</small><strong id="statWorkout">A</strong></div>
-      <div class="stat"><small>Exercícios concluídos hoje</small><strong id="statExercises">0/0</strong></div>
+      <div class="stat"><small>Exercícios concluídos</small><strong id="statExercises">0/0</strong></div>
       <div class="stat"><small>Treinos nesta semana</small><strong id="statWeek">0</strong></div>
       <div class="stat"><small>Meta do ciclo</small><strong id="statCycle">0%</strong></div>
     </div>
-    <div style="margin-top:12px">
-      <div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do treino atual</div><div id="currentPct" class="muted">0%</div></div>
-      <div class="progress"><div class="bar" id="currentBar"></div></div>
-    </div>
-    <div style="margin-top:12px">
-      <div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso da meta do ciclo</div><div id="cyclePct" class="muted">0%</div></div>
-      <div class="progress"><div class="bar" id="cycleBar"></div></div>
-    </div>
+    <div style="margin-top:12px"><div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do treino atual</div><div id="currentPct" class="muted">0%</div></div><div class="progress"><div class="bar" id="currentBar"></div></div></div>
+    <div style="margin-top:12px"><div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso da meta do ciclo</div><div id="cyclePct" class="muted">0%</div></div><div class="progress"><div class="bar" id="cycleBar"></div></div></div>
   </div>
 
-  <div class="grid g2" style="margin-top:14px">
+  <section id="screen-importar" class="screen">
     <div class="card">
-      <div class="row" style="justify-content:space-between; margin-bottom:10px">
-        <div class="title" style="margin:0">3) Executar treino</div>
-        <div class="tabs" id="tabs"></div>
+      <div class="title">1) Importar</div>
+      <div class="row" style="margin-bottom:10px"><button class="btn ok" id="loadPresetBtn">Usar meu treino ABC + D</button></div>
+      <div class="input-grid" style="margin-bottom:10px">
+        <div class="field"><label for="pdfFile">PDF do treino</label><input type="file" id="pdfFile" accept="application/pdf" /></div>
       </div>
-      <div id="exerciseList" class="list"></div>
-      <div class="row" style="margin-top:12px">
-        <button class="btn ok" id="completeWorkoutBtn">Concluir treino</button>
-        <button class="btn warn" id="clearTodayBtn">Limpar marcações de hoje</button>
-      </div>
+      <div class="row"><button class="btn primary" id="importPdfBtn">Tentar ler PDF</button></div>
+      <div class="note" style="margin-top:10px">Se o PDF falhar, usa o botão verde e segue com o treino pronto.</div>
+      <div id="importStatus" class="muted" style="margin-top:10px"></div>
     </div>
+  </section>
 
+  <section id="screen-meta" class="screen hidden">
+    <div class="card">
+      <div class="title">2) Meta e período</div>
+      <div class="input-grid">
+        <div class="field"><label for="weeklyGoal">Meta de treinos por semana</label><input type="number" min="1" max="14" id="weeklyGoal" /></div>
+        <div class="field"><label for="cycleStart">Início do ciclo</label><input type="date" id="cycleStart" /></div>
+        <div class="field"><label for="cycleWeeks">Semanas no ciclo</label><input type="number" min="1" max="20" id="cycleWeeks" /></div>
+      </div>
+      <div class="row" style="margin-top:14px"><button class="btn ok" id="saveGoalsBtn">Salvar meta</button><button class="btn warn" id="resetHistoryBtn">Zerar histórico</button></div>
+    </div>
+  </section>
+
+  <section id="screen-execucao" class="screen hidden">
+    <div class="card">
+      <div class="row" style="justify-content:space-between; margin-bottom:10px"><div class="title" style="margin:0">3) Execução</div><div class="tabs" id="tabs"></div></div>
+      <div id="exerciseList" class="list"></div>
+      <div class="row" style="margin-top:12px"><button class="btn ok" id="completeWorkoutBtn">Concluir treino</button><button class="btn warn" id="clearTodayBtn">Limpar marcações</button></div>
+    </div>
+  </section>
+
+  <section id="screen-historico" class="screen hidden">
     <div class="card">
       <div class="title">4) Histórico</div>
-      <div class="row" style="gap:8px; margin-bottom:10px">
-        <span class="pill" id="weekGoalInfo">Meta semanal: 4</span>
-        <span class="pill" id="weekDoneInfo">Feitos na semana: 0</span>
-        <span class="pill" id="remainingInfo">Faltam: 0</span>
-      </div>
-      <table>
-        <thead><tr><th>Data</th><th>Treino</th><th>Exercícios</th><th>Status</th></tr></thead>
-        <tbody id="historyBody"></tbody>
-      </table>
+      <div class="row" style="gap:8px; margin-bottom:10px"><span class="pill" id="weekGoalInfo">Meta semanal: 4</span><span class="pill" id="weekDoneInfo">Feitos na semana: 0</span><span class="pill" id="remainingInfo">Faltam: 0</span></div>
+      <table><thead><tr><th>Data</th><th>Treino</th><th>Exercícios</th><th>Status</th></tr></thead><tbody id="historyBody"></tbody></table>
     </div>
-  </div>
+  </section>
 </div>
 
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="nav-btn active" data-screen="importar"><span class="nav-icon">⬆️</span><span>Importar</span></button>
+    <button class="nav-btn" data-screen="meta"><span class="nav-icon">🎯</span><span>Meta</span></button>
+    <button class="nav-btn" data-screen="execucao"><span class="nav-icon">💪</span><span>Execução</span></button>
+    <button class="nav-btn" data-screen="historico"><span class="nav-icon">📊</span><span>Histórico</span></button>
+  </div>
+</nav>
+
 <script>
-const STORAGE_KEY = "controle-treinos-v21";
-const defaultWorkouts = {
+if (window.pdfjsLib) { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js'; }
+
+const STORAGE_KEY = "controle-treinos-v23";
+const presetWorkouts = {
   "A":[
-    {name:"Supino reto barra", meta:"4×6–8"},
-    {name:"Supino inclinado halteres", meta:"3×8–10"},
-    {name:"Paralelas", meta:"3×8–12"},
-    {name:"Crossover ou fly máquina", meta:"2×12–15"},
-    {name:"Rosca direta barra", meta:"3×6–8"},
-    {name:"Rosca inclinada", meta:"3×10–12"},
-    {name:"Rosca martelo", meta:"2×12–15"}
+    {name:"Supino reto barra", meta:"4×6–8 — descanso 2min"},
+    {name:"Supino inclinado halteres", meta:"3×8–10 — descanso 1min30"},
+    {name:"Paralelas", meta:"3×8–12 — descanso 1min30"},
+    {name:"Crossover ou fly máquina", meta:"2×12–15 — descanso 1min"},
+    {name:"Rosca direta barra", meta:"3×6–8 — descanso 1min30"},
+    {name:"Rosca inclinada", meta:"3×10–12 — descanso 1min"},
+    {name:"Rosca martelo", meta:"2×12–15 — descanso 1min"}
   ],
   "B":[
-    {name:"Barra fixa / puxada", meta:"4×6–8"},
-    {name:"Remada cavalinho", meta:"4×8–10"},
-    {name:"Remada baixa", meta:"3×10–12"},
-    {name:"Pulldown", meta:"2×12–15"},
-    {name:"Desenvolvimento halteres", meta:"3×8–10"},
-    {name:"Elevação lateral", meta:"3×12–15"},
-    {name:"Tríceps testa", meta:"3×8–10"},
-    {name:"Tríceps corda", meta:"2×12–15"}
+    {name:"Barra fixa / puxada", meta:"4×6–8 — descanso 2min"},
+    {name:"Remada cavalinho", meta:"4×8–10 — descanso 1min30"},
+    {name:"Remada baixa", meta:"3×10–12 — descanso 1min30"},
+    {name:"Pulldown", meta:"2×12–15 — descanso 1min"},
+    {name:"Desenvolvimento halteres", meta:"3×8–10 — descanso 1min30"},
+    {name:"Elevação lateral", meta:"3×12–15 — descanso 1min"},
+    {name:"Tríceps testa", meta:"3×8–10 — descanso 1min30"},
+    {name:"Tríceps corda", meta:"2×12–15 — descanso 1min"}
   ],
   "C":[
-    {name:"Hip Thrust", meta:"4×6–8"},
-    {name:"Leg Press", meta:"3×8–10"},
-    {name:"Stiff (RDL)", meta:"3×8–10"},
-    {name:"Bulgarian Split Squat", meta:"3×8–10 por perna"},
-    {name:"Mesa flexora", meta:"3×10–12"},
-    {name:"Glúteo na polia", meta:"2–3×12–15"},
-    {name:"Cadeira abdutora", meta:"2–3×15–20"},
-    {name:"Panturrilha", meta:"4×12–15"}
+    {name:"Hip Thrust", meta:"4×6–8 — descanso 2min"},
+    {name:"Leg Press", meta:"3×8–10 — descanso 1min30"},
+    {name:"Stiff (RDL)", meta:"3×8–10 — descanso 1min30"},
+    {name:"Bulgarian Split Squat", meta:"3×8–10 por perna — descanso 1min30"},
+    {name:"Mesa flexora", meta:"3×10–12 — descanso 1min"},
+    {name:"Glúteo na polia", meta:"2–3×12–15 — descanso 1min"},
+    {name:"Cadeira abdutora", meta:"2–3×15–20 — descanso 1min"},
+    {name:"Panturrilha", meta:"4×12–15 — descanso 1min"}
   ],
   "D":[
     {name:"Supino máquina", meta:"3×12"},
@@ -156,81 +149,74 @@ const defaultWorkouts = {
 };
 
 let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {
-  workouts: defaultWorkouts,
-  currentWorkout: "A",
-  checks: {},
-  history: [],
-  goals: { weeklyGoal: 4, cycleWeeks: 8, cycleStart: new Date().toISOString().slice(0,10) }
+  workouts: presetWorkouts, currentWorkout: "A", checks: {}, history: [],
+  goals: { weeklyGoal: 4, cycleWeeks: 8, cycleStart: new Date().toISOString().slice(0,10) },
+  activeScreen: "importar"
 };
 
 function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 function currentChecks(){ if(!state.checks[state.currentWorkout]) state.checks[state.currentWorkout] = {}; return state.checks[state.currentWorkout]; }
 function formatDate(d){ return new Date(d).toLocaleDateString("pt-BR"); }
-
-function getWeekRange(date = new Date()){
-  const d = new Date(date); const day = (d.getDay()+6)%7; d.setHours(0,0,0,0);
-  const monday = new Date(d); monday.setDate(d.getDate()-day);
-  const sunday = new Date(monday); sunday.setDate(monday.getDate()+6); sunday.setHours(23,59,59,999);
-  return {start:monday, end:sunday};
-}
-function getCycleEnd(){
-  const start = new Date(state.goals.cycleStart + "T00:00:00");
-  const end = new Date(start); end.setDate(start.getDate() + state.goals.cycleWeeks*7 - 1); end.setHours(23,59,59,999); return end;
-}
-function sessionsInWeek(){ const {start,end}=getWeekRange(); return state.history.filter(h=>new Date(h.date)>=start && new Date(h.date)<=end); }
+function getWeekRange(date = new Date()){ const d = new Date(date); const day = (d.getDay()+6)%7; d.setHours(0,0,0,0); const monday = new Date(d); monday.setDate(d.getDate()-day); const sunday = new Date(monday); sunday.setDate(monday.getDate()+6); sunday.setHours(23,59,59,999); return {start:monday, end:sunday}; }
+function getCycleEnd(){ const start = new Date(state.goals.cycleStart + "T00:00:00"); const end = new Date(start); end.setDate(start.getDate() + state.goals.cycleWeeks*7 - 1); end.setHours(23,59,59,999); return end; }
+function sessionsInWeek(){ const r=getWeekRange(); return state.history.filter(h=>new Date(h.date)>=r.start && new Date(h.date)<=r.end); }
 function sessionsInCycle(){ const start=new Date(state.goals.cycleStart+"T00:00:00"), end=getCycleEnd(); return state.history.filter(h=>new Date(h.date)>=start && new Date(h.date)<=end); }
 function totalCycleGoal(){ return state.goals.weeklyGoal * state.goals.cycleWeeks; }
 
+function switchScreen(name){
+  state.activeScreen = name; saveState();
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById('screen-' + name).classList.remove('hidden');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
+}
 function renderTabs(){
-  const tabs = document.getElementById("tabs"); tabs.innerHTML = "";
+  const tabs=document.getElementById("tabs"); tabs.innerHTML="";
   Object.keys(state.workouts).forEach(k=>{
     const b=document.createElement("button"); b.className="tab"+(state.currentWorkout===k?" active":""); b.textContent="Treino "+k;
     b.onclick=()=>{state.currentWorkout=k;saveState();renderAll();}; tabs.appendChild(b);
   });
 }
-
 function renderExercises(){
   const wrap=document.getElementById("exerciseList"); wrap.innerHTML="";
   const list=state.workouts[state.currentWorkout]||[]; const checks=currentChecks();
   list.forEach((ex,idx)=>{
     const key=String(idx), checked=!!checks[key];
     const row=document.createElement("div"); row.className="exercise";
-    row.innerHTML=`
-      <div><div class="ename">${ex.name}</div><div class="emeta">${ex.meta||""}</div></div>
-      <div><label class="muted">Feito</label><br><input type="checkbox" ${checked?"checked":""} data-idx="${idx}"></div>
-      <div><label class="muted">Séries</label><input type="number" min="0" value="${checks[key+'_sets']||''}" data-sets="${idx}"></div>
-      <div><label class="muted">Obs</label><input type="text" value="${checks[key+'_note']||''}" data-note="${idx}" placeholder="carga, reps..."></div>`;
+    row.innerHTML="<div><div class='ename'>"+ex.name+"</div><div class='emeta'>"+(ex.meta||"")+"</div></div>" +
+      "<div class='exercise-grid'>" +
+      "<label class='exercise-check'><input type='checkbox' "+(checked?"checked":"")+" data-idx='"+idx+"'> Feito</label>" +
+      "<div class='field'><label>Séries</label><input type='number' min='0' value='"+(checks[key+'_sets']||"")+"' data-sets='"+idx+"'></div>" +
+      "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+(checks[key+'_note']||"")+"' data-note='"+idx+"' placeholder='carga, reps...'></div>" +
+      "</div>";
     wrap.appendChild(row);
   });
-  wrap.querySelectorAll('input[type="checkbox"]').forEach(el=>el.addEventListener("change", e=>{checks[e.target.dataset.idx]=e.target.checked; saveState(); updateTopStats();}));
-  wrap.querySelectorAll('input[data-sets]').forEach(el=>el.addEventListener("input", e=>{checks[e.target.dataset.sets+"_sets"]=e.target.value; saveState();}));
-  wrap.querySelectorAll('input[data-note]').forEach(el=>el.addEventListener("input", e=>{checks[e.target.dataset.note+"_note"]=e.target.value; saveState();}));
+  wrap.querySelectorAll("input[type='checkbox']").forEach(el=>el.addEventListener("change", e=>{checks[e.target.dataset.idx]=e.target.checked; saveState(); updateTopStats();}));
+  wrap.querySelectorAll("input[data-sets]").forEach(el=>el.addEventListener("input", e=>{checks[e.target.dataset.sets+'_sets']=e.target.value; saveState();}));
+  wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{checks[e.target.dataset.note+'_note']=e.target.value; saveState();}));
 }
-
 function updateTopStats(){
   const list=state.workouts[state.currentWorkout]||[]; const checks=currentChecks();
   const done=list.filter((_,i)=>!!checks[String(i)]).length; const pct=list.length?Math.round(done/list.length*100):0;
   document.getElementById("statWorkout").textContent=state.currentWorkout;
-  document.getElementById("statExercises").textContent=`${done}/${list.length}`;
-  document.getElementById("currentPct").textContent=`${pct}%`;
+  document.getElementById("statExercises").textContent=done+"/"+list.length;
+  document.getElementById("currentPct").textContent=pct+"%";
   document.getElementById("currentBar").style.width=pct+"%";
   const weekDone=sessionsInWeek().length; document.getElementById("statWeek").textContent=weekDone;
   const cycleDone=sessionsInCycle().length, cycleGoal=totalCycleGoal(), cyclePct=cycleGoal?Math.min(100,Math.round(cycleDone/cycleGoal*100)):0;
-  document.getElementById("statCycle").textContent=`${cyclePct}%`;
-  document.getElementById("cyclePct").textContent=`${cycleDone}/${cycleGoal} (${cyclePct}%)`;
+  document.getElementById("statCycle").textContent=cyclePct+"%";
+  document.getElementById("cyclePct").textContent=cycleDone+"/"+cycleGoal+" ("+cyclePct+"%)";
   document.getElementById("cycleBar").style.width=cyclePct+"%";
-  document.getElementById("weekGoalInfo").textContent=`Meta semanal: ${state.goals.weeklyGoal}`;
-  document.getElementById("weekDoneInfo").textContent=`Feitos na semana: ${weekDone}`;
-  document.getElementById("remainingInfo").textContent=`Faltam: ${Math.max(0,state.goals.weeklyGoal-weekDone)}`;
+  document.getElementById("weekGoalInfo").textContent="Meta semanal: "+state.goals.weeklyGoal;
+  document.getElementById("weekDoneInfo").textContent="Feitos na semana: "+weekDone;
+  document.getElementById("remainingInfo").textContent="Faltam: "+Math.max(0,state.goals.weeklyGoal-weekDone);
 }
 function renderHistory(){
   const body=document.getElementById("historyBody"); body.innerHTML="";
-  const items=[...state.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,18);
-  if(!items.length){ body.innerHTML=`<tr><td colspan="4" class="muted">Nenhum treino concluído ainda.</td></tr>`; return; }
+  const items=[...state.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,30);
+  if(!items.length){ body.innerHTML="<tr><td colspan='4' class='muted'>Nenhum treino concluído ainda.</td></tr>"; return; }
   items.forEach(h=>{
-    const statusClass=h.percent===100?"okpill":"partpill", statusText=h.percent===100?"Completo":"Parcial";
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${formatDate(h.date)}</td><td>Treino ${h.workout}</td><td>${h.done}/${h.total}</td><td><span class="pill ${statusClass}">${statusText} (${h.percent}%)</span></td>`;
+    tr.innerHTML="<td>"+formatDate(h.date)+"</td><td>Treino "+h.workout+"</td><td>"+h.done+"/"+h.total+"</td><td>"+(h.percent===100?"Completo":"Parcial")+" ("+h.percent+"%)</td>";
     body.appendChild(tr);
   });
 }
@@ -239,18 +225,15 @@ function renderGoals(){
   document.getElementById("cycleStart").value=state.goals.cycleStart;
   document.getElementById("cycleWeeks").value=state.goals.cycleWeeks;
 }
-function renderAll(){ renderTabs(); renderExercises(); renderHistory(); renderGoals(); updateTopStats(); }
+function renderAll(){ renderTabs(); renderExercises(); renderHistory(); renderGoals(); updateTopStats(); switchScreen(state.activeScreen || "importar"); }
 
 function completeWorkout(){
   const list=state.workouts[state.currentWorkout]||[], checks=currentChecks();
   const done=list.filter((_,i)=>!!checks[String(i)]).length;
   if(!list.length) return alert("Não há exercícios carregados nesse treino.");
   if(done===0) return alert("Marque pelo menos um exercício antes de concluir o treino.");
-  state.history.push({
-    id: String(Date.now()), date:new Date().toISOString(), workout:state.currentWorkout,
-    done, total:list.length, percent:Math.round(done/list.length*100)
-  });
-  state.checks[state.currentWorkout]={}; saveState(); renderAll(); alert(`Treino ${state.currentWorkout} concluído: ${done}/${list.length} exercícios.`);
+  state.history.push({id:String(Date.now()), date:new Date().toISOString(), workout:state.currentWorkout, done:done, total:list.length, percent:Math.round(done/list.length*100)});
+  state.checks[state.currentWorkout]={}; saveState(); renderAll(); alert("Treino "+state.currentWorkout+" concluído: "+done+"/"+list.length+" exercícios.");
 }
 function clearToday(){ state.checks[state.currentWorkout]={}; saveState(); renderAll(); }
 function saveGoals(){
@@ -260,8 +243,7 @@ function saveGoals(){
   saveState(); renderAll(); alert("Meta salva.");
 }
 function resetHistory(){ if(!confirm("Apagar histórico?")) return; state.history=[]; state.checks={}; saveState(); renderAll(); }
-function setDefaultWorkouts(){ state.workouts=JSON.parse(JSON.stringify(defaultWorkouts)); state.currentWorkout="A"; state.checks={}; saveState(); renderAll(); document.getElementById("importStatus").textContent="Treino padrão carregado."; }
-
+function loadPreset(){ state.workouts=JSON.parse(JSON.stringify(presetWorkouts)); state.currentWorkout="A"; state.checks={}; saveState(); renderAll(); document.getElementById("importStatus").textContent="Treino ABC + D carregado com sucesso."; }
 function preprocessText(text){
   text = text.replace(/\s+/g, ' ').trim();
   text = text.replace(/(Treino\s+[A-Z]\s*[–-])/g, '\n$1');
@@ -269,44 +251,21 @@ function preprocessText(text){
   text = text.replace(/(\d+\s+[A-ZÁÀÂÃÉÊÍÓÔÕÚÇa-záàâãéêíóôõúç].+?)(?=\s+\d+\s+[A-ZÁÀÂÃÉÊÍÓÔÕÚÇa-záàâãéêíóôõúç]|\s+Treino\s+[A-Z]|\s+Dia Extra|\s*$)/g, '\n$1');
   return text;
 }
-
 function parseWorkoutText(text){
-  const clean = preprocessText(text);
-  const lines = clean.split(/\n+/).map(s=>s.trim()).filter(Boolean);
-  const workouts = {};
-  let current = null;
-
+  const clean = preprocessText(text), lines = clean.split(/\n+/).map(s=>s.trim()).filter(Boolean), workouts = {}; let current = null;
   for (const line of lines){
-    const trainMatch = line.match(/^Treino\s+([A-Z])\b/i);
-    if(trainMatch){
-      current = trainMatch[1].toUpperCase();
-      if(!workouts[current]) workouts[current] = [];
-      continue;
-    }
-    if(/^Dia Extra/i.test(line)){
-      current = "D";
-      if(!workouts[current]) workouts[current] = [];
-      continue;
-    }
+    const tm = line.match(/^Treino\s+([A-Z])\b/i);
+    if(tm){ current = tm[1].toUpperCase(); workouts[current] = workouts[current] || []; continue; }
+    if(/^Dia Extra/i.test(line)){ current = "D"; workouts[current] = workouts[current] || []; continue; }
     if(!current) continue;
-
     let m = line.match(/^\d+\s+(.+?)\s+[—-]\s+(.+)$/);
-    if(m){
-      workouts[current].push({name:m[1].trim(), meta:m[2].trim()});
-      continue;
-    }
+    if(m){ workouts[current].push({name:m[1].trim(), meta:m[2].trim()}); continue; }
     m = line.match(/^\d+\s+(.+)$/);
-    if(m){
-      workouts[current].push({name:m[1].trim(), meta:""});
-    }
+    if(m){ workouts[current].push({name:m[1].trim(), meta:""}); }
   }
-
-  Object.keys(workouts).forEach(k=>{
-    workouts[k] = workouts[k].filter(ex=>ex.name);
-  });
+  Object.keys(workouts).forEach(k=> workouts[k] = workouts[k].filter(ex=>ex.name));
   return workouts;
 }
-
 async function extractPdfText(file){
   const buf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data: buf}).promise;
@@ -314,8 +273,7 @@ async function extractPdfText(file){
   for(let p=1; p<=pdf.numPages; p++){
     const page = await pdf.getPage(p);
     const content = await page.getTextContent();
-    const text = content.items.map(item => item.str).join(" ");
-    fullText += text + "\n";
+    fullText += content.items.map(item => item.str).join(" ") + "\n";
   }
   return fullText;
 }
@@ -324,18 +282,12 @@ async function importPdf(){
   if(!file) return alert("Escolha um PDF primeiro.");
   status.textContent="Lendo PDF...";
   try{
-    const text=await extractPdfText(file);
-    const parsed=parseWorkoutText(text);
-    const keys=Object.keys(parsed);
-    if(!keys.length){ status.textContent="Não consegui reconhecer os treinos nesse PDF."; return; }
-    state.workouts=parsed;
-    state.currentWorkout=keys.includes("A") ? "A" : keys[0];
-    state.checks={};
-    saveState(); renderAll();
-    status.textContent=`PDF lido com sucesso. Treinos encontrados: ${keys.join(", ")}.`;
+    const text=await extractPdfText(file), parsed=parseWorkoutText(text), keys=Object.keys(parsed);
+    if(!keys.length){ status.textContent="Não consegui reconhecer os treinos nesse PDF. Use o botão verde."; return; }
+    state.workouts=parsed; state.currentWorkout=keys.includes("A") ? "A" : keys[0]; state.checks={}; saveState(); renderAll();
+    status.textContent="PDF lido com sucesso. Treinos encontrados: "+keys.join(", ")+".";
   }catch(err){
-    console.error(err);
-    status.textContent="Falha ao ler o PDF.";
+    console.error(err); status.textContent="Falha ao ler esse PDF. Use o botão verde para carregar o treino pronto.";
   }
 }
 
@@ -343,12 +295,10 @@ document.getElementById("completeWorkoutBtn").addEventListener("click", complete
 document.getElementById("clearTodayBtn").addEventListener("click", clearToday);
 document.getElementById("saveGoalsBtn").addEventListener("click", saveGoals);
 document.getElementById("resetHistoryBtn").addEventListener("click", resetHistory);
-document.getElementById("loadDefaultBtn").addEventListener("click", setDefaultWorkouts);
+document.getElementById("loadPresetBtn").addEventListener("click", loadPreset);
 document.getElementById("importPdfBtn").addEventListener("click", importPdf);
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
-}
+document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", () => switchScreen(btn.dataset.screen)));
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{})); }
 renderAll();
 </script>
 </body>
