@@ -12,66 +12,140 @@
   <meta name="apple-mobile-web-app-title" content="Controle de Treinos">
   <link rel="apple-touch-icon" href="icon-192.png">
   <style>
-    :root{--text:#e5e7eb;--muted:#94a3b8;--line:#253247;--accent:#38bdf8;--ok:#22c55e;--warn:#f59e0b;--safeBottom:env(safe-area-inset-bottom,0px);--navH:84px}
-    *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#08101d,#111827);color:var(--text);padding:18px 16px calc(var(--navH) + var(--safeBottom) + 16px)}
+    :root{
+      --text:#e5e7eb;--muted:#94a3b8;--line:#253247;--accent:#38bdf8;--ok:#22c55e;--warn:#f59e0b;
+      --safeBottom:env(safe-area-inset-bottom,0px);--navH:84px
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      background:linear-gradient(180deg,#08101d,#111827);color:var(--text);
+      padding:18px 16px calc(var(--navH) + var(--safeBottom) + 16px)
+    }
     .wrap{max-width:760px;margin:0 auto}
-    h1{margin:0 0 6px;font-size:28px}.sub{color:var(--muted);margin-bottom:14px;line-height:1.4}
-    .card{background:rgba(17,24,39,.96);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.22);margin-bottom:14px}
-    .title{font-size:19px;font-weight:800;margin-bottom:12px}.muted{color:var(--muted)}.note{font-size:13px;color:var(--muted);line-height:1.45}
+    h1{margin:0 0 14px;font-size:28px}
+    .card{
+      background:rgba(17,24,39,.96);border:1px solid var(--line);border-radius:22px;
+      padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.22);margin-bottom:14px
+    }
+    .title{font-size:19px;font-weight:800;margin-bottom:12px}
+    .subtitle{font-size:16px;font-weight:800;margin-bottom:8px}
+    .muted{color:var(--muted)} .note{font-size:13px;color:var(--muted);line-height:1.45}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .btn{border:1px solid var(--line);background:#0f172a;color:var(--text);border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:800;font-size:16px}
-    .btn.primary{background:var(--accent);color:#062133;border-color:var(--accent)} .btn.ok{background:var(--ok);color:#06250d;border-color:var(--ok)} .btn.warn{background:var(--warn);color:#2b1801;border-color:var(--warn)}
-    .input-grid{display:grid;grid-template-columns:1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+    .btn{
+      border:1px solid var(--line);background:#0f172a;color:var(--text);
+      border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:800;font-size:16px
+    }
+    .btn.primary{background:var(--accent);color:#062133;border-color:var(--accent)}
+    .btn.ok{background:var(--ok);color:#06250d;border-color:var(--ok)}
+    .btn.warn{background:var(--warn);color:#2b1801;border-color:var(--warn)}
+    .input-grid{display:grid;grid-template-columns:1fr;gap:12px}
+    .field{display:flex;flex-direction:column;gap:6px;min-width:0}
     .field label{font-size:15px;color:var(--muted);font-weight:700;line-height:1.25}
-    input, textarea{width:100%;min-width:0;background:#0b1220;color:var(--text);border:1px solid var(--line);border-radius:16px;padding:14px 16px;font-size:18px;appearance:none;-webkit-appearance:none}
+    input, textarea{
+      width:100%;min-width:0;background:#0b1220;color:var(--text);border:1px solid var(--line);
+      border-radius:16px;padding:14px 16px;font-size:18px;appearance:none;-webkit-appearance:none
+    }
     textarea{min-height:180px;resize:vertical}
-    input[type='checkbox']{width:auto;transform:scale(1.15)} input[type='date']{min-height:56px}
-    .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#0b1220;border:1px solid var(--line);border-radius:16px;padding:12px}.stat small{display:block;color:var(--muted)}.stat strong{display:block;margin-top:6px;font-size:22px}
-    .progress{width:100%;height:12px;background:#0b1220;border-radius:999px;overflow:hidden;border:1px solid var(--line)} .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--ok))}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap}.tab{border:1px solid var(--line);background:#0f172a;color:var(--text);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800}.tab.active{background:var(--accent);color:#062133;border-color:var(--accent)}
-    .list{max-height:48vh;overflow:auto;padding-right:4px}.exercise{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr;gap:10px}.exercise:first-of-type{border-top:none}.ename{font-weight:800}.emeta{font-size:13px;color:var(--muted);margin-top:4px}
-    .exercise-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.exercise-check{display:flex;align-items:center;gap:8px;font-weight:700;background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:12px}
-    table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top} th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
-    .pill{font-size:12px;padding:5px 9px;border-radius:999px;display:inline-block;background:#0b1220;border:1px solid var(--line)} .hidden{display:none!important}
-    .bottom-nav{position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(10px + var(--safeBottom));background:rgba(8,16,29,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line);z-index:1000}
-    .bottom-nav-inner{max-width:760px;margin:0 auto;background:rgba(17,24,39,.96);border:1px solid var(--line);border-radius:22px;padding:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-    .nav-btn{border:none;background:transparent;color:var(--muted);border-radius:16px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800}
-    .nav-btn.active{background:#0b1220;color:var(--text)} .nav-icon{font-size:22px;line-height:1}
+    input[type='date']{min-height:56px}
+    .hidden{display:none!important}
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .stat{background:#0b1220;border:1px solid var(--line);border-radius:16px;padding:12px}
+    .stat small{display:block;color:var(--muted)} .stat strong{display:block;margin-top:6px;font-size:22px}
+    .progress{width:100%;height:12px;background:#0b1220;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+    .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--ok))}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{
+      border:1px solid var(--line);background:#0f172a;color:var(--text);
+      border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800
+    }
+    .tab.active{background:var(--accent);color:#062133;border-color:var(--accent)}
+    .list{max-height:48vh;overflow:auto;padding-right:4px}
+    .exercise{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr;gap:10px}
+    .exercise:first-of-type{border-top:none}
+    .ename{font-weight:800}
+    .emeta{font-size:13px;color:var(--muted);margin-top:4px}
+    .exercise-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .check-chip{
+      display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;
+      background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:12px;min-height:54px;
+      user-select:none;cursor:pointer
+    }
+    .check-chip input{display:none}
+    .check-box{
+      width:26px;height:26px;border-radius:8px;border:2px solid #50627a;display:inline-flex;
+      align-items:center;justify-content:center;font-size:16px;font-weight:900;flex:0 0 auto
+    }
+    .check-chip.done{border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.12)}
+    .check-chip.done .check-box{background:var(--ok);border-color:var(--ok);color:#06250d}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
+    th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+    .pill{font-size:12px;padding:5px 9px;border-radius:999px;display:inline-block;background:#0b1220;border:1px solid var(--line)}
+    .bottom-nav{
+      position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(10px + var(--safeBottom));
+      background:rgba(8,16,29,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line);z-index:1000
+    }
+    .bottom-nav-inner{
+      max-width:760px;margin:0 auto;background:rgba(17,24,39,.96);border:1px solid var(--line);
+      border-radius:22px;padding:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px
+    }
+    .nav-btn{
+      border:none;background:transparent;color:var(--muted);border-radius:16px;padding:10px 6px;cursor:pointer;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800
+    }
+    .nav-btn.active{background:#0b1220;color:var(--text)}
+    .nav-icon{font-size:22px;line-height:1}
   </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Controle de Treinos</h1>
-  <div class="sub">Importe, acompanhe resultados e execute seu treino.</div>
-
-  <div class="card">
-    <div class="stats">
-      <div class="stat"><small>Treino atual</small><strong id="statWorkout">A</strong></div>
-      <div class="stat"><small>Exercícios concluídos</small><strong id="statExercises">0/0</strong></div>
-      <div class="stat"><small>Treinos nesta semana</small><strong id="statWeek">0</strong></div>
-      <div class="stat"><small>Meta do ciclo</small><strong id="statCycle">0%</strong></div>
-    </div>
-    <div style="margin-top:12px"><div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do treino atual</div><div id="currentPct" class="muted">0%</div></div><div class="progress"><div class="bar" id="currentBar"></div></div></div>
-    <div style="margin-top:12px"><div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso da meta do ciclo</div><div id="cyclePct" class="muted">0%</div></div><div class="progress"><div class="bar" id="cycleBar"></div></div></div>
-  </div>
 
   <section id="screen-importar" class="screen">
     <div class="card">
       <div class="title">Importar</div>
-      <div class="row" style="margin-bottom:10px"><button class="btn ok" id="loadPresetBtn">Usar meu treino ABC + D</button></div>
-      <div class="input-grid" style="margin-bottom:10px">
-        <div class="field"><label for="pdfFile">PDF do treino</label><input type="file" id="pdfFile" accept="application/pdf" /></div>
+      <div class="input-grid" style="margin-bottom:12px">
+        <div class="field">
+          <label for="pdfFile">PDF do treino</label>
+          <input type="file" id="pdfFile" accept="application/pdf" />
+        </div>
       </div>
-      <div class="row"><button class="btn primary" id="importPdfBtn">Tentar ler PDF</button></div>
-      <div class="note" style="margin-top:10px">Se preferir, use texto colado em Resultados para importar num formato mais confiável.</div>
-      <div id="importStatus" class="muted" style="margin-top:10px"></div>
+      <div class="row" style="margin-bottom:12px">
+        <button class="btn primary" id="importPdfBtn">Importar PDF</button>
+      </div>
+      <div id="importStatus" class="muted" style="margin-bottom:14px"></div>
+
+      <div class="field">
+        <label for="textImport">Texto do treino</label>
+        <textarea id="textImport" placeholder="Treino A&#10;1 Supino reto barra — 4×6–8&#10;2 Supino inclinado halteres — 3×8–10&#10;&#10;Treino B&#10;1 Barra fixa / puxada — 4×6–8"></textarea>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ok" id="importTextBtn">Importar texto</button>
+      </div>
+      <div id="textImportStatus" class="muted" style="margin-top:10px"></div>
     </div>
   </section>
 
   <section id="screen-resultados" class="screen hidden">
     <div class="card">
       <div class="title">Resultados</div>
+      <div class="stats-grid">
+        <div class="stat"><small>Treino atual</small><strong id="resCurrentWorkout">A</strong></div>
+        <div class="stat"><small>Próximo treino sugerido</small><strong id="resNextWorkout">B</strong></div>
+        <div class="stat"><small>Conclusão do ciclo</small><strong id="resCyclePct">0%</strong></div>
+        <div class="stat"><small>Treinos nesta semana</small><strong id="resWeekCount">0</strong></div>
+        <div class="stat"><small>Treinos acumulados</small><strong id="resTotalCount">0</strong></div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do ciclo</div><div id="cyclePctLabel" class="muted">0%</div></div>
+        <div class="progress"><div class="bar" id="cycleBar"></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="subtitle">Meta do ciclo</div>
       <div class="input-grid">
         <div class="field"><label for="weeklyGoal">Meta de treinos por semana</label><input type="number" min="1" max="14" id="weeklyGoal" /></div>
         <div class="field"><label for="cycleStart">Início do ciclo</label><input type="date" id="cycleStart" /></div>
@@ -81,28 +155,36 @@
     </div>
 
     <div class="card">
-      <div class="title">Importar por texto</div>
-      <div class="note" style="margin-bottom:10px">Formato ideal: Treino A, Treino B, Treino C, Treino D. Uma linha por exercício.</div>
-      <div class="field">
-        <label for="textImport">Cole o treino aqui</label>
-        <textarea id="textImport" placeholder="Treino A&#10;1 Supino reto barra — 4×6–8&#10;2 Supino inclinado halteres — 3×8–10&#10;&#10;Treino B&#10;1 Barra fixa / puxada — 4×6–8"></textarea>
+      <div class="subtitle">Histórico</div>
+      <div class="row" style="gap:8px; margin-bottom:10px">
+        <span class="pill" id="weekGoalInfo">Meta semanal: 4</span>
+        <span class="pill" id="weekDoneInfo">Feitos na semana: 0</span>
+        <span class="pill" id="remainingInfo">Faltam: 0</span>
       </div>
-      <div class="row" style="margin-top:12px"><button class="btn primary" id="importTextBtn">Importar texto</button></div>
-      <div id="textImportStatus" class="muted" style="margin-top:10px"></div>
-    </div>
-
-    <div class="card">
-      <div class="title">Histórico</div>
-      <div class="row" style="gap:8px; margin-bottom:10px"><span class="pill" id="weekGoalInfo">Meta semanal: 4</span><span class="pill" id="weekDoneInfo">Feitos na semana: 0</span><span class="pill" id="remainingInfo">Faltam: 0</span></div>
-      <table><thead><tr><th>Data</th><th>Treino</th><th>Exercícios</th><th>Status</th></tr></thead><tbody id="historyBody"></tbody></table>
+      <table>
+        <thead><tr><th>Data</th><th>Treino</th><th>Exercícios</th><th>Status</th></tr></thead>
+        <tbody id="historyBody"></tbody>
+      </table>
     </div>
   </section>
 
   <section id="screen-execucao" class="screen hidden">
     <div class="card">
-      <div class="row" style="justify-content:space-between; margin-bottom:10px"><div class="title" style="margin:0">Execução</div><div class="tabs" id="tabs"></div></div>
+      <div class="title">Execução</div>
+      <div class="stats-grid" style="margin-bottom:12px">
+        <div class="stat"><small>Treino atual</small><strong id="execCurrentWorkout">A</strong></div>
+        <div class="stat"><small>Exercícios concluídos</small><strong id="execExercisesDone">0/0</strong></div>
+      </div>
+      <div style="margin-bottom:12px">
+        <div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do treino atual</div><div id="currentPct" class="muted">0%</div></div>
+        <div class="progress"><div class="bar" id="currentBar"></div></div>
+      </div>
+      <div class="tabs" id="tabs" style="margin-bottom:10px"></div>
       <div id="exerciseList" class="list"></div>
-      <div class="row" style="margin-top:12px"><button class="btn ok" id="completeWorkoutBtn">Concluir treino</button><button class="btn warn" id="clearTodayBtn">Limpar marcações</button></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ok" id="completeWorkoutBtn">Concluir treino</button>
+        <button class="btn warn" id="clearTodayBtn">Limpar marcações</button>
+      </div>
     </div>
   </section>
 </div>
@@ -118,7 +200,7 @@
 <script>
 if (window.pdfjsLib) { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js'; }
 
-const STORAGE_KEY = "controle-treinos-v25";
+const STORAGE_KEY = "controle-treinos-v26";
 const presetWorkouts = {
   "A":[
     {name:"Supino reto barra", meta:"4×6–8 — descanso 2min"},
@@ -165,6 +247,7 @@ let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {
 };
 
 function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function currentChecks(){ if(!state.checks[state.currentWorkout]) state.checks[state.currentWorkout] = {}; return state.checks[state.currentWorkout]; }
 function formatDate(d){ return new Date(d).toLocaleDateString("pt-BR"); }
 function getWeekRange(date = new Date()){ const d = new Date(date); const day = (d.getDay()+6)%7; d.setHours(0,0,0,0); const monday = new Date(d); monday.setDate(d.getDate()-day); const sunday = new Date(monday); sunday.setDate(monday.getDate()+6); sunday.setHours(23,59,59,999); return {start:monday, end:sunday}; }
@@ -173,6 +256,17 @@ function sessionsInWeek(){ const r=getWeekRange(); return state.history.filter(h
 function sessionsInCycle(){ const start=new Date(state.goals.cycleStart+"T00:00:00"), end=getCycleEnd(); return state.history.filter(h=>new Date(h.date)>=start && new Date(h.date)<=end); }
 function totalCycleGoal(){ return state.goals.weeklyGoal * state.goals.cycleWeeks; }
 
+function getWorkoutOrder(){ return Object.keys(state.workouts); }
+function getNextSuggestedWorkout(){
+  const order = getWorkoutOrder();
+  if (!order.length) return "-";
+  if (!state.history.length) return order.includes("A") ? "A" : order[0];
+  const last = state.history[state.history.length - 1].workout;
+  const idx = order.indexOf(last);
+  if (idx === -1) return order[0];
+  return order[(idx + 1) % order.length];
+}
+
 function switchScreen(name){
   state.activeScreen = name; saveState();
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
@@ -180,48 +274,79 @@ function switchScreen(name){
   if (el) el.classList.remove('hidden');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
 }
+
 function renderTabs(){
   const tabs=document.getElementById("tabs"); tabs.innerHTML="";
   Object.keys(state.workouts).forEach(k=>{
-    const b=document.createElement("button"); b.className="tab"+(state.currentWorkout===k?" active":""); b.textContent="Treino "+k;
-    b.onclick=()=>{state.currentWorkout=k;saveState();renderAll();}; tabs.appendChild(b);
+    const b=document.createElement("button");
+    b.className="tab"+(state.currentWorkout===k?" active":"");
+    b.textContent="Treino "+k;
+    b.onclick=()=>{state.currentWorkout=k;saveState();renderAll();};
+    tabs.appendChild(b);
   });
 }
-function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
 function renderExercises(){
   const wrap=document.getElementById("exerciseList"); wrap.innerHTML="";
   const list=state.workouts[state.currentWorkout]||[]; const checks=currentChecks();
   list.forEach((ex,idx)=>{
     const key=String(idx), checked=!!checks[key];
     const row=document.createElement("div"); row.className="exercise";
-    row.innerHTML="<div><div class='ename'>"+esc(ex.name)+"</div><div class='emeta'>"+esc(ex.meta||"")+"</div></div>" +
+    row.innerHTML =
+      "<div><div class='ename'>"+esc(ex.name)+"</div><div class='emeta'>"+esc(ex.meta||"")+"</div></div>" +
       "<div class='exercise-grid'>" +
-      "<label class='exercise-check'><input type='checkbox' "+(checked?"checked":"")+" data-idx='"+idx+"'> Feito</label>" +
-      "<div class='field'><label>Séries</label><input type='number' min='0' value='"+esc(checks[key+'_sets']||"")+"' data-sets='"+idx+"'></div>" +
-      "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(checks[key+'_note']||"")+"' data-note='"+idx+"' placeholder='carga, reps...'></div>" +
+        "<label class='check-chip "+(checked?"done":"")+"' data-label='"+idx+"'>" +
+          "<input type='checkbox' "+(checked?"checked":"")+" data-idx='"+idx+"'>" +
+          "<span class='check-box'>"+(checked?"✓":"")+"</span><span>Feito</span>" +
+        "</label>" +
+        "<div class='field'><label>Séries</label><input type='number' min='0' value='"+esc(checks[key+'_sets']||"")+"' data-sets='"+idx+"'></div>" +
+        "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(checks[key+'_note']||"")+"' data-note='"+idx+"' placeholder='carga, reps...'></div>" +
       "</div>";
     wrap.appendChild(row);
   });
-  wrap.querySelectorAll("input[type='checkbox']").forEach(el=>el.addEventListener("change", e=>{checks[e.target.dataset.idx]=e.target.checked; saveState(); updateTopStats();}));
+
+  wrap.querySelectorAll("input[type='checkbox']").forEach(el=>el.addEventListener("change", e=>{
+    const idx = e.target.dataset.idx;
+    checks[idx]=e.target.checked;
+    const chip = wrap.querySelector("[data-label='"+idx+"']");
+    const box = chip.querySelector(".check-box");
+    chip.classList.toggle("done", e.target.checked);
+    box.textContent = e.target.checked ? "✓" : "";
+    saveState(); updateStats();
+  }));
   wrap.querySelectorAll("input[data-sets]").forEach(el=>el.addEventListener("input", e=>{checks[e.target.dataset.sets+'_sets']=e.target.value; saveState();}));
   wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{checks[e.target.dataset.note+'_note']=e.target.value; saveState();}));
 }
-function updateTopStats(){
-  const list=state.workouts[state.currentWorkout]||[]; const checks=currentChecks();
-  const done=list.filter((_,i)=>!!checks[String(i)]).length; const pct=list.length?Math.round(done/list.length*100):0;
-  document.getElementById("statWorkout").textContent=state.currentWorkout;
-  document.getElementById("statExercises").textContent=done+"/"+list.length;
+
+function updateStats(){
+  const list=state.workouts[state.currentWorkout]||[];
+  const checks=currentChecks();
+  const done=list.filter((_,i)=>!!checks[String(i)]).length;
+  const pct=list.length?Math.round(done/list.length*100):0;
+  const weekDone=sessionsInWeek().length;
+  const totalDone=state.history.length;
+  const cycleDone=sessionsInCycle().length;
+  const cycleGoal=totalCycleGoal();
+  const cyclePct=cycleGoal?Math.min(100,Math.round(cycleDone/cycleGoal*100)):0;
+
+  document.getElementById("execCurrentWorkout").textContent=state.currentWorkout;
+  document.getElementById("execExercisesDone").textContent=done+"/"+list.length;
   document.getElementById("currentPct").textContent=pct+"%";
   document.getElementById("currentBar").style.width=pct+"%";
-  const weekDone=sessionsInWeek().length; document.getElementById("statWeek").textContent=weekDone;
-  const cycleDone=sessionsInCycle().length, cycleGoal=totalCycleGoal(), cyclePct=cycleGoal?Math.min(100,Math.round(cycleDone/cycleGoal*100)):0;
-  document.getElementById("statCycle").textContent=cyclePct+"%";
-  document.getElementById("cyclePct").textContent=cycleDone+"/"+cycleGoal+" ("+cyclePct+"%)";
+
+  document.getElementById("resCurrentWorkout").textContent=state.currentWorkout;
+  document.getElementById("resNextWorkout").textContent=getNextSuggestedWorkout();
+  document.getElementById("resCyclePct").textContent=cyclePct+"%";
+  document.getElementById("resWeekCount").textContent=weekDone;
+  document.getElementById("resTotalCount").textContent=totalDone;
+  document.getElementById("cyclePctLabel").textContent=cycleDone+"/"+cycleGoal+" ("+cyclePct+"%)";
   document.getElementById("cycleBar").style.width=cyclePct+"%";
+
   document.getElementById("weekGoalInfo").textContent="Meta semanal: "+state.goals.weeklyGoal;
   document.getElementById("weekDoneInfo").textContent="Feitos na semana: "+weekDone;
   document.getElementById("remainingInfo").textContent="Faltam: "+Math.max(0,state.goals.weeklyGoal-weekDone);
 }
+
 function renderHistory(){
   const body=document.getElementById("historyBody"); body.innerHTML="";
   const items=[...state.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,40);
@@ -232,12 +357,21 @@ function renderHistory(){
     body.appendChild(tr);
   });
 }
+
 function renderGoals(){
   document.getElementById("weeklyGoal").value=state.goals.weeklyGoal;
   document.getElementById("cycleStart").value=state.goals.cycleStart;
   document.getElementById("cycleWeeks").value=state.goals.cycleWeeks;
 }
-function renderAll(){ renderTabs(); renderExercises(); renderHistory(); renderGoals(); updateTopStats(); switchScreen(state.activeScreen || "importar"); }
+
+function renderAll(){
+  renderTabs();
+  renderExercises();
+  renderHistory();
+  renderGoals();
+  updateStats();
+  switchScreen(state.activeScreen || "importar");
+}
 
 function completeWorkout(){
   const list=state.workouts[state.currentWorkout]||[], checks=currentChecks();
@@ -245,9 +379,11 @@ function completeWorkout(){
   if(!list.length) return alert("Não há exercícios carregados nesse treino.");
   if(done===0) return alert("Marque pelo menos um exercício antes de concluir o treino.");
   state.history.push({id:String(Date.now()), date:new Date().toISOString(), workout:state.currentWorkout, done:done, total:list.length, percent:Math.round(done/list.length*100)});
-  state.checks[state.currentWorkout]={}; saveState(); renderAll(); alert("Treino "+state.currentWorkout+" concluído: "+done+"/"+list.length+" exercícios.");
+  state.checks[state.currentWorkout]={};
+  saveState(); renderAll(); alert("Treino "+state.currentWorkout+" concluído: "+done+"/"+list.length+" exercícios.");
 }
 function clearToday(){ state.checks[state.currentWorkout]={}; saveState(); renderAll(); }
+
 function saveGoals(){
   state.goals.weeklyGoal=parseInt(document.getElementById("weeklyGoal").value||"4",10);
   state.goals.cycleStart=document.getElementById("cycleStart").value||new Date().toISOString().slice(0,10);
@@ -255,7 +391,6 @@ function saveGoals(){
   saveState(); renderAll(); alert("Meta salva.");
 }
 function resetHistory(){ if(!confirm("Apagar histórico?")) return; state.history=[]; state.checks={}; saveState(); renderAll(); }
-function loadPreset(){ state.workouts=JSON.parse(JSON.stringify(presetWorkouts)); state.currentWorkout="A"; state.checks={}; saveState(); renderAll(); document.getElementById("importStatus").textContent="Treino ABC + D carregado com sucesso."; }
 
 function preprocessText(text){
   text = text.replace(/\r/g,'').replace(/\s+$/gm,'').trim();
@@ -298,7 +433,7 @@ async function importPdf(){
     const text=await extractPdfText(file), parsed=parseWorkoutText(text), keys=Object.keys(parsed);
     if(!keys.length){ status.textContent="Não consegui reconhecer os treinos nesse PDF."; return; }
     state.workouts=parsed; state.currentWorkout=keys.includes("A") ? "A" : keys[0]; state.checks={}; saveState(); renderAll();
-    status.textContent="PDF lido com sucesso. Treinos encontrados: "+keys.join(", ")+".";
+    status.textContent="PDF importado com sucesso. Treinos encontrados: "+keys.join(", ")+".";
   }catch(err){
     console.error(err); status.textContent="Falha ao ler esse PDF.";
   }
@@ -312,14 +447,15 @@ function importText(){
   state.workouts = parsed; state.currentWorkout = keys.includes("A") ? "A" : keys[0]; state.checks = {}; saveState(); renderAll();
   status.textContent = "Texto importado com sucesso. Treinos encontrados: " + keys.join(", ") + ".";
 }
+
 document.getElementById("completeWorkoutBtn").addEventListener("click", completeWorkout);
 document.getElementById("clearTodayBtn").addEventListener("click", clearToday);
 document.getElementById("saveGoalsBtn").addEventListener("click", saveGoals);
 document.getElementById("resetHistoryBtn").addEventListener("click", resetHistory);
-document.getElementById("loadPresetBtn").addEventListener("click", loadPreset);
 document.getElementById("importPdfBtn").addEventListener("click", importPdf);
 document.getElementById("importTextBtn").addEventListener("click", importText);
 document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", () => switchScreen(btn.dataset.screen)));
+
 if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{})); }
 renderAll();
 </script>
