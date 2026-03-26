@@ -14,17 +14,21 @@
   <style>
     :root{
       --text:#e5e7eb;--muted:#94a3b8;--line:#253247;--accent:#38bdf8;--ok:#22c55e;--warn:#f59e0b;
-      --safeBottom:env(safe-area-inset-bottom,0px);--navH:84px
+      --safeBottom:env(safe-area-inset-bottom,0px);--navH:110px
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
       background:linear-gradient(180deg,#08101d,#111827);color:var(--text);
-      padding:18px 16px calc(var(--navH) + var(--safeBottom) + 16px)
+      overflow-x:hidden;
+    }
+    .page{
+      min-height:100%;
+      padding:18px 16px calc(var(--navH) + var(--safeBottom) + 34px);
     }
     .wrap{max-width:760px;margin:0 auto}
-    h1{margin:0 0 14px;font-size:28px}
+    h1{margin:0 0 14px;font-size:28px; line-height:1.1}
     .card{
       background:rgba(17,24,39,.96);border:1px solid var(--line);border-radius:22px;
       padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.22);margin-bottom:14px
@@ -55,13 +59,22 @@
     .stat small{display:block;color:var(--muted)} .stat strong{display:block;margin-top:6px;font-size:22px}
     .progress{width:100%;height:12px;background:#0b1220;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
     .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--ok))}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tabs{
+      display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;
+      -webkit-overflow-scrolling:touch;scrollbar-width:none
+    }
+    .tabs::-webkit-scrollbar{display:none}
     .tab{
       border:1px solid var(--line);background:#0f172a;color:var(--text);
-      border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800
+      border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800;flex:0 0 auto
     }
     .tab.active{background:var(--accent);color:#062133;border-color:var(--accent)}
-    .list{max-height:48vh;overflow:auto;padding-right:4px}
+    .list{
+      max-height:none;
+      overflow:visible;
+      padding-right:0;
+      padding-bottom:10px;
+    }
     .exercise{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr;gap:10px}
     .exercise:first-of-type{border-top:none}
     .ename{font-weight:800}
@@ -84,12 +97,16 @@
     th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
     .pill{font-size:12px;padding:5px 9px;border-radius:999px;display:inline-block;background:#0b1220;border:1px solid var(--line)}
     .bottom-nav{
-      position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(10px + var(--safeBottom));
-      background:rgba(8,16,29,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line);z-index:1000
+      position:fixed;left:0;right:0;bottom:0;
+      padding:10px 12px calc(10px + var(--safeBottom));
+      background:linear-gradient(180deg, rgba(8,16,29,0) 0%, rgba(8,16,29,.92) 22%, rgba(8,16,29,.95) 100%);
+      backdrop-filter:blur(14px);
+      z-index:1000
     }
     .bottom-nav-inner{
       max-width:760px;margin:0 auto;background:rgba(17,24,39,.96);border:1px solid var(--line);
-      border-radius:22px;padding:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px
+      border-radius:22px;padding:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25)
     }
     .nav-btn{
       border:none;background:transparent;color:var(--muted);border-radius:16px;padding:10px 6px;cursor:pointer;
@@ -97,9 +114,16 @@
     }
     .nav-btn.active{background:#0b1220;color:var(--text)}
     .nav-icon{font-size:22px;line-height:1}
+    @media (max-width: 420px){
+      .exercise-grid{grid-template-columns:1fr}
+      .stats-grid{grid-template-columns:1fr 1fr}
+      .page{padding-left:14px;padding-right:14px}
+      .card{padding:14px}
+    }
   </style>
 </head>
 <body>
+<div class="page">
 <div class="wrap">
   <h1>Controle de Treinos</h1>
 
@@ -188,6 +212,7 @@
     </div>
   </section>
 </div>
+</div>
 
 <nav class="bottom-nav">
   <div class="bottom-nav-inner">
@@ -200,7 +225,7 @@
 <script>
 if (window.pdfjsLib) { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js'; }
 
-const STORAGE_KEY = "controle-treinos-v26";
+const STORAGE_KEY = "controle-treinos-v27";
 const presetWorkouts = {
   "A":[
     {name:"Supino reto barra", meta:"4×6–8 — descanso 2min"},
@@ -273,6 +298,7 @@ function switchScreen(name){
   const el = document.getElementById('screen-' + name);
   if (el) el.classList.remove('hidden');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function renderTabs(){
@@ -380,7 +406,8 @@ function completeWorkout(){
   if(done===0) return alert("Marque pelo menos um exercício antes de concluir o treino.");
   state.history.push({id:String(Date.now()), date:new Date().toISOString(), workout:state.currentWorkout, done:done, total:list.length, percent:Math.round(done/list.length*100)});
   state.checks[state.currentWorkout]={};
-  saveState(); renderAll(); alert("Treino "+state.currentWorkout+" concluído: "+done+"/"+list.length+" exercícios.");
+  saveState(); renderAll();
+  alert("Treino "+state.currentWorkout+" concluído: "+done+"/"+list.length+" exercícios.");
 }
 function clearToday(){ state.checks[state.currentWorkout]={}; saveState(); renderAll(); }
 
@@ -455,7 +482,6 @@ document.getElementById("resetHistoryBtn").addEventListener("click", resetHistor
 document.getElementById("importPdfBtn").addEventListener("click", importPdf);
 document.getElementById("importTextBtn").addEventListener("click", importText);
 document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", () => switchScreen(btn.dataset.screen)));
-
 if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{})); }
 renderAll();
 </script>
