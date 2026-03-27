@@ -250,7 +250,7 @@ if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
 }
 
-const STORAGE_KEY = "controle-treinos-v36";
+const STORAGE_KEY = "controle-treinos-v38";
 let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {
   workouts: {"A":[{"id":"a1","name":"Supino reto barra","meta":"4×6–8"}],"B":[],"C":[],"D":[]},
   currentWorkout: "A",
@@ -364,7 +364,7 @@ function renderExercises(){
       "<div class='exercise-grid'>" +
         "<div class='field'><label>Séries concluídas</label><div class='series-boxes'>"+seriesHtml+"</div></div>" +
         "<div class='field'><label>Carga</label><input type='text' value='"+esc(loadVal)+"' data-load='"+idx+"' placeholder='ex.: 20kg'></div>" +
-        "<div class='field'><label>Séries previstas</label><input type='number' min='1' value='"+seriesTarget+"' data-series-target='"+idx+"'></div>" +
+
         "<div class='field'><label>Status</label><div class='pill' style='align-self:flex-start'>"+(done ? "✅ Concluído" : ("⏳ "+doneCount+"/"+seriesTarget))+"</div></div>" +
         "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(checks[key+'_note']||"")+"' data-note='"+idx+"' placeholder='carga, sensação...'></div>" +
         "<div class='exercise-actions' style='grid-column:1/-1'><button type='button' class='mini-btn' data-edit='"+idx+"'>Editar exercício</button><button type='button' class='mini-btn danger' data-delete='"+idx+"'>Apagar</button></div>" +
@@ -372,34 +372,24 @@ function renderExercises(){
     wrap.appendChild(row);
   });
 
-  wrap.querySelectorAll("button[data-series-idx]").forEach(btn=>btn.addEventListener("click", e=>{
-    const idx = e.currentTarget.dataset.seriesIdx;
-    const num = Number(e.currentTarget.dataset.seriesNum);
-    const key = String(idx) + '_seriesDone';
-    const arr = Array.isArray(checks[key]) ? checks[key].slice() : [];
-    arr[num] = !arr[num];
-    checks[key] = arr;
-    saveState();
-    renderAll();
-  }));
+  wrap.querySelectorAll("button[data-series-idx]").forEach(btn=>{
+    btn.addEventListener("click", e=>{
+      e.preventDefault();
+      e.stopPropagation();
+      const scrollY = window.scrollY;
+      const idx = e.currentTarget.dataset.seriesIdx;
+      const num = Number(e.currentTarget.dataset.seriesNum);
+      const key = String(idx) + '_seriesDone';
+      const arr = Array.isArray(checks[key]) ? checks[key].slice() : [];
+      arr[num] = !arr[num];
+      checks[key] = arr;
+      saveState();
+      renderAll({ keepScroll: true });
+      window.scrollTo(0, scrollY);
+    });
+  });
 
-  wrap.querySelectorAll("input[data-series-target]").forEach(el=>el.addEventListener("input", e=>{
-    const idx = Number(e.target.dataset.seriesTarget);
-    const ex = list[idx];
-    const target = Math.max(1, parseInt(e.target.value || "1", 10));
-    const oldMeta = String(ex.meta || "");
-    if(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i.test(oldMeta)){
-      ex.meta = oldMeta.replace(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i, target + "×");
-    } else {
-      ex.meta = (oldMeta ? oldMeta + " — " : "") + target + "×";
-    }
-    const key = String(idx) + '_seriesDone';
-    const arr = Array.isArray(checks[key]) ? checks[key].slice(0, target) : [];
-    while(arr.length < target) arr.push(false);
-    checks[key] = arr;
-    saveState();
-    renderAll();
-  }));
+
 
   wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{
     checks[e.target.dataset.note+'_note']=e.target.value;
@@ -578,13 +568,25 @@ function renderGoals(){
   document.getElementById("cycleWeeks").value=state.goals.cycleWeeks;
 }
 
-function renderAll(){
+function renderAll(options = {}){
+  const keepScroll = !!options.keepScroll;
+  const currentScroll = window.scrollY;
+  const active = state.activeScreen || "importar";
   renderTabs();
   renderExercises();
   renderHistory();
   renderGoals();
   updateStats();
-  switchScreen(state.activeScreen || "importar");
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  const target = document.getElementById('screen-' + active);
+  if (target) target.classList.remove('hidden');
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.screen === active));
+  if (keepScroll) {
+    window.scrollTo(0, currentScroll);
+  } else {
+    window.scrollTo(0, 0);
+  }
+  if(active === 'resultados') setTimeout(drawProgressChart, 40);
 }
 
 function normalizeText(text){
