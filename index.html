@@ -175,9 +175,9 @@
       </div>
 
       <div class="card">
-        <div class="subtitle">Progressão média de carga</div>
-        <table><thead><tr><th>Treino</th><th>Carga média atual</th><th>Variação</th></tr></thead><tbody id="progressBody"></tbody></table>
-        <div class="tiny" style="margin-top:8px">A variação compara a média mais recente com a média anterior do mesmo treino.</div>
+        <div class="subtitle">Evolução de volume</div>
+        <table><thead><tr><th>Treino</th><th>Volume atual</th><th>Variação</th></tr></thead><tbody id="progressBody"></tbody></table>
+        <div class="tiny" style="margin-top:8px">A variação compara o volume mais recente com o volume anterior do mesmo treino, usando a fórmula (séries × repetições × carga) / 100.</div>
       </div>
 
       <div class="card">
@@ -250,7 +250,7 @@ if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
 }
 
-const STORAGE_KEY = "controle-treinos-v38";
+const STORAGE_KEY = "controle-treinos-v36";
 let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {
   workouts: {"A":[{"id":"a1","name":"Supino reto barra","meta":"4×6–8"}],"B":[],"C":[],"D":[]},
   currentWorkout: "A",
@@ -364,7 +364,7 @@ function renderExercises(){
       "<div class='exercise-grid'>" +
         "<div class='field'><label>Séries concluídas</label><div class='series-boxes'>"+seriesHtml+"</div></div>" +
         "<div class='field'><label>Carga</label><input type='text' value='"+esc(loadVal)+"' data-load='"+idx+"' placeholder='ex.: 20kg'></div>" +
-
+        "<div class='field'><label>Séries previstas</label><input type='number' min='1' value='"+seriesTarget+"' data-series-target='"+idx+"'></div>" +
         "<div class='field'><label>Status</label><div class='pill' style='align-self:flex-start'>"+(done ? "✅ Concluído" : ("⏳ "+doneCount+"/"+seriesTarget))+"</div></div>" +
         "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(checks[key+'_note']||"")+"' data-note='"+idx+"' placeholder='carga, sensação...'></div>" +
         "<div class='exercise-actions' style='grid-column:1/-1'><button type='button' class='mini-btn' data-edit='"+idx+"'>Editar exercício</button><button type='button' class='mini-btn danger' data-delete='"+idx+"'>Apagar</button></div>" +
@@ -372,27 +372,41 @@ function renderExercises(){
     wrap.appendChild(row);
   });
 
-  wrap.querySelectorAll("button[data-series-idx]").forEach(btn=>{
-    btn.addEventListener("click", e=>{
-      e.preventDefault();
-      e.stopPropagation();
-      const scrollY = window.scrollY;
-      const idx = e.currentTarget.dataset.seriesIdx;
-      const num = Number(e.currentTarget.dataset.seriesNum);
-      const key = String(idx) + '_seriesDone';
-      const arr = Array.isArray(checks[key]) ? checks[key].slice() : [];
-      arr[num] = !arr[num];
-      checks[key] = arr;
-      saveState();
-      renderAll({ keepScroll: true });
-      window.scrollTo(0, scrollY);
-    });
-  });
+  wrap.querySelectorAll("button[data-series-idx]").forEach(btn=>btn.addEventListener("click", e=>{
+    const idx = e.currentTarget.dataset.seriesIdx;
+    const num = Number(e.currentTarget.dataset.seriesNum);
+    const key = String(idx) + '_seriesDone';
+    const arr = Array.isArray(checks[key]) ? checks[key].slice() : [];
+    arr[num] = !arr[num];
+    checks[key] = arr;
+    saveState();
+    renderAll();
+  }));
 
-
+  wrap.querySelectorAll("input[data-series-target]").forEach(el=>el.addEventListener("input", e=>{
+    const idx = Number(e.target.dataset.seriesTarget);
+    const ex = list[idx];
+    const target = Math.max(1, parseInt(e.target.value || "1", 10));
+    const oldMeta = String(ex.meta || "");
+    if(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i.test(oldMeta)){
+      ex.meta = oldMeta.replace(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i, target + "×");
+    } else {
+      ex.meta = (oldMeta ? oldMeta + " — " : "") + target + "×";
+    }
+    const key = String(idx) + '_seriesDone';
+    const arr = Array.isArray(checks[key]) ? checks[key].slice(0, target) : [];
+    while(arr.length < target) arr.push(false);
+    checks[key] = arr;
+    saveState();
+    renderAll();
+  }));
 
   wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{
     checks[e.target.dataset.note+'_note']=e.target.value;
+    saveState();
+  }));
+  wrap.querySelectorAll("input[data-reps]").forEach(el=>el.addEventListener("input", e=>{
+    checks[e.target.dataset.reps+'_reps']=e.target.value;
     saveState();
   }));
 
@@ -431,13 +445,13 @@ function renderProgressTable(){
   const body = document.getElementById("progressBody");
   body.innerHTML = "";
   Object.keys(state.workouts).forEach(w=>{
-    const sessions = state.history.filter(h=>h.workout===w && typeof h.avgLoad === "number");
+    const sessions = state.history.filter(h=>h.workout===w && typeof h.volumeScore === "number");
     let current = "-", diff = "-";
     if(sessions.length){
-      const latest = sessions[sessions.length-1].avgLoad;
+      const latest = sessions[sessions.length-1].volumeScore;
       current = latest.toFixed(1);
       if(sessions.length >= 2){
-        const prev = sessions[sessions.length-2].avgLoad;
+        const prev = sessions[sessions.length-2].volumeScore;
         const delta = latest - prev;
         diff = (delta>0?"+":"") + delta.toFixed(1);
       }
@@ -469,14 +483,14 @@ function drawProgressChart(){
 
   const series = {};
   Object.keys(state.workouts).forEach((wk)=>{
-    series[wk] = state.history.filter(h=>h.workout===wk && typeof h.avgLoad === "number").map((h,idx)=>({x:idx+1,y:h.avgLoad}));
+    series[wk] = state.history.filter(h=>h.workout===wk && typeof h.volumeScore === "number").map((h,idx)=>({x:idx+1,y:h.volumeScore}));
   });
   const all = Object.values(series).flat();
   legend.innerHTML = "";
   if(!all.length){
     ctx.fillStyle = textColor;
     ctx.font = "14px sans-serif";
-    ctx.fillText("Sem dados de carga ainda.", 12, 24);
+    ctx.fillText("Sem dados de volume ainda.", 12, 24);
     return;
   }
   const minY = Math.min(...all.map(p=>p.y));
@@ -568,25 +582,13 @@ function renderGoals(){
   document.getElementById("cycleWeeks").value=state.goals.cycleWeeks;
 }
 
-function renderAll(options = {}){
-  const keepScroll = !!options.keepScroll;
-  const currentScroll = window.scrollY;
-  const active = state.activeScreen || "importar";
+function renderAll(){
   renderTabs();
   renderExercises();
   renderHistory();
   renderGoals();
   updateStats();
-  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-  const target = document.getElementById('screen-' + active);
-  if (target) target.classList.remove('hidden');
-  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.screen === active));
-  if (keepScroll) {
-    window.scrollTo(0, currentScroll);
-  } else {
-    window.scrollTo(0, 0);
-  }
-  if(active === 'resultados') setTimeout(drawProgressChart, 40);
+  switchScreen(state.activeScreen || "importar");
 }
 
 function normalizeText(text){
@@ -737,6 +739,32 @@ function addExercise(){
   renderAll();
 }
 
+
+function getSeriesTargetFromMeta(meta){
+  const s = String(meta || "");
+  const m = s.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i);
+  if(m) return parseInt(m[1], 10);
+  return 3;
+}
+function calculateWorkoutVolume(workout){
+  const list = state.workouts[workout] || [];
+  const checks = state.checks[workout] || {};
+  const sessionLoads = state.sessionLoads[workout] || {};
+  let total = 0;
+  list.forEach((ex, i) => {
+    const seriesDone = Array.isArray(checks[String(i)+'_seriesDone']) ? checks[String(i)+'_seriesDone'].filter(Boolean).length : 0;
+    const targetSeries = getSeriesTargetFromMeta(ex.meta);
+    const effectiveSeries = Math.min(seriesDone || 0, targetSeries || 0);
+    const reps = parseFloat(String(checks[String(i)+'_reps'] || "").replace(",", "."));
+    const loadRaw = String(sessionLoads[ex.id] ?? state.lastLoads[getLoadKey(workout, ex)] ?? "").replace(",", ".").replace(/[^\d.]/g,"");
+    const load = parseFloat(loadRaw);
+    if (effectiveSeries > 0 && !isNaN(reps) && !isNaN(load)) {
+      total += (effectiveSeries * reps * load) / 100;
+    }
+  });
+  return total > 0 ? total : null;
+}
+
 function averageLoadForCurrentSession(workout){
   const list = state.workouts[workout] || [];
   const sessionLoads = state.sessionLoads[workout] || {};
@@ -757,7 +785,7 @@ function completeWorkout(){
   }).length;
   if(!list.length) return alert("Não há exercícios carregados nesse treino.");
   if(done===0) return alert("Conclua todas as séries de pelo menos um exercício antes de concluir o treino.");
-  const avgLoad = averageLoadForCurrentSession(state.currentWorkout);
+  const volumeScore = calculateWorkoutVolume(state.currentWorkout);
   state.history.push({
     id:String(Date.now()),
     date:new Date().toISOString(),
@@ -765,7 +793,7 @@ function completeWorkout(){
     done:done,
     total:list.length,
     percent:Math.round(done/list.length*100),
-    avgLoad:avgLoad
+    volumeScore:volumeScore
   });
   state.checks[state.currentWorkout]={};
   state.sessionLoads[state.currentWorkout]={};
