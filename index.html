@@ -26,149 +26,205 @@
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);overflow-x:hidden;-webkit-text-size-adjust:100%}
-    .page{min-height:100%;padding:calc(var(--safeTop) + 20px) calc(var(--safeRight) + 16px) calc(var(--navH) + var(--safeBottom) + 36px) calc(var(--safeLeft) + 16px)}
+    body{
+      margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);overflow-x:hidden;-webkit-text-size-adjust:100%;
+    }
+    .page{
+      min-height:100%;
+      padding:calc(var(--safeTop) + 20px) calc(var(--safeRight) + 16px) calc(var(--navH) + var(--safeBottom) + 36px) calc(var(--safeLeft) + 16px);
+    }
     .wrap{max-width:780px;margin:0 auto}
-    .apphead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .apphead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
     .logo{width:36px;height:36px;border-radius:10px}
     .appname{font-weight:900;font-size:20px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.18);margin-bottom:14px;overflow:hidden}
-    .title{font-size:19px;font-weight:800;margin-bottom:12px}.subtitle{font-size:16px;font-weight:800;margin-bottom:8px}
+    .card{
+      background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;
+      box-shadow:0 12px 30px rgba(0,0,0,.18);margin-bottom:14px;overflow:hidden;
+    }
+    .title{font-size:19px;font-weight:800;margin-bottom:12px}
+    .subtitle{font-size:16px;font-weight:800;margin-bottom:8px}
     .muted{color:var(--muted)} .note{font-size:13px;color:var(--muted);line-height:1.45}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .btn{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:800;font-size:16px}
-    .btn.primary{background:var(--accent);color:white;border-color:transparent}.btn.ok{background:var(--ok);color:white;border-color:transparent}.btn.warn{background:var(--warn);color:white;border-color:transparent}.btn.danger{background:var(--danger);color:white;border-color:transparent}
-    .input-grid{display:grid;grid-template-columns:1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field label{font-size:15px;color:var(--muted);font-weight:700;line-height:1.25}
-    input, textarea{width:100%;min-width:0;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:16px;padding:14px 16px;font-size:18px;appearance:none;-webkit-appearance:none}
-    textarea{min-height:220px;resize:vertical} input[type='date']{min-height:56px}
+    .btn{
+      border:1px solid var(--line);background:var(--surface);color:var(--text);
+      border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:800;font-size:16px;
+    }
+    .btn.primary{background:var(--accent);color:white;border-color:transparent}
+    .btn.ok{background:var(--ok);color:white;border-color:transparent}
+    .btn.warn{background:var(--warn);color:white;border-color:transparent}
+    .btn.danger{background:var(--danger);color:white;border-color:transparent}
+    .input-grid{display:grid;grid-template-columns:1fr;gap:12px}
+    .field{display:flex;flex-direction:column;gap:6px;min-width:0}
+    .field label{font-size:15px;color:var(--muted);font-weight:700;line-height:1.25}
+    input, textarea{
+      width:100%;min-width:0;background:var(--surface);color:var(--text);
+      border:1px solid var(--line);border-radius:16px;padding:14px 16px;font-size:18px;
+      appearance:none;-webkit-appearance:none;
+    }
+    textarea{min-height:220px;resize:vertical}
+    input[type='date']{min-height:56px}
     .hidden{display:none!important}
-    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;min-width:0}.stat small{display:block;color:var(--muted)}.stat strong{display:block;margin-top:6px;font-size:22px;line-height:1.1}
-    .progress{width:100%;height:12px;background:var(--surface);border-radius:999px;overflow:hidden;border:1px solid var(--line)} .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--ok));transition:width .3s ease}
-    .tabs{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
-    .tab{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800;flex:0 0 auto}.tab.active{background:var(--accent);color:white;border-color:transparent}
-    .list{max-height:none;overflow:visible;padding-bottom:10px}.exercise{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr;gap:10px}.exercise:first-of-type{border-top:none}
-    .ename{font-weight:800;font-size:18px}.emeta{font-size:13px;color:var(--muted);margin-top:4px}
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;min-width:0}
+    .stat small{display:block;color:var(--muted)} .stat strong{display:block;margin-top:6px;font-size:22px;line-height:1.1}
+    .progress{width:100%;height:12px;background:var(--surface);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+    .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--ok));transition:width .3s ease}
+    .tabs{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{
+      border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800;flex:0 0 auto
+    }
+    .tab.active{background:var(--accent);color:white;border-color:transparent}
+    .list{max-height:none;overflow:visible;padding-bottom:10px}
+    .exercise{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr;gap:10px}
+    .exercise:first-of-type{border-top:none}
+    .ename{font-weight:800;font-size:18px}
+    .emeta{font-size:13px;color:var(--muted);margin-top:4px}
     .exercise-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .mini-btn{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:8px 10px;font-size:12px;font-weight:800;cursor:pointer}
     .mini-btn.danger{border-color:rgba(239,68,68,.45);color:var(--danger)}
     .exercise-actions{display:flex;gap:8px;flex-wrap:wrap}
-    table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top} th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
+    th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
     .pill{font-size:12px;padding:5px 9px;border-radius:999px;display:inline-block;background:var(--surface);border:1px solid var(--line)}
     .preview-box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px}
     .preview-title{font-weight:800;margin-bottom:8px}
     .tiny{font-size:12px;color:var(--muted)}
     .dot{width:10px;height:10px;border-radius:999px;display:inline-block}
-    .bottom-nav{position:fixed;left:0;right:0;bottom:0;padding:10px calc(var(--safeRight) + 12px) calc(10px + var(--safeBottom)) calc(var(--safeLeft) + 12px);background:linear-gradient(180deg, rgba(8,16,29,0) 0%, rgba(8,16,29,.92) 22%, rgba(8,16,29,.95) 100%);backdrop-filter:blur(14px);z-index:1000}
-    .bottom-nav-inner{max-width:780px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;box-shadow:0 10px 30px rgba(0,0,0,.15)}
-    .nav-btn{border:none;background:transparent;color:var(--muted);border-radius:16px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800;min-height:74px}
-    .nav-btn.active{background:var(--surface);color:var(--text)} .nav-icon{font-size:22px;line-height:1} .bottom-nav,.bottom-nav-inner,.nav-btn{pointer-events:auto}
-    @media (max-width: 420px){.exercise-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}.page{padding-top:calc(var(--safeTop) + 24px);padding-left:calc(var(--safeLeft) + 14px);padding-right:calc(var(--safeRight) + 14px);padding-bottom:calc(var(--navH) + var(--safeBottom) + 42px)}.card{padding:14px}}
+    .bottom-nav{
+      position:fixed;left:0;right:0;bottom:0;padding:10px calc(var(--safeRight) + 12px) calc(10px + var(--safeBottom)) calc(var(--safeLeft) + 12px);
+      background:linear-gradient(180deg, rgba(8,16,29,0) 0%, rgba(8,16,29,.92) 22%, rgba(8,16,29,.95) 100%);backdrop-filter:blur(14px);z-index:1000
+    }
+    .bottom-nav-inner{
+      max-width:780px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:6px;
+      display:grid;grid-template-columns:repeat(3,1fr);gap:6px;box-shadow:0 10px 30px rgba(0,0,0,.15)
+    }
+    .nav-btn{
+      border:none;background:transparent;color:var(--muted);border-radius:16px;padding:10px 6px;cursor:pointer;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800;min-height:74px
+    }
+    .nav-btn.active{background:var(--surface);color:var(--text)}
+    .nav-icon{font-size:22px;line-height:1}
+    @media (max-width: 420px){
+      .exercise-grid{grid-template-columns:1fr}
+      .stats-grid{grid-template-columns:1fr 1fr}
+      .page{padding-top:calc(var(--safeTop) + 24px);padding-left:calc(var(--safeLeft) + 14px);padding-right:calc(var(--safeRight) + 14px);padding-bottom:calc(var(--navH) + var(--safeBottom) + 42px)}
+      .card{padding:14px}
+    }
   </style>
 </head>
 <body>
 <div class="page">
-<div class="wrap">
-  <div class="apphead"><img src="icon-192.png" class="logo"/><span class="appname">Controle de Treinos</span></div>
+  <div class="wrap">
+    <div class="apphead"><img src="icon-192.png" class="logo"/><span class="appname">Controle de Treinos</span></div>
 
-  <section id="screen-importar" class="screen">
-    <div class="card">
-      <div class="title">Importar</div>
-      <div class="input-grid" style="margin-bottom:12px">
+    <section id="screen-importar" class="screen">
+      <div class="card">
+        <div class="title">Importar</div>
+        <div class="input-grid" style="margin-bottom:12px">
+          <div class="field">
+            <label for="pdfFile">PDF do treino</label>
+            <input type="file" id="pdfFile" accept="application/pdf" />
+          </div>
+        </div>
+        <div class="row" style="margin-bottom:12px">
+          <button type="button" class="btn primary" id="importPdfBtn">Importar PDF</button>
+        </div>
+        <div id="importStatus" class="muted" style="margin-bottom:14px"></div>
+
         <div class="field">
-          <label for="pdfFile">PDF do treino</label>
-          <input type="file" id="pdfFile" accept="application/pdf" />
+          <label for="textImport">Texto do treino</label>
+          <textarea id="textImport" placeholder="TREINO A – Peito + Bíceps&#10;• Supino reto barra — 4×6–8&#10;• Supino inclinado halteres — 3×8–10"></textarea>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button type="button" class="btn ok" id="previewTextBtn">Pré-visualizar</button>
+          <button type="button" class="btn primary" id="importTextBtn">Importar texto</button>
+        </div>
+        <div class="note" style="margin-top:10px">Aceita títulos como “TREINO A – ...”, bullets “•” e linhas sem numeração.</div>
+        <div id="textImportStatus" class="muted" style="margin-top:10px"></div>
+        <div id="previewArea" class="hidden"></div>
+      </div>
+    </section>
+
+    <section id="screen-resultados" class="screen hidden">
+      <div class="card">
+        <div class="title">Resultados</div>
+        <div class="stats-grid">
+          <div class="stat"><small>Treino atual</small><strong id="resCurrentWorkout">A</strong></div>
+          <div class="stat"><small>Próximo treino sugerido</small><strong id="resNextWorkout">B</strong></div>
+          <div class="stat"><small>Conclusão do ciclo</small><strong id="resCyclePct">0%</strong></div>
+          <div class="stat"><small>Treinos nesta semana</small><strong id="resWeekCount">0</strong></div>
+          <div class="stat"><small>Treinos acumulados</small><strong id="resTotalCount">0</strong></div>
+        </div>
+        <div style="margin-top:12px">
+          <div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do ciclo</div><div id="cyclePctLabel" class="muted">0%</div></div>
+          <div class="progress"><div class="bar" id="cycleBar"></div></div>
         </div>
       </div>
-      <div class="row" style="margin-bottom:12px">
-        <button class="btn primary" id="importPdfBtn">Importar PDF</button>
-      </div>
-      <div id="importStatus" class="muted" style="margin-bottom:14px"></div>
-      <div class="field">
-        <label for="textImport">Texto do treino</label>
-        <textarea id="textImport"></textarea>
-      </div>
-      <div class="row" style="margin-top:12px">
-        <button class="btn ok" id="previewTextBtn">Pré-visualizar</button>
-        <button class="btn primary" id="importTextBtn">Importar texto</button>
-      </div>
-      <div class="note" style="margin-top:10px">Aceita títulos como “TREINO A – ...”, bullets “•” e linhas sem numeração.</div>
-      <div id="textImportStatus" class="muted" style="margin-top:10px"></div>
-      <div id="previewArea" class="hidden"></div>
-    </div>
-  </section>
 
-  <section id="screen-resultados" class="screen hidden">
-    <div class="card">
-      <div class="title">Resultados</div>
-      <div class="stats-grid">
-        <div class="stat"><small>Treino atual</small><strong id="resCurrentWorkout">A</strong></div>
-        <div class="stat"><small>Próximo treino sugerido</small><strong id="resNextWorkout">B</strong></div>
-        <div class="stat"><small>Conclusão do ciclo</small><strong id="resCyclePct">0%</strong></div>
-        <div class="stat"><small>Treinos nesta semana</small><strong id="resWeekCount">0</strong></div>
-        <div class="stat"><small>Treinos acumulados</small><strong id="resTotalCount">0</strong></div>
+      <div class="card">
+        <div class="subtitle">Progressão média de carga</div>
+        <table><thead><tr><th>Treino</th><th>Carga média atual</th><th>Variação</th></tr></thead><tbody id="progressBody"></tbody></table>
+        <div class="tiny" style="margin-top:8px">A variação compara a média mais recente com a média anterior do mesmo treino.</div>
       </div>
-      <div style="margin-top:12px">
-        <div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do ciclo</div><div id="cyclePctLabel" class="muted">0%</div></div>
-        <div class="progress"><div class="bar" id="cycleBar"></div></div>
-      </div>
-    </div>
 
-    <div class="card">
-      <div class="subtitle">Progressão média de carga</div>
-      <table><thead><tr><th>Treino</th><th>Carga média atual</th><th>Variação</th></tr></thead><tbody id="progressBody"></tbody></table>
-      <div class="tiny" style="margin-top:8px">A variação compara a média mais recente com a média anterior do mesmo treino.</div>
-    </div>
+      <div class="card">
+        <div class="subtitle">Gráfico de progressão</div>
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px">
+          <div style="height:220px"><canvas id="progressChart"></canvas></div>
+          <div id="chartLegend" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)"></div>
+        </div>
+      </div>
 
-    <div class="card">
-      <div class="subtitle">Gráfico de progressão</div>
-      <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px">
-        <div style="height:220px"><canvas id="progressChart"></canvas></div>
-        <div id="chartLegend" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)"></div>
+      <div class="card">
+        <div class="subtitle">Meta do ciclo</div>
+        <div class="input-grid">
+          <div class="field"><label for="weeklyGoal">Meta de treinos por semana</label><input type="number" min="1" max="14" id="weeklyGoal" /></div>
+          <div class="field"><label for="cycleStart">Início do ciclo</label><input type="date" id="cycleStart" /></div>
+          <div class="field"><label for="cycleWeeks">Semanas no ciclo</label><input type="number" min="1" max="20" id="cycleWeeks" /></div>
+        </div>
+        <div class="row" style="margin-top:14px">
+          <button type="button" class="btn ok" id="saveGoalsBtn">Salvar meta</button>
+          <button type="button" class="btn warn" id="resetHistoryBtn">Zerar histórico</button>
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="subtitle">Meta do ciclo</div>
-      <div class="input-grid">
-        <div class="field"><label for="weeklyGoal">Meta de treinos por semana</label><input type="number" min="1" max="14" id="weeklyGoal" /></div>
-        <div class="field"><label for="cycleStart">Início do ciclo</label><input type="date" id="cycleStart" /></div>
-        <div class="field"><label for="cycleWeeks">Semanas no ciclo</label><input type="number" min="1" max="20" id="cycleWeeks" /></div>
+      <div class="card">
+        <div class="subtitle">Histórico</div>
+        <div class="row" style="gap:8px; margin-bottom:10px">
+          <span class="pill" id="weekGoalInfo">Meta semanal: 4</span>
+          <span class="pill" id="weekDoneInfo">Feitos na semana: 0</span>
+          <span class="pill" id="remainingInfo">Faltam: 0</span>
+        </div>
+        <table><thead><tr><th>Data</th><th>Treino</th><th>Exercícios</th><th>Status</th></tr></thead><tbody id="historyBody"></tbody></table>
       </div>
-      <div class="row" style="margin-top:14px"><button class="btn ok" id="saveGoalsBtn">Salvar meta</button><button class="btn warn" id="resetHistoryBtn">Zerar histórico</button></div>
-    </div>
+    </section>
 
-    <div class="card">
-      <div class="subtitle">Histórico</div>
-      <div class="row" style="gap:8px; margin-bottom:10px">
-        <span class="pill" id="weekGoalInfo">Meta semanal: 4</span>
-        <span class="pill" id="weekDoneInfo">Feitos na semana: 0</span>
-        <span class="pill" id="remainingInfo">Faltam: 0</span>
+    <section id="screen-execucao" class="screen hidden">
+      <div class="card">
+        <div class="title">Execução</div>
+        <div class="stats-grid" style="margin-bottom:12px">
+          <div class="stat"><small>Treino atual</small><strong id="execCurrentWorkout">A</strong></div>
+          <div class="stat"><small>Exercícios concluídos</small><strong id="execExercisesDone">0/0</strong></div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do treino atual</div><div id="currentPct" class="muted">0%</div></div>
+          <div class="progress"><div class="bar" id="currentBar"></div></div>
+        </div>
+        <div class="tabs" id="tabs" style="margin-bottom:10px"></div>
+        <div class="row" style="margin-bottom:10px">
+          <button type="button" class="btn ok" id="addExerciseBtn">Adicionar exercício</button>
+        </div>
+        <div id="exerciseList" class="list"></div>
+        <div class="row" style="margin-top:12px">
+          <button type="button" class="btn ok" id="completeWorkoutBtn">Concluir treino</button>
+          <button type="button" class="btn warn" id="clearTodayBtn">Limpar marcações</button>
+        </div>
       </div>
-      <table><thead><tr><th>Data</th><th>Treino</th><th>Exercícios</th><th>Status</th></tr></thead><tbody id="historyBody"></tbody></table>
-    </div>
-  </section>
-
-  <section id="screen-execucao" class="screen hidden">
-    <div class="card">
-      <div class="title">Execução</div>
-      <div class="stats-grid" style="margin-bottom:12px">
-        <div class="stat"><small>Treino atual</small><strong id="execCurrentWorkout">A</strong></div>
-        <div class="stat"><small>Exercícios concluídos</small><strong id="execExercisesDone">0/0</strong></div>
-      </div>
-      <div style="margin-bottom:12px">
-        <div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do treino atual</div><div id="currentPct" class="muted">0%</div></div>
-        <div class="progress"><div class="bar" id="currentBar"></div></div>
-      </div>
-      <div class="tabs" id="tabs" style="margin-bottom:10px"></div>
-      <div class="row" style="margin-bottom:10px"><button class="btn ok" id="addExerciseBtn">Adicionar exercício</button></div>
-      <div id="exerciseList" class="list"></div>
-      <div class="row" style="margin-top:12px">
-        <button class="btn ok" id="completeWorkoutBtn">Concluir treino</button>
-        <button class="btn warn" id="clearTodayBtn">Limpar marcações</button>
-      </div>
-    </div>
-  </section>
-</div>
+    </section>
+  </div>
 </div>
 
 <nav class="bottom-nav">
@@ -180,49 +236,152 @@
 </nav>
 
 <script>
-if (window.pdfjsLib) { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js'; }
-const STORAGE_KEY = "controle-treinos-v34";
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
+}
+
+const STORAGE_KEY = "controle-treinos-v36";
 let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {
   workouts: {"A":[{"id":"a1","name":"Supino reto barra","meta":"4×6–8"}],"B":[],"C":[],"D":[]},
-  currentWorkout: "A", checks: {}, history: [],
+  currentWorkout: "A",
+  checks: {},
+  history: [],
   goals: { weeklyGoal: 4, cycleWeeks: 8, cycleStart: new Date().toISOString().slice(0,10) },
-  activeScreen: "importar", lastLoads: {}, sessionLoads: {}
+  activeScreen: "importar",
+  lastLoads: {},
+  sessionLoads: {}
 };
+
 function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function uid(){ return "id" + Math.random().toString(36).slice(2,10); }
 function currentChecks(){ if(!state.checks[state.currentWorkout]) state.checks[state.currentWorkout] = {}; return state.checks[state.currentWorkout]; }
 function currentSessionLoads(){ if(!state.sessionLoads[state.currentWorkout]) state.sessionLoads[state.currentWorkout] = {}; return state.sessionLoads[state.currentWorkout]; }
 function formatDate(d){ return new Date(d).toLocaleDateString("pt-BR"); }
-function getWeekRange(date = new Date()){ const d = new Date(date); const day = (d.getDay()+6)%7; d.setHours(0,0,0,0); const monday = new Date(d); monday.setDate(d.getDate()-day); const sunday = new Date(monday); sunday.setDate(monday.getDate()+6); sunday.setHours(23,59,59,999); return {start:monday, end:sunday}; }
-function getCycleEnd(){ const start = new Date(state.goals.cycleStart + "T00:00:00"); const end = new Date(start); end.setDate(start.getDate() + state.goals.cycleWeeks*7 - 1); end.setHours(23,59,59,999); return end; }
+
+function getWeekRange(date = new Date()){
+  const d = new Date(date);
+  const day = (d.getDay()+6)%7;
+  d.setHours(0,0,0,0);
+  const monday = new Date(d);
+  monday.setDate(d.getDate()-day);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate()+6);
+  sunday.setHours(23,59,59,999);
+  return {start:monday, end:sunday};
+}
+function getCycleEnd(){
+  const start = new Date(state.goals.cycleStart + "T00:00:00");
+  const end = new Date(start);
+  end.setDate(start.getDate() + state.goals.cycleWeeks*7 - 1);
+  end.setHours(23,59,59,999);
+  return end;
+}
 function sessionsInWeek(){ const r=getWeekRange(); return state.history.filter(h=>new Date(h.date)>=r.start && new Date(h.date)<=r.end); }
 function sessionsInCycle(){ const start=new Date(state.goals.cycleStart+"T00:00:00"), end=getCycleEnd(); return state.history.filter(h=>new Date(h.date)>=start && new Date(h.date)<=end); }
 function totalCycleGoal(){ return state.goals.weeklyGoal * state.goals.cycleWeeks; }
 function getWorkoutOrder(){ return Object.keys(state.workouts); }
-function getNextSuggestedWorkout(){ const order = getWorkoutOrder(); if (!order.length) return "-"; if (!state.history.length) return order.includes("A") ? "A" : order[0]; const last = state.history[state.history.length - 1].workout; const idx = order.indexOf(last); if (idx === -1) return order[0]; return order[(idx + 1) % order.length]; }
-function switchScreen(name){
-  try {
-    state.activeScreen = name;
-    saveState();
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(s => s.classList.add('hidden'));
-    const target = document.getElementById('screen-' + name);
-    if (target) target.classList.remove('hidden');
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.screen === name);
-      btn.setAttribute('aria-pressed', btn.dataset.screen === name ? 'true' : 'false');
-    });
-    window.scrollTo(0, 0);
-    if (name === 'resultados') setTimeout(drawProgressChart, 40);
-  } catch (e) {
-    console.error('switchScreen error', e);
-  }
+function getNextSuggestedWorkout(){
+  const order = getWorkoutOrder();
+  if (!order.length) return "-";
+  if (!state.history.length) return order.includes("A") ? "A" : order[0];
+  const last = state.history[state.history.length - 1].workout;
+  const idx = order.indexOf(last);
+  if (idx === -1) return order[0];
+  return order[(idx + 1) % order.length];
 }
+
+function switchScreen(name){
+  state.activeScreen = name;
+  saveState();
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  const target = document.getElementById('screen-' + name);
+  if (target) target.classList.remove('hidden');
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.screen === name));
+  window.scrollTo(0,0);
+  if(name === 'resultados') setTimeout(drawProgressChart, 40);
+}
+
+function getLoadKey(workout, ex){ return workout + "|" + (ex.id || ex.name); }
+
+function renderTabs(){
+  const tabs = document.getElementById("tabs");
+  tabs.innerHTML = "";
+  Object.keys(state.workouts).forEach(k=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "tab" + (state.currentWorkout===k ? " active" : "");
+    b.textContent = "Treino " + k;
+    b.addEventListener("click", ()=>{ state.currentWorkout = k; saveState(); renderAll(); });
+    tabs.appendChild(b);
+  });
+}
+
+function renderExercises(){
+  const wrap=document.getElementById("exerciseList");
+  wrap.innerHTML="";
+  const list=state.workouts[state.currentWorkout]||[];
+  const checks=currentChecks();
+  const sessionLoads=currentSessionLoads();
+
+  list.forEach((ex,idx)=>{
+    if(!ex.id) ex.id = uid();
+    const key=String(idx);
+    const repsVal = checks[key+'_reps'] || "";
+    const done = Number(repsVal||0) > 0;
+    const loadKey = getLoadKey(state.currentWorkout, ex);
+    const loadVal = (sessionLoads[ex.id] ?? state.lastLoads[loadKey] ?? "");
+    const row=document.createElement("div");
+    row.className="exercise";
+    row.innerHTML =
+      "<div><div class='ename'>"+esc(ex.name)+"</div><div class='emeta'>"+esc(ex.meta||"")+"</div></div>" +
+      "<div class='exercise-grid'>" +
+        "<div class='field'><label>Repetições feitas</label><input type='number' min='0' value='"+esc(repsVal)+"' data-reps='"+idx+"'></div>" +
+        "<div class='field'><label>Carga</label><input type='text' value='"+esc(loadVal)+"' data-load='"+idx+"' placeholder='ex.: 20kg'></div>" +
+        "<div class='field'><label>Séries</label><input type='number' min='0' value='"+esc(checks[key+'_sets']||"")+"' data-sets='"+idx+"'></div>" +
+        "<div class='field'><label>Status</label><div class='pill' style='align-self:flex-start'>"+(done ? "✅ Concluído" : "⏳ Pendente")+"</div></div>" +
+        "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(checks[key+'_note']||"")+"' data-note='"+idx+"' placeholder='reps, sensação...'></div>" +
+        "<div class='exercise-actions' style='grid-column:1/-1'><button type='button' class='mini-btn' data-edit='"+idx+"'>Editar exercício</button><button type='button' class='mini-btn danger' data-delete='"+idx+"'>Apagar</button></div>" +
+      "</div>";
+    wrap.appendChild(row);
+  });
+
+  wrap.querySelectorAll("input[data-reps]").forEach(el=>el.addEventListener("input", e=>{ checks[e.target.dataset.reps+'_reps']=e.target.value; saveState(); renderAll(); }));
+  wrap.querySelectorAll("input[data-sets]").forEach(el=>el.addEventListener("input", e=>{ checks[e.target.dataset.sets+'_sets']=e.target.value; saveState(); }));
+  wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{ checks[e.target.dataset.note+'_note']=e.target.value; saveState(); }));
+  wrap.querySelectorAll("input[data-load]").forEach(el=>el.addEventListener("input", e=>{
+    const ex = list[Number(e.target.dataset.load)];
+    const loadKey = getLoadKey(state.currentWorkout, ex);
+    currentSessionLoads()[ex.id] = e.target.value;
+    state.lastLoads[loadKey] = e.target.value;
+    saveState();
+  }));
+  wrap.querySelectorAll("[data-edit]").forEach(btn=>btn.addEventListener("click", e=>{
+    const idx = Number(e.target.dataset.edit);
+    const ex = list[idx];
+    const newName = prompt("Novo nome do exercício:", ex.name);
+    if(newName === null) return;
+    const newMeta = prompt("Nova meta/séries:", ex.meta || "");
+    ex.name = (newName || ex.name).trim();
+    ex.meta = (newMeta ?? ex.meta).trim();
+    saveState();
+    renderAll();
+  }));
+  wrap.querySelectorAll("[data-delete]").forEach(btn=>btn.addEventListener("click", e=>{
+    const idx = Number(e.target.dataset.delete);
+    if(!confirm("Apagar esse exercício?")) return;
+    const ex = list[idx];
+    delete currentSessionLoads()[ex.id];
+    list.splice(idx,1);
+    saveState();
+    renderAll();
+  }));
+}
+
 function renderProgressTable(){
-  const body = document.getElementById("progressBody"); body.innerHTML = "";
-  const workouts = Object.keys(state.workouts);
-  workouts.forEach(w=>{
+  const body = document.getElementById("progressBody");
+  body.innerHTML = "";
+  Object.keys(state.workouts).forEach(w=>{
     const sessions = state.history.filter(h=>h.workout===w && typeof h.avgLoad === "number");
     let current = "-", diff = "-";
     if(sessions.length){
@@ -239,14 +398,17 @@ function renderProgressTable(){
     body.appendChild(tr);
   });
 }
+
 function drawProgressChart(){
   const canvas = document.getElementById("progressChart");
   const legend = document.getElementById("chartLegend");
   if(!canvas || !legend) return;
   const rect = canvas.parentElement.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
-  canvas.style.width = rect.width + "px"; canvas.style.height = rect.height + "px";
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  canvas.style.width = rect.width + "px";
+  canvas.style.height = rect.height + "px";
   const ctx = canvas.getContext("2d");
   ctx.setTransform(dpr,0,0,dpr,0,0);
   const w = rect.width, h = rect.height;
@@ -263,7 +425,8 @@ function drawProgressChart(){
   const all = Object.values(series).flat();
   legend.innerHTML = "";
   if(!all.length){
-    ctx.fillStyle = textColor; ctx.font = "14px sans-serif";
+    ctx.fillStyle = textColor;
+    ctx.font = "14px sans-serif";
     ctx.fillText("Sem dados de carga ainda.", 12, 24);
     return;
   }
@@ -273,26 +436,47 @@ function drawProgressChart(){
   const pad = {l:34,r:10,t:12,b:24}, plotW = w-pad.l-pad.r, plotH = h-pad.t-pad.b;
   const yMin = Math.floor(Math.max(0, minY-1)), yMax = Math.ceil(maxY+1);
 
-  ctx.strokeStyle = lineColor; ctx.lineWidth = 1;
+  ctx.strokeStyle = lineColor;
+  ctx.lineWidth = 1;
   for(let i=0;i<4;i++){ const y = pad.t + (plotH/3)*i; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke(); }
-  ctx.fillStyle = textColor; ctx.font = "11px sans-serif";
+  ctx.fillStyle = textColor;
+  ctx.font = "11px sans-serif";
   for(let i=0;i<4;i++){ const val = yMax - ((yMax-yMin)/3)*i; const y = pad.t + (plotH/3)*i; ctx.fillText(String(val.toFixed(0)), 4, y+4); }
 
   Object.keys(series).forEach((wk, idx)=>{
-    const pts = series[wk]; if(!pts.length) return;
+    const pts = series[wk];
+    if(!pts.length) return;
     const color = palette[idx % palette.length];
     legend.innerHTML += "<div style='display:flex;align-items:center;gap:6px'><span class='dot' style='background:"+color+"'></span>Treino "+wk+"</div>";
-    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
-    pts.forEach((p,i)=>{ const x = pad.l + ((p.x-1)/Math.max(1,maxX-1))*plotW; const y = pad.t + (1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    pts.forEach((p,i)=>{
+      const x = pad.l + ((p.x-1)/Math.max(1,maxX-1))*plotW;
+      const y = pad.t + (1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
     ctx.stroke();
-    pts.forEach((p)=>{ const x = pad.l + ((p.x-1)/Math.max(1,maxX-1))*plotW; const y = pad.t + (1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH; ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fill(); });
+    pts.forEach((p)=>{
+      const x = pad.l + ((p.x-1)/Math.max(1,maxX-1))*plotW;
+      const y = pad.t + (1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH;
+      ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fill();
+    });
   });
 }
+
 function updateStats(){
-  const list=state.workouts[state.currentWorkout]||[]; const checks=currentChecks();
+  const list=state.workouts[state.currentWorkout]||[];
+  const checks=currentChecks();
   const done=list.filter((_,i)=>Number(checks[String(i)+'_reps']||0)>0).length;
   const pct=list.length?Math.round(done/list.length*100):0;
-  const weekDone=sessionsInWeek().length; const totalDone=state.history.length; const cycleDone=sessionsInCycle().length; const cycleGoal=totalCycleGoal(); const cyclePct=cycleGoal?Math.min(100,Math.round(cycleDone/cycleGoal*100)):0;
+  const weekDone=sessionsInWeek().length;
+  const totalDone=state.history.length;
+  const cycleDone=sessionsInCycle().length;
+  const cycleGoal=totalCycleGoal();
+  const cyclePct=cycleGoal?Math.min(100,Math.round(cycleDone/cycleGoal*100)):0;
+
   document.getElementById("execCurrentWorkout").textContent=state.currentWorkout;
   document.getElementById("execExercisesDone").textContent=done+"/"+list.length;
   document.getElementById("currentPct").textContent=pct+"%";
@@ -307,40 +491,93 @@ function updateStats(){
   document.getElementById("weekGoalInfo").textContent="Meta semanal: "+state.goals.weeklyGoal;
   document.getElementById("weekDoneInfo").textContent="Feitos na semana: "+weekDone;
   document.getElementById("remainingInfo").textContent="Faltam: "+Math.max(0,state.goals.weeklyGoal-weekDone);
-  renderProgressTable(); drawProgressChart();
+  renderProgressTable();
+  drawProgressChart();
 }
-function renderHistory(){ const body=document.getElementById("historyBody"); body.innerHTML=""; const items=[...state.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,60); if(!items.length){ body.innerHTML="<tr><td colspan='4' class='muted'>Nenhum treino concluído ainda.</td></tr>"; return; } items.forEach(h=>{ const tr=document.createElement("tr"); tr.innerHTML="<td>"+formatDate(h.date)+"</td><td>Treino "+esc(h.workout)+"</td><td>"+h.done+"/"+h.total+"</td><td>"+(h.percent===100?"Completo":"Parcial")+" ("+h.percent+"%)</td>"; body.appendChild(tr); }); }
-function renderGoals(){ document.getElementById("weeklyGoal").value=state.goals.weeklyGoal; document.getElementById("cycleStart").value=state.goals.cycleStart; document.getElementById("cycleWeeks").value=state.goals.cycleWeeks; }
-function renderAll(){ renderTabs(); renderExercises(); renderHistory(); renderGoals(); updateStats(); switchScreen(state.activeScreen || "importar"); }
 
-function normalizeText(text){ return (text || "").replace(/\u000c/g, "\n").replace(/\r/g, "\n").replace(/[•●▪◦‣]/g, "\n• ").replace(/[–—]/g, "—").replace(/\t/g, " ").replace(/[ ]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim(); }
+function renderHistory(){
+  const body=document.getElementById("historyBody");
+  body.innerHTML="";
+  const items=[...state.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,60);
+  if(!items.length){ body.innerHTML="<tr><td colspan='4' class='muted'>Nenhum treino concluído ainda.</td></tr>"; return; }
+  items.forEach(h=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML="<td>"+formatDate(h.date)+"</td><td>Treino "+esc(h.workout)+"</td><td>"+h.done+"/"+h.total+"</td><td>"+(h.percent===100?"Completo":"Parcial")+" ("+h.percent+"%)</td>";
+    body.appendChild(tr);
+  });
+}
+
+function renderGoals(){
+  document.getElementById("weeklyGoal").value=state.goals.weeklyGoal;
+  document.getElementById("cycleStart").value=state.goals.cycleStart;
+  document.getElementById("cycleWeeks").value=state.goals.cycleWeeks;
+}
+
+function renderAll(){
+  renderTabs();
+  renderExercises();
+  renderHistory();
+  renderGoals();
+  updateStats();
+  switchScreen(state.activeScreen || "importar");
+}
+
+function normalizeText(text){
+  return (text || "")
+    .replace(/\u000c/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/[•●▪◦‣]/g, "\n• ")
+    .replace(/[–—]/g, "—")
+    .replace(/\t/g, " ")
+    .replace(/[ ]{2,}/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
 function isStopSection(line){ return /^(ABDOMINAIS|CORRIDA|SUGESTÃO SEMANAL|REGRAS IMPORTANTES|OBJETIVO\b|PLANO DE TREINO\b)/i.test(line); }
 function headingWorkout(line){ const m = line.match(/^TREINO\s+([A-Z])\b/i); return m ? m[1].toUpperCase() : null; }
-function cleanExerciseLine(line){ let s = line.trim(); s = s.replace(/^•\s*/, ""); s = s.replace(/^\d+\s+/, ""); s = s.replace(/\s+/g, " ").trim(); return s; }
+function cleanExerciseLine(line){
+  let s = line.trim();
+  s = s.replace(/^•\s*/, "");
+  s = s.replace(/^\d+\s+/, "");
+  s = s.replace(/\s+/g, " ").trim();
+  return s;
+}
 function parseWorkoutText(text){
   const lines = normalizeText(text).split(/\n+/).map(s => s.trim()).filter(Boolean);
-  const workouts = {}; let current = null; let stopMode = false;
+  const workouts = {};
+  let current = null;
+  let stopMode = false;
   for (let raw of lines){
-    const line = raw.trim(); const heading = headingWorkout(line);
+    const line = raw.trim();
+    const heading = headingWorkout(line);
     if (heading){ current = heading; workouts[current] = workouts[current] || []; stopMode = false; continue; }
     if (isStopSection(line)){ stopMode = true; current = null; continue; }
     if (stopMode || !current) continue;
-    const cleaned = cleanExerciseLine(line); if (!cleaned) continue;
+    const cleaned = cleanExerciseLine(line);
+    if (!cleaned) continue;
     let name = cleaned, meta = "";
     if (cleaned.includes("—") || cleaned.includes("-")) {
-      let parts = cleaned.split("—"); if (parts.length === 1) parts = cleaned.split(" - ");
-      const maybeName = (parts[0] || "").trim(); const maybeMeta = parts.slice(1).join(" — ").trim();
+      let parts = cleaned.split("—");
+      if (parts.length === 1) parts = cleaned.split(" - ");
+      const maybeName = (parts[0] || "").trim();
+      const maybeMeta = parts.slice(1).join(" — ").trim();
       if (maybeName && maybeMeta) { name = maybeName; meta = maybeMeta; }
     }
     if (!/^(TREINO|ABDOMINAIS|CORRIDA|SUGESTÃO|REGRAS)/i.test(name)) workouts[current].push({id:uid(), name, meta});
   }
   Object.keys(workouts).forEach(k => {
     const seen = new Set();
-    workouts[k] = workouts[k].filter(ex => { const key = (ex.name + "|" + ex.meta).toLowerCase(); if (!ex.name || seen.has(key)) return false; seen.add(key); return true; });
+    workouts[k] = workouts[k].filter(ex => {
+      const key = (ex.name + "|" + ex.meta).toLowerCase();
+      if (!ex.name || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
     if (!workouts[k].length) delete workouts[k];
   });
   return workouts;
 }
+
 function renderPreview(parsed){
   const area = document.getElementById("previewArea");
   const keys = Object.keys(parsed);
@@ -355,68 +592,154 @@ function renderPreview(parsed){
   area.innerHTML = html;
   area.classList.remove("hidden");
 }
-async function extractPdfText(file){ const buf = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data: buf}).promise; let fullText = ""; for(let p=1; p<=pdf.numPages; p++){ const page = await pdf.getPage(p); const content = await page.getTextContent(); fullText += content.items.map(item => item.str).join(" ") + "\n"; } return fullText; }
+
+async function extractPdfText(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+  let fullText = "";
+  for(let p=1; p<=pdf.numPages; p++){
+    const page = await pdf.getPage(p);
+    const content = await page.getTextContent();
+    fullText += content.items.map(item => item.str).join(" ") + "\n";
+  }
+  return fullText;
+}
+
 async function importPdf(){
-  const file=document.getElementById("pdfFile").files[0], status=document.getElementById("importStatus");
+  const file=document.getElementById("pdfFile").files[0];
+  const status=document.getElementById("importStatus");
   if(!file) return alert("Escolha um PDF primeiro.");
   status.textContent="Lendo PDF...";
   try{
-    const text=await extractPdfText(file); const parsed=parseWorkoutText(text); const keys=Object.keys(parsed); renderPreview(parsed);
+    const text=await extractPdfText(file);
+    const parsed=parseWorkoutText(text);
+    const keys=Object.keys(parsed);
+    renderPreview(parsed);
     if(!keys.length){ status.textContent="Não consegui reconhecer os treinos nesse PDF."; return; }
-    const previousHistory = state.history || []; const previousLastLoads = state.lastLoads || {};
-    state.workouts=parsed; ["A","B","C","D"].forEach(k=>{ if(!state.workouts[k]) state.workouts[k]=[]; });
-    state.currentWorkout=keys.includes("A") ? "A" : keys[0]; state.checks={}; state.sessionLoads={}; state.history=previousHistory; state.lastLoads=previousLastLoads;
-    saveState(); renderAll(); status.textContent="PDF importado com sucesso. Treinos encontrados: "+keys.join(", ")+"."; switchScreen("execucao");
-  }catch(err){ console.error(err); status.textContent="Falha ao ler esse PDF."; }
+    const previousHistory = state.history || [];
+    const previousLastLoads = state.lastLoads || {};
+    state.workouts=parsed;
+    ["A","B","C","D"].forEach(k=>{ if(!state.workouts[k]) state.workouts[k]=[]; });
+    state.currentWorkout=keys.includes("A") ? "A" : keys[0];
+    state.checks={};
+    state.sessionLoads={};
+    state.history=previousHistory;
+    state.lastLoads=previousLastLoads;
+    saveState();
+    renderAll();
+    status.textContent="PDF importado com sucesso. Treinos encontrados: "+keys.join(", ")+".";
+    switchScreen("execucao");
+  }catch(err){
+    console.error(err);
+    status.textContent="Falha ao ler esse PDF.";
+  }
 }
+
 function importText(){
-  const txt = document.getElementById("textImport").value || ""; const status = document.getElementById("textImportStatus");
-  const parsed = parseWorkoutText(txt); const keys = Object.keys(parsed); renderPreview(parsed);
-  if(!keys.length){ status.textContent = "Não consegui reconhecer treinos no texto. Use títulos como TREINO A, TREINO B..."; return; }
-  const previousHistory = state.history || []; const previousLastLoads = state.lastLoads || {};
-  state.workouts = parsed; ["A","B","C","D"].forEach(k=>{ if(!state.workouts[k]) state.workouts[k]=[]; });
-  state.currentWorkout = keys.includes("A") ? "A" : keys[0]; state.checks = {}; state.sessionLoads = {}; state.history=previousHistory; state.lastLoads=previousLastLoads;
-  saveState(); renderAll(); status.textContent = "Texto importado com sucesso. Treinos encontrados: " + keys.join(", ") + "."; switchScreen("execucao");
+  const txt = document.getElementById("textImport").value || "";
+  const status = document.getElementById("textImportStatus");
+  const parsed = parseWorkoutText(txt);
+  const keys = Object.keys(parsed);
+  renderPreview(parsed);
+  if(!keys.length){
+    status.textContent = "Não consegui reconhecer treinos no texto. Use títulos como TREINO A, TREINO B...";
+    return;
+  }
+  const previousHistory = state.history || [];
+  const previousLastLoads = state.lastLoads || {};
+  state.workouts = parsed;
+  ["A","B","C","D"].forEach(k=>{ if(!state.workouts[k]) state.workouts[k]=[]; });
+  state.currentWorkout = keys.includes("A") ? "A" : keys[0];
+  state.checks = {};
+  state.sessionLoads = {};
+  state.history = previousHistory;
+  state.lastLoads = previousLastLoads;
+  saveState();
+  renderAll();
+  status.textContent = "Texto importado com sucesso. Treinos encontrados: " + keys.join(", ") + ".";
+  switchScreen("execucao");
 }
-function addExercise(){ const name = prompt("Nome do exercício:"); if(!name) return; const meta = prompt("Meta/séries (opcional):", "") || ""; if(!state.workouts[state.currentWorkout]) state.workouts[state.currentWorkout] = []; state.workouts[state.currentWorkout].push({id:uid(), name:name.trim(), meta:meta.trim()}); saveState(); renderAll(); }
-function averageLoadForCurrentSession(workout){ const list = state.workouts[workout] || []; const sessionLoads = state.sessionLoads[workout] || {}; const nums = list.map(ex => parseFloat(String(sessionLoads[ex.id] ?? "").replace(",", ".").replace(/[^\d.]/g,""))).filter(x => !isNaN(x)); if(!nums.length) return null; return nums.reduce((a,b)=>a+b,0)/nums.length; }
+
+function addExercise(){
+  const name = prompt("Nome do exercício:");
+  if(!name) return;
+  const meta = prompt("Meta/séries (opcional):", "") || "";
+  if(!state.workouts[state.currentWorkout]) state.workouts[state.currentWorkout] = [];
+  state.workouts[state.currentWorkout].push({id:uid(), name:name.trim(), meta:meta.trim()});
+  saveState();
+  renderAll();
+}
+
+function averageLoadForCurrentSession(workout){
+  const list = state.workouts[workout] || [];
+  const sessionLoads = state.sessionLoads[workout] || {};
+  const nums = list.map(ex => parseFloat(String(sessionLoads[ex.id] ?? "").replace(",", ".").replace(/[^\d.]/g,""))).filter(x => !isNaN(x));
+  if(!nums.length) return null;
+  return nums.reduce((a,b)=>a+b,0)/nums.length;
+}
+
 function completeWorkout(){
-  const list=state.workouts[state.currentWorkout]||[], checks=currentChecks();
+  const list=state.workouts[state.currentWorkout]||[];
+  const checks=currentChecks();
   const done=list.filter((_,i)=>Number(checks[String(i)+'_reps']||0)>0).length;
   if(!list.length) return alert("Não há exercícios carregados nesse treino.");
   if(done===0) return alert("Preencha pelo menos uma repetição em algum exercício antes de concluir o treino.");
   const avgLoad = averageLoadForCurrentSession(state.currentWorkout);
-  state.history.push({id:String(Date.now()), date:new Date().toISOString(), workout:state.currentWorkout, done:done, total:list.length, percent:Math.round(done/list.length*100), avgLoad:avgLoad});
-  state.checks[state.currentWorkout]={}; state.sessionLoads[state.currentWorkout]={};
-  saveState(); renderAll(); alert("Treino "+state.currentWorkout+" concluído: "+done+"/"+list.length+" exercícios.");
+  state.history.push({
+    id:String(Date.now()),
+    date:new Date().toISOString(),
+    workout:state.currentWorkout,
+    done:done,
+    total:list.length,
+    percent:Math.round(done/list.length*100),
+    avgLoad:avgLoad
+  });
+  state.checks[state.currentWorkout]={};
+  state.sessionLoads[state.currentWorkout]={};
+  saveState();
+  renderAll();
+  alert("Treino "+state.currentWorkout+" concluído: "+done+"/"+list.length+" exercícios.");
 }
-function clearToday(){ state.checks[state.currentWorkout]={}; state.sessionLoads[state.currentWorkout]={}; saveState(); renderAll(); }
-function saveGoals(){ state.goals.weeklyGoal=parseInt(document.getElementById("weeklyGoal").value||"4",10); state.goals.cycleStart=document.getElementById("cycleStart").value||new Date().toISOString().slice(0,10); state.goals.cycleWeeks=parseInt(document.getElementById("cycleWeeks").value||"8",10); saveState(); renderAll(); }
-function resetHistory(){ if(!confirm("Apagar histórico?")) return; state.history=[]; saveState(); renderAll(); }
 
-document.getElementById("completeWorkoutBtn").addEventListener("click", completeWorkout);
-document.getElementById("clearTodayBtn").addEventListener("click", clearToday);
-document.getElementById("saveGoalsBtn").addEventListener("click", saveGoals);
-document.getElementById("resetHistoryBtn").addEventListener("click", resetHistory);
+function clearToday(){
+  state.checks[state.currentWorkout]={};
+  state.sessionLoads[state.currentWorkout]={};
+  saveState();
+  renderAll();
+}
+
+function saveGoals(){
+  state.goals.weeklyGoal=parseInt(document.getElementById("weeklyGoal").value||"4",10);
+  state.goals.cycleStart=document.getElementById("cycleStart").value||new Date().toISOString().slice(0,10);
+  state.goals.cycleWeeks=parseInt(document.getElementById("cycleWeeks").value||"8",10);
+  saveState();
+  renderAll();
+}
+
+function resetHistory(){
+  if(!confirm("Apagar histórico?")) return;
+  state.history=[];
+  saveState();
+  renderAll();
+}
+
 document.getElementById("importPdfBtn").addEventListener("click", importPdf);
 document.getElementById("previewTextBtn").addEventListener("click", ()=>renderPreview(parseWorkoutText(document.getElementById("textImport").value || "")));
 document.getElementById("importTextBtn").addEventListener("click", importText);
+document.getElementById("saveGoalsBtn").addEventListener("click", saveGoals);
+document.getElementById("resetHistoryBtn").addEventListener("click", resetHistory);
 document.getElementById("addExerciseBtn").addEventListener("click", addExercise);
-document.querySelectorAll(".nav-btn").forEach(btn => {
-  btn.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const screen = btn.dataset.screen;
-    switchScreen(screen);
-  }, {passive:false});
-  btn.addEventListener("touchend", (e) => {
-    e.preventDefault();
-    const screen = btn.dataset.screen;
-    switchScreen(screen);
-  }, {passive:false});
-});
+document.getElementById("completeWorkoutBtn").addEventListener("click", completeWorkout);
+document.getElementById("clearTodayBtn").addEventListener("click", clearToday);
+document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", (e) => {
+  e.preventDefault();
+  switchScreen(btn.dataset.screen);
+}));
 window.addEventListener("resize", ()=>{ if(state.activeScreen==='resultados') drawProgressChart(); });
-if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{})); }
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
+}
 renderAll();
 </script>
 </body>
