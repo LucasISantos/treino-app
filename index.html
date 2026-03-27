@@ -373,6 +373,9 @@ function renderExercises(){
   });
 
   wrap.querySelectorAll("button[data-series-idx]").forEach(btn=>btn.addEventListener("click", e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    const savedScroll = window.scrollY;
     const idx = e.currentTarget.dataset.seriesIdx;
     const num = Number(e.currentTarget.dataset.seriesNum);
     const key = String(idx) + '_seriesDone';
@@ -380,7 +383,8 @@ function renderExercises(){
     arr[num] = !arr[num];
     checks[key] = arr;
     saveState();
-    renderAll();
+    renderAll({ keepScroll: true });
+    window.scrollTo(0, savedScroll);
   }));
 
   wrap.querySelectorAll("input[data-series-target]").forEach(el=>el.addEventListener("input", e=>{
@@ -582,13 +586,27 @@ function renderGoals(){
   document.getElementById("cycleWeeks").value=state.goals.cycleWeeks;
 }
 
-function renderAll(){
+function renderAll(options = {}){
+  const keepScroll = !!options.keepScroll;
+  const savedScroll = window.scrollY;
+  const activeScreen = state.activeScreen || "importar";
   renderTabs();
   renderExercises();
   renderHistory();
   renderGoals();
   updateStats();
-  switchScreen(state.activeScreen || "importar");
+
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  const target = document.getElementById('screen-' + activeScreen);
+  if (target) target.classList.remove('hidden');
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.screen === activeScreen));
+
+  if (keepScroll) {
+    window.scrollTo(0, savedScroll);
+  } else {
+    window.scrollTo(0, 0);
+  }
+  if(activeScreen === 'resultados') setTimeout(drawProgressChart, 40);
 }
 
 function normalizeText(text){
