@@ -85,6 +85,16 @@
     .mini-btn{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:8px 10px;font-size:12px;font-weight:800;cursor:pointer}
     .mini-btn.danger{border-color:rgba(239,68,68,.45);color:var(--danger)}
     .exercise-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .series-boxes{display:flex;gap:8px;flex-wrap:wrap}
+    .series-chip{
+      display:inline-flex;align-items:center;justify-content:center;
+      min-width:42px;height:42px;border-radius:12px;border:1px solid var(--line);
+      background:var(--surface);font-weight:800;cursor:pointer;user-select:none;
+      transition:transform .12s ease, background .2s ease, border-color .2s ease;
+    }
+    .series-chip.active{background:var(--ok);color:white;border-color:transparent}
+    .series-chip:active{transform:scale(.97)}
+
     table{width:100%;border-collapse:collapse}
     th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
     th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
@@ -324,31 +334,78 @@ function renderExercises(){
   const checks=currentChecks();
   const sessionLoads=currentSessionLoads();
 
+  function getSeriesTarget(meta){
+    const s = String(meta || "");
+    const m = s.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i);
+    if(m) return parseInt(m[1], 10);
+    return 3;
+  }
+
   list.forEach((ex,idx)=>{
     if(!ex.id) ex.id = uid();
     const key=String(idx);
-    const repsVal = checks[key+'_reps'] || "";
-    const done = Number(repsVal||0) > 0;
+    const seriesTarget = getSeriesTarget(ex.meta);
+    const doneSeries = Array.isArray(checks[key+'_seriesDone']) ? checks[key+'_seriesDone'] : [];
+    const doneCount = doneSeries.filter(Boolean).length;
+    const done = doneCount >= seriesTarget;
     const loadKey = getLoadKey(state.currentWorkout, ex);
     const loadVal = (sessionLoads[ex.id] ?? state.lastLoads[loadKey] ?? "");
+
+    let seriesHtml = "";
+    for(let i=0;i<seriesTarget;i++){
+      const active = !!doneSeries[i];
+      seriesHtml += "<button type='button' class='series-chip "+(active?"active":"")+"' data-series-idx='"+idx+"' data-series-num='"+i+"'>"+(i+1)+"</button>";
+    }
+
     const row=document.createElement("div");
     row.className="exercise";
     row.innerHTML =
       "<div><div class='ename'>"+esc(ex.name)+"</div><div class='emeta'>"+esc(ex.meta||"")+"</div></div>" +
       "<div class='exercise-grid'>" +
-        "<div class='field'><label>Repetições feitas</label><input type='number' min='0' value='"+esc(repsVal)+"' data-reps='"+idx+"'></div>" +
+        "<div class='field'><label>Séries concluídas</label><div class='series-boxes'>"+seriesHtml+"</div></div>" +
         "<div class='field'><label>Carga</label><input type='text' value='"+esc(loadVal)+"' data-load='"+idx+"' placeholder='ex.: 20kg'></div>" +
-        "<div class='field'><label>Séries</label><input type='number' min='0' value='"+esc(checks[key+'_sets']||"")+"' data-sets='"+idx+"'></div>" +
-        "<div class='field'><label>Status</label><div class='pill' style='align-self:flex-start'>"+(done ? "✅ Concluído" : "⏳ Pendente")+"</div></div>" +
-        "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(checks[key+'_note']||"")+"' data-note='"+idx+"' placeholder='reps, sensação...'></div>" +
+        "<div class='field'><label>Séries previstas</label><input type='number' min='1' value='"+seriesTarget+"' data-series-target='"+idx+"'></div>" +
+        "<div class='field'><label>Status</label><div class='pill' style='align-self:flex-start'>"+(done ? "✅ Concluído" : ("⏳ "+doneCount+"/"+seriesTarget))+"</div></div>" +
+        "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(checks[key+'_note']||"")+"' data-note='"+idx+"' placeholder='carga, sensação...'></div>" +
         "<div class='exercise-actions' style='grid-column:1/-1'><button type='button' class='mini-btn' data-edit='"+idx+"'>Editar exercício</button><button type='button' class='mini-btn danger' data-delete='"+idx+"'>Apagar</button></div>" +
       "</div>";
     wrap.appendChild(row);
   });
 
-  wrap.querySelectorAll("input[data-reps]").forEach(el=>el.addEventListener("input", e=>{ checks[e.target.dataset.reps+'_reps']=e.target.value; saveState(); renderAll(); }));
-  wrap.querySelectorAll("input[data-sets]").forEach(el=>el.addEventListener("input", e=>{ checks[e.target.dataset.sets+'_sets']=e.target.value; saveState(); }));
-  wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{ checks[e.target.dataset.note+'_note']=e.target.value; saveState(); }));
+  wrap.querySelectorAll("button[data-series-idx]").forEach(btn=>btn.addEventListener("click", e=>{
+    const idx = e.currentTarget.dataset.seriesIdx;
+    const num = Number(e.currentTarget.dataset.seriesNum);
+    const key = String(idx) + '_seriesDone';
+    const arr = Array.isArray(checks[key]) ? checks[key].slice() : [];
+    arr[num] = !arr[num];
+    checks[key] = arr;
+    saveState();
+    renderAll();
+  }));
+
+  wrap.querySelectorAll("input[data-series-target]").forEach(el=>el.addEventListener("input", e=>{
+    const idx = Number(e.target.dataset.seriesTarget);
+    const ex = list[idx];
+    const target = Math.max(1, parseInt(e.target.value || "1", 10));
+    const oldMeta = String(ex.meta || "");
+    if(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i.test(oldMeta)){
+      ex.meta = oldMeta.replace(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i, target + "×");
+    } else {
+      ex.meta = (oldMeta ? oldMeta + " — " : "") + target + "×";
+    }
+    const key = String(idx) + '_seriesDone';
+    const arr = Array.isArray(checks[key]) ? checks[key].slice(0, target) : [];
+    while(arr.length < target) arr.push(false);
+    checks[key] = arr;
+    saveState();
+    renderAll();
+  }));
+
+  wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{
+    checks[e.target.dataset.note+'_note']=e.target.value;
+    saveState();
+  }));
+
   wrap.querySelectorAll("input[data-load]").forEach(el=>el.addEventListener("input", e=>{
     const ex = list[Number(e.target.dataset.load)];
     const loadKey = getLoadKey(state.currentWorkout, ex);
@@ -356,6 +413,7 @@ function renderExercises(){
     state.lastLoads[loadKey] = e.target.value;
     saveState();
   }));
+
   wrap.querySelectorAll("[data-edit]").forEach(btn=>btn.addEventListener("click", e=>{
     const idx = Number(e.target.dataset.edit);
     const ex = list[idx];
@@ -367,6 +425,7 @@ function renderExercises(){
     saveState();
     renderAll();
   }));
+
   wrap.querySelectorAll("[data-delete]").forEach(btn=>btn.addEventListener("click", e=>{
     const idx = Number(e.target.dataset.delete);
     if(!confirm("Apagar esse exercício?")) return;
@@ -469,7 +528,13 @@ function drawProgressChart(){
 function updateStats(){
   const list=state.workouts[state.currentWorkout]||[];
   const checks=currentChecks();
-  const done=list.filter((_,i)=>Number(checks[String(i)+'_reps']||0)>0).length;
+  const done=list.filter((ex,i)=>{
+    const meta = String(ex.meta || "");
+    const m = meta.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i);
+    const target = m ? parseInt(m[1],10) : 3;
+    const arr = Array.isArray(checks[String(i)+'_seriesDone']) ? checks[String(i)+'_seriesDone'] : [];
+    return arr.filter(Boolean).length >= target;
+  }).length;
   const pct=list.length?Math.round(done/list.length*100):0;
   const weekDone=sessionsInWeek().length;
   const totalDone=state.history.length;
@@ -681,9 +746,15 @@ function averageLoadForCurrentSession(workout){
 function completeWorkout(){
   const list=state.workouts[state.currentWorkout]||[];
   const checks=currentChecks();
-  const done=list.filter((_,i)=>Number(checks[String(i)+'_reps']||0)>0).length;
+  const done=list.filter((ex,i)=>{
+    const meta = String(ex.meta || "");
+    const m = meta.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i);
+    const target = m ? parseInt(m[1],10) : 3;
+    const arr = Array.isArray(checks[String(i)+'_seriesDone']) ? checks[String(i)+'_seriesDone'] : [];
+    return arr.filter(Boolean).length >= target;
+  }).length;
   if(!list.length) return alert("Não há exercícios carregados nesse treino.");
-  if(done===0) return alert("Preencha pelo menos uma repetição em algum exercício antes de concluir o treino.");
+  if(done===0) return alert("Conclua todas as séries de pelo menos um exercício antes de concluir o treino.");
   const avgLoad = averageLoadForCurrentSession(state.currentWorkout);
   state.history.push({
     id:String(Date.now()),
