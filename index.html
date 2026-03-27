@@ -36,7 +36,7 @@
     .progress{width:100%;height:12px;background:#0b1220;border-radius:999px;overflow:hidden;border:1px solid var(--line)} .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--ok))}
     .tabs{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
     .tab{border:1px solid var(--line);background:#0f172a;color:var(--text);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800;flex:0 0 auto}.tab.active{background:var(--accent);color:#062133;border-color:var(--accent)}
-    .list{max-height:none;overflow:visible;padding-right:0;padding-bottom:10px}.exercise{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr;gap:10px}.exercise:first-of-type{border-top:none}.ename{font-weight:800}.emeta{font-size:13px;color:var(--muted);margin-top:4px}
+    .list{max-height:none;overflow:visible;padding-right:0;padding-bottom:10px}.exercise{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr;gap:10px}.exercise:first-of-type{border-top:none}.ename{font-weight:800;font-size:18px}.emeta{font-size:13px;color:var(--muted);margin-top:4px}
     .exercise-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .check-chip{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:12px;min-height:54px;user-select:none;cursor:pointer}
     .check-chip input{display:none}.check-box{width:26px;height:26px;border-radius:8px;border:2px solid #50627a;display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex:0 0 auto}
@@ -229,10 +229,8 @@ function renderExercises(){
     row.innerHTML =
       "<div><div class='ename'>"+esc(ex.name)+"</div><div class='emeta'>"+esc(ex.meta||"")+"</div></div>" +
       "<div class='exercise-grid'>" +
-        "<label class='check-chip "+(checked?"done":"")+"' data-label='"+idx+"'>" +
-          "<input type='checkbox' "+(checked?"checked":"")+" data-idx='"+idx+"'>" +
-          "<span class='check-box'>"+(checked?"✓":"")+"</span><span>Feito</span>" +
-        "</label>" +
+        "<div class='field'><label>Repetições feitas</label>
+       <input type='number' min='0' data-reps='IDX'></div>" +
         "<div class='field'><label>Séries</label><input type='number' min='0' value='"+esc(checks[key+'_sets']||"")+"' data-sets='"+idx+"'></div>" +
         "<div class='field'><label>Carga</label><input type='text' value='"+esc(loadVal)+"' data-load='"+idx+"' placeholder='ex.: 20kg'></div>" +
         "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(checks[key+'_note']||"")+"' data-note='"+idx+"' placeholder='reps, sensação...'></div>" +
@@ -240,8 +238,12 @@ function renderExercises(){
       "</div>";
     wrap.appendChild(row);
   });
-  wrap.querySelectorAll("input[type='checkbox']").forEach(el=>el.addEventListener("change", e=>{ const idx=e.target.dataset.idx; checks[idx]=e.target.checked; const chip=wrap.querySelector("[data-label='"+idx+"']"); const box=chip.querySelector(".check-box"); chip.classList.toggle("done", e.target.checked); box.textContent=e.target.checked?"✓":""; saveState(); updateStats(); }));
-  wrap.querySelectorAll("input[data-sets]").forEach(el=>el.addEventListener("input", e=>{checks[e.target.dataset.sets+'_sets']=e.target.value; saveState();}));
+  // removed checkbox.forEach(el=>el.addEventListener("change", e=>{ const idx=e.target.dataset.idx; checks[idx]=e.target.checked; const chip=wrap.querySelector("[data-label='"+idx+"']"); const box=chip.querySelector(".check-box"); chip.classList.toggle("done", e.target.checked); box.textContent=e.target.checked?"✓":""; saveState(); updateStats(); }));
+  wrap.querySelectorAll("input[data-reps]").forEach(el=>el.addEventListener("input", e=>{
+        checks[e.target.dataset.reps+'_reps']=e.target.value;
+        saveState(); updateStats();
+    }));
+    wrap.querySelectorAll("input[data-sets]").forEach(el=>el.addEventListener("input", e=>{checks[e.target.dataset.sets+'_sets']=e.target.value; saveState();}));
   wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{checks[e.target.dataset.note+'_note']=e.target.value; saveState();}));
   wrap.querySelectorAll("input[data-load]").forEach(el=>el.addEventListener("input", e=>{
     const ex = list[Number(e.target.dataset.load)];
@@ -341,7 +343,7 @@ function drawProgressChart(){
 
 function updateStats(){
   const list=state.workouts[state.currentWorkout]||[]; const checks=currentChecks();
-  const done=list.filter((_,i)=>!!checks[String(i)]).length; const pct=list.length?Math.round(done/list.length*100):0;
+  const done=list.filter((_,i)=>Number(checks[String(i)+'_reps']||0)>0).length; const pct=list.length?Math.round(done/list.length*100):0;
   const weekDone=sessionsInWeek().length; const totalDone=state.history.length; const cycleDone=sessionsInCycle().length; const cycleGoal=totalCycleGoal(); const cyclePct=cycleGoal?Math.min(100,Math.round(cycleDone/cycleGoal*100)):0;
   document.getElementById("execCurrentWorkout").textContent=state.currentWorkout;
   document.getElementById("execExercisesDone").textContent=done+"/"+list.length;
@@ -451,7 +453,7 @@ function averageLoadForCurrentSession(workout){
 }
 function completeWorkout(){
   const list=state.workouts[state.currentWorkout]||[], checks=currentChecks();
-  const done=list.filter((_,i)=>!!checks[String(i)]).length;
+  const done=list.filter((_,i)=>Number(checks[String(i)+'_reps']||0)>0).length;
   if(!list.length) return alert("Não há exercícios carregados nesse treino.");
   if(done===0) return alert("Marque pelo menos um exercício antes de concluir o treino.");
   const avgLoad = averageLoadForCurrentSession(state.currentWorkout);
