@@ -40,9 +40,9 @@
     .exercise-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .check-chip{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:12px;min-height:54px;user-select:none;cursor:pointer}
     .check-chip input{display:none}.check-box{width:26px;height:26px;border-radius:8px;border:2px solid #50627a;display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex:0 0 auto}
-    .check-chip.done{border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.12)} .check-chip.done .check-box{background:var(--ok);border-color:var(--ok);color:#06250d}
+    .check-chip.done{border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.12);animation:popDone .22s ease} .check-chip.done .check-box{background:var(--ok);border-color:var(--ok);color:#06250d;transform:scale(1.08)} @keyframes popDone{0%{transform:scale(.98)}55%{transform:scale(1.02)}100%{transform:scale(1)}}
     table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top} th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
-    .pill{font-size:12px;padding:5px 9px;border-radius:999px;display:inline-block;background:#0b1220;border:1px solid var(--line)}
+    .pill{font-size:12px;padding:5px 9px;border-radius:999px;display:inline-block;background:#0b1220;border:1px solid var(--line)} .dot{width:10px;height:10px;border-radius:999px;display:inline-block}
     .preview-box{background:#0b1220;border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px}
     .preview-title{font-weight:800;margin-bottom:8px}
     .tiny{font-size:12px;color:var(--muted)}
@@ -53,18 +53,22 @@
     .bottom-nav-inner{max-width:780px;margin:0 auto;background:rgba(17,24,39,.96);border:1px solid var(--line);border-radius:22px;padding:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
     .nav-btn{border:none;background:transparent;color:var(--muted);border-radius:16px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800;min-height:74px}
     .nav-btn.active{background:#0b1220;color:var(--text)} .nav-icon{font-size:22px;line-height:1}
+    @media (prefers-color-scheme: light){
+      :root{--text:#0f172a;--muted:#5b6b80;--line:#d8e2ee;--accent:#0284c7;--ok:#16a34a;--warn:#d97706;--danger:#dc2626;}
+      body{background:linear-gradient(180deg,#eef5ff,#f8fbff)}
+      .card{background:rgba(255,255,255,.94)}
+      .btn,.tab{background:#ffffff;color:#0f172a}
+      input, textarea, .stat, .pill, .check-chip{background:#f3f7fc;color:#0f172a}
+      .bottom-nav-inner{background:rgba(255,255,255,.96)}
+      .nav-btn.active{background:#f3f7fc}
+    }
     @media (max-width: 420px){.exercise-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}.page{padding-top:calc(var(--safeTop) + 24px);padding-left:calc(var(--safeLeft) + 14px);padding-right:calc(var(--safeRight) + 14px);padding-bottom:calc(var(--navH) + var(--safeBottom) + 42px)}.card{padding:14px}h1{font-size:27px;margin-bottom:14px}.title{font-size:18px}.bottom-nav{padding-left:calc(var(--safeLeft) + 10px);padding-right:calc(var(--safeRight) + 10px)}}
   </style>
 </head>
 <body>
 <div class="page">
 <div class="wrap">
-  
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-  <img src="icon-192.png" style="width:36px;height:36px;border-radius:10px"/>
-  <span style="font-weight:900;font-size:20px">Controle de Treinos</span>
-</div>
-
+  <h1>Controle de Treinos</h1>
 
   <section id="screen-importar" class="screen">
     <div class="card">
@@ -117,6 +121,14 @@
         <tbody id="progressBody"></tbody>
       </table>
       <div class="tiny" style="margin-top:8px">A variação compara a média mais recente com a média anterior do mesmo treino.</div>
+    </div>
+
+    <div class="card">
+      <div class="subtitle">Gráfico de progressão</div>
+      <div style="background:#0b1220;border:1px solid var(--line);border-radius:16px;padding:12px">
+        <div style="height:220px"><canvas id="progressChart"></canvas></div>
+        <div id="chartLegend" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)"></div>
+      </div>
     </div>
 
     <div class="card">
@@ -202,7 +214,7 @@ function sessionsInCycle(){ const start=new Date(state.goals.cycleStart+"T00:00:
 function totalCycleGoal(){ return state.goals.weeklyGoal * state.goals.cycleWeeks; }
 function getWorkoutOrder(){ return Object.keys(state.workouts); }
 function getNextSuggestedWorkout(){ const order = getWorkoutOrder(); if (!order.length) return "-"; if (!state.history.length) return order.includes("A") ? "A" : order[0]; const last = state.history[state.history.length - 1].workout; const idx = order.indexOf(last); if (idx === -1) return order[0]; return order[(idx + 1) % order.length]; }
-function switchScreen(name){ state.activeScreen = name; saveState(); document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); const el = document.getElementById('screen-' + name); if (el) el.classList.remove('hidden'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === name)); window.scrollTo({top:0, behavior:'instant'}); }
+function switchScreen(name){ state.activeScreen = name; saveState(); document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); const el = document.getElementById('screen-' + name); if (el) el.classList.remove('hidden'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === name)); window.scrollTo({top:0, behavior:'instant'}); if(name==='resultados') setTimeout(drawProgressChart,40); }
 function renderTabs(){ const tabs=document.getElementById("tabs"); tabs.innerHTML=""; Object.keys(state.workouts).forEach(k=>{ const b=document.createElement("button"); b.className="tab"+(state.currentWorkout===k?" active":""); b.textContent="Treino "+k; b.onclick=()=>{state.currentWorkout=k;saveState();renderAll();}; tabs.appendChild(b); }); }
 function getLoadKey(workout, ex){ return workout + "|" + (ex.id || ex.name); }
 function renderExercises(){
@@ -276,6 +288,57 @@ function renderProgressTable(){
     body.appendChild(tr);
   });
 }
+
+function drawProgressChart(){
+  const canvas = document.getElementById("progressChart");
+  const legend = document.getElementById("chartLegend");
+  if(!canvas || !legend) return;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+  canvas.style.width = rect.width + "px"; canvas.style.height = rect.height + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const w = rect.width, h = rect.height;
+  ctx.clearRect(0,0,w,h);
+
+  const palette = ['#38bdf8','#22c55e','#f59e0b','#ef4444'];
+  const lineColor = getComputedStyle(document.documentElement).getPropertyValue('--line').trim();
+  const textColor = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
+
+  const series = {};
+  Object.keys(state.workouts).forEach((wk)=>{
+    series[wk] = state.history.filter(h=>h.workout===wk && typeof h.avgLoad === "number").map((h,idx)=>({x:idx+1,y:h.avgLoad}));
+  });
+  const all = Object.values(series).flat();
+  legend.innerHTML = "";
+  if(!all.length){
+    ctx.fillStyle = textColor; ctx.font = "14px sans-serif";
+    ctx.fillText("Sem dados de carga ainda.", 12, 24);
+    return;
+  }
+  const minY = Math.min(...all.map(p=>p.y));
+  const maxY = Math.max(...all.map(p=>p.y));
+  const maxX = Math.max(...all.map(p=>p.x));
+  const pad = {l:34,r:10,t:12,b:24}, plotW = w-pad.l-pad.r, plotH = h-pad.t-pad.b;
+  const yMin = Math.floor(Math.max(0, minY-1)), yMax = Math.ceil(maxY+1);
+
+  ctx.strokeStyle = lineColor; ctx.lineWidth = 1;
+  for(let i=0;i<4;i++){ const y = pad.t + (plotH/3)*i; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke(); }
+  ctx.fillStyle = textColor; ctx.font = "11px sans-serif";
+  for(let i=0;i<4;i++){ const val = yMax - ((yMax-yMin)/3)*i; const y = pad.t + (plotH/3)*i; ctx.fillText(String(val.toFixed(0)), 4, y+4); }
+
+  Object.keys(series).forEach((wk, idx)=>{
+    const pts = series[wk]; if(!pts.length) return;
+    const color = palette[idx % palette.length];
+    legend.innerHTML += "<div style='display:flex;align-items:center;gap:6px'><span class='dot' style='background:"+color+"'></span>Treino "+wk+"</div>";
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
+    pts.forEach((p,i)=>{ const x = pad.l + ((p.x-1)/Math.max(1,maxX-1))*plotW; const y = pad.t + (1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    ctx.stroke();
+    pts.forEach((p)=>{ const x = pad.l + ((p.x-1)/Math.max(1,maxX-1))*plotW; const y = pad.t + (1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH; ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fill(); });
+  });
+}
+
 function updateStats(){
   const list=state.workouts[state.currentWorkout]||[]; const checks=currentChecks();
   const done=list.filter((_,i)=>!!checks[String(i)]).length; const pct=list.length?Math.round(done/list.length*100):0;
@@ -294,7 +357,7 @@ function updateStats(){
   document.getElementById("weekGoalInfo").textContent="Meta semanal: "+state.goals.weeklyGoal;
   document.getElementById("weekDoneInfo").textContent="Feitos na semana: "+weekDone;
   document.getElementById("remainingInfo").textContent="Faltam: "+Math.max(0,state.goals.weeklyGoal-weekDone);
-  renderProgressTable();
+  renderProgressTable(); drawProgressChart();
 }
 function renderHistory(){ const body=document.getElementById("historyBody"); body.innerHTML=""; const items=[...state.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,60); if(!items.length){ body.innerHTML="<tr><td colspan='4' class='muted'>Nenhum treino concluído ainda.</td></tr>"; return; } items.forEach(h=>{ const tr=document.createElement("tr"); tr.innerHTML="<td>"+formatDate(h.date)+"</td><td>Treino "+esc(h.workout)+"</td><td>"+h.done+"/"+h.total+"</td><td>"+(h.percent===100?"Completo":"Parcial")+" ("+h.percent+"%)</td>"; body.appendChild(tr); }); }
 function renderGoals(){ document.getElementById("weeklyGoal").value=state.goals.weeklyGoal; document.getElementById("cycleStart").value=state.goals.cycleStart; document.getElementById("cycleWeeks").value=state.goals.cycleWeeks; }
@@ -413,6 +476,7 @@ document.getElementById("addExerciseBtn").addEventListener("click", addExercise)
 document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", () => switchScreen(btn.dataset.screen)));
 if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{})); }
 renderAll();
+window.addEventListener('resize', ()=>{ if(state.activeScreen==='resultados') drawProgressChart(); });
 </script>
 </body>
 </html>
