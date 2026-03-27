@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -14,112 +15,40 @@
   <style>
     :root{
       --text:#e5e7eb;--muted:#94a3b8;--line:#253247;--accent:#38bdf8;--ok:#22c55e;--warn:#f59e0b;
-      --safeBottom:env(safe-area-inset-bottom,0px);--navH:110px
+      --safeTop:env(safe-area-inset-top,0px);--safeBottom:env(safe-area-inset-bottom,0px);
+      --safeLeft:env(safe-area-inset-left,0px);--safeRight:env(safe-area-inset-right,0px);--navH:112px;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-      background:linear-gradient(180deg,#08101d,#111827);color:var(--text);
-      overflow-x:hidden;
-    }
-    .page{
-      min-height:100%;
-      padding:18px 16px calc(var(--navH) + var(--safeBottom) + 34px);
-    }
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#08101d,#111827);color:var(--text);overflow-x:hidden;-webkit-text-size-adjust:100%}
+    .page{min-height:100%;padding:calc(var(--safeTop) + 20px) calc(var(--safeRight) + 16px) calc(var(--navH) + var(--safeBottom) + 36px) calc(var(--safeLeft) + 16px)}
     .wrap{max-width:760px;margin:0 auto}
-    h1{margin:0 0 14px;font-size:28px; line-height:1.1}
-    .card{
-      background:rgba(17,24,39,.96);border:1px solid var(--line);border-radius:22px;
-      padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.22);margin-bottom:14px
-    }
-    .title{font-size:19px;font-weight:800;margin-bottom:12px}
-    .subtitle{font-size:16px;font-weight:800;margin-bottom:8px}
-    .muted{color:var(--muted)} .note{font-size:13px;color:var(--muted);line-height:1.45}
+    h1{margin:0 0 16px;font-size:28px;line-height:1.1;letter-spacing:-0.02em;padding-top:2px}
+    .card{background:rgba(17,24,39,.96);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.22);margin-bottom:14px;overflow:hidden}
+    .title{font-size:19px;font-weight:800;margin-bottom:12px}.subtitle{font-size:16px;font-weight:800;margin-bottom:8px}.muted{color:var(--muted)}.note{font-size:13px;color:var(--muted);line-height:1.45}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .btn{
-      border:1px solid var(--line);background:#0f172a;color:var(--text);
-      border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:800;font-size:16px
-    }
-    .btn.primary{background:var(--accent);color:#062133;border-color:var(--accent)}
-    .btn.ok{background:var(--ok);color:#06250d;border-color:var(--ok)}
-    .btn.warn{background:var(--warn);color:#2b1801;border-color:var(--warn)}
-    .input-grid{display:grid;grid-template-columns:1fr;gap:12px}
-    .field{display:flex;flex-direction:column;gap:6px;min-width:0}
-    .field label{font-size:15px;color:var(--muted);font-weight:700;line-height:1.25}
-    input, textarea{
-      width:100%;min-width:0;background:#0b1220;color:var(--text);border:1px solid var(--line);
-      border-radius:16px;padding:14px 16px;font-size:18px;appearance:none;-webkit-appearance:none
-    }
-    textarea{min-height:180px;resize:vertical}
-    input[type='date']{min-height:56px}
+    .btn{border:1px solid var(--line);background:#0f172a;color:var(--text);border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:800;font-size:16px}
+    .btn.primary{background:var(--accent);color:#062133;border-color:var(--accent)} .btn.ok{background:var(--ok);color:#06250d;border-color:var(--ok)} .btn.warn{background:var(--warn);color:#2b1801;border-color:var(--warn)}
+    .input-grid{display:grid;grid-template-columns:1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field label{font-size:15px;color:var(--muted);font-weight:700;line-height:1.25}
+    input, textarea{width:100%;min-width:0;background:#0b1220;color:var(--text);border:1px solid var(--line);border-radius:16px;padding:14px 16px;font-size:18px;appearance:none;-webkit-appearance:none}
+    textarea{min-height:220px;resize:vertical} input[type='date']{min-height:56px}
     .hidden{display:none!important}
-    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-    .stat{background:#0b1220;border:1px solid var(--line);border-radius:16px;padding:12px}
-    .stat small{display:block;color:var(--muted)} .stat strong{display:block;margin-top:6px;font-size:22px}
-    .progress{width:100%;height:12px;background:#0b1220;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
-    .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--ok))}
-    .tabs{
-      display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;
-      -webkit-overflow-scrolling:touch;scrollbar-width:none
-    }
-    .tabs::-webkit-scrollbar{display:none}
-    .tab{
-      border:1px solid var(--line);background:#0f172a;color:var(--text);
-      border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800;flex:0 0 auto
-    }
-    .tab.active{background:var(--accent);color:#062133;border-color:var(--accent)}
-    .list{
-      max-height:none;
-      overflow:visible;
-      padding-right:0;
-      padding-bottom:10px;
-    }
-    .exercise{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr;gap:10px}
-    .exercise:first-of-type{border-top:none}
-    .ename{font-weight:800}
-    .emeta{font-size:13px;color:var(--muted);margin-top:4px}
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#0b1220;border:1px solid var(--line);border-radius:16px;padding:12px;min-width:0}.stat small{display:block;color:var(--muted)}.stat strong{display:block;margin-top:6px;font-size:22px;line-height:1.1}
+    .progress{width:100%;height:12px;background:#0b1220;border-radius:999px;overflow:hidden;border:1px solid var(--line)} .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--ok))}
+    .tabs{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+    .tab{border:1px solid var(--line);background:#0f172a;color:var(--text);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800;flex:0 0 auto}.tab.active{background:var(--accent);color:#062133;border-color:var(--accent)}
+    .list{max-height:none;overflow:visible;padding-right:0;padding-bottom:10px}.exercise{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr;gap:10px}.exercise:first-of-type{border-top:none}.ename{font-weight:800}.emeta{font-size:13px;color:var(--muted);margin-top:4px}
     .exercise-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .check-chip{
-      display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;
-      background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:12px;min-height:54px;
-      user-select:none;cursor:pointer
-    }
-    .check-chip input{display:none}
-    .check-box{
-      width:26px;height:26px;border-radius:8px;border:2px solid #50627a;display:inline-flex;
-      align-items:center;justify-content:center;font-size:16px;font-weight:900;flex:0 0 auto
-    }
-    .check-chip.done{border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.12)}
-    .check-chip.done .check-box{background:var(--ok);border-color:var(--ok);color:#06250d}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
-    th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+    .check-chip{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:12px;min-height:54px;user-select:none;cursor:pointer}
+    .check-chip input{display:none}.check-box{width:26px;height:26px;border-radius:8px;border:2px solid #50627a;display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex:0 0 auto}
+    .check-chip.done{border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.12)} .check-chip.done .check-box{background:var(--ok);border-color:var(--ok);color:#06250d}
+    table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top} th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
     .pill{font-size:12px;padding:5px 9px;border-radius:999px;display:inline-block;background:#0b1220;border:1px solid var(--line)}
-    .bottom-nav{
-      position:fixed;left:0;right:0;bottom:0;
-      padding:10px 12px calc(10px + var(--safeBottom));
-      background:linear-gradient(180deg, rgba(8,16,29,0) 0%, rgba(8,16,29,.92) 22%, rgba(8,16,29,.95) 100%);
-      backdrop-filter:blur(14px);
-      z-index:1000
-    }
-    .bottom-nav-inner{
-      max-width:760px;margin:0 auto;background:rgba(17,24,39,.96);border:1px solid var(--line);
-      border-radius:22px;padding:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
-      box-shadow:0 10px 30px rgba(0,0,0,.25)
-    }
-    .nav-btn{
-      border:none;background:transparent;color:var(--muted);border-radius:16px;padding:10px 6px;cursor:pointer;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800
-    }
-    .nav-btn.active{background:#0b1220;color:var(--text)}
-    .nav-icon{font-size:22px;line-height:1}
-    @media (max-width: 420px){
-      .exercise-grid{grid-template-columns:1fr}
-      .stats-grid{grid-template-columns:1fr 1fr}
-      .page{padding-left:14px;padding-right:14px}
-      .card{padding:14px}
-    }
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;padding:10px calc(var(--safeRight) + 12px) calc(10px + var(--safeBottom)) calc(var(--safeLeft) + 12px);background:linear-gradient(180deg, rgba(8,16,29,0) 0%, rgba(8,16,29,.92) 22%, rgba(8,16,29,.95) 100%);backdrop-filter:blur(14px);z-index:1000}
+    .bottom-nav-inner{max-width:760px;margin:0 auto;background:rgba(17,24,39,.96);border:1px solid var(--line);border-radius:22px;padding:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .nav-btn{border:none;background:transparent;color:var(--muted);border-radius:16px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800;min-height:74px}
+    .nav-btn.active{background:#0b1220;color:var(--text)} .nav-icon{font-size:22px;line-height:1}
+    @media (max-width: 420px){.exercise-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}.page{padding-top:calc(var(--safeTop) + 24px);padding-left:calc(var(--safeLeft) + 14px);padding-right:calc(var(--safeRight) + 14px);padding-bottom:calc(var(--navH) + var(--safeBottom) + 42px)}.card{padding:14px}h1{font-size:27px;margin-bottom:14px}.title{font-size:18px}.bottom-nav{padding-left:calc(var(--safeLeft) + 10px);padding-right:calc(var(--safeRight) + 10px)}}
   </style>
 </head>
 <body>
@@ -143,11 +72,12 @@
 
       <div class="field">
         <label for="textImport">Texto do treino</label>
-        <textarea id="textImport" placeholder="Treino A&#10;1 Supino reto barra — 4×6–8&#10;2 Supino inclinado halteres — 3×8–10&#10;&#10;Treino B&#10;1 Barra fixa / puxada — 4×6–8"></textarea>
+        <textarea id="textImport" placeholder="TREINO A – Peito + Bíceps&#10;• Supino reto barra — 4×6–8&#10;• Supino inclinado halteres — 3×8–10&#10;&#10;TREINO B – Costas + Ombro + Tríceps&#10;• Barra fixa / puxada — 4×6–8"></textarea>
       </div>
       <div class="row" style="margin-top:12px">
         <button class="btn ok" id="importTextBtn">Importar texto</button>
       </div>
+      <div class="note" style="margin-top:10px">Aceita títulos como “TREINO A – ...”, bullets “•” e linhas sem numeração.</div>
       <div id="textImportStatus" class="muted" style="margin-top:10px"></div>
     </div>
   </section>
@@ -224,53 +154,12 @@
 
 <script>
 if (window.pdfjsLib) { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js'; }
-
-const STORAGE_KEY = "controle-treinos-v27";
-const presetWorkouts = {
-  "A":[
-    {name:"Supino reto barra", meta:"4×6–8 — descanso 2min"},
-    {name:"Supino inclinado halteres", meta:"3×8–10 — descanso 1min30"},
-    {name:"Paralelas", meta:"3×8–12 — descanso 1min30"},
-    {name:"Crossover ou fly máquina", meta:"2×12–15 — descanso 1min"},
-    {name:"Rosca direta barra", meta:"3×6–8 — descanso 1min30"},
-    {name:"Rosca inclinada", meta:"3×10–12 — descanso 1min"},
-    {name:"Rosca martelo", meta:"2×12–15 — descanso 1min"}
-  ],
-  "B":[
-    {name:"Barra fixa / puxada", meta:"4×6–8 — descanso 2min"},
-    {name:"Remada cavalinho", meta:"4×8–10 — descanso 1min30"},
-    {name:"Remada baixa", meta:"3×10–12 — descanso 1min30"},
-    {name:"Pulldown", meta:"2×12–15 — descanso 1min"},
-    {name:"Desenvolvimento halteres", meta:"3×8–10 — descanso 1min30"},
-    {name:"Elevação lateral", meta:"3×12–15 — descanso 1min"},
-    {name:"Tríceps testa", meta:"3×8–10 — descanso 1min30"},
-    {name:"Tríceps corda", meta:"2×12–15 — descanso 1min"}
-  ],
-  "C":[
-    {name:"Hip Thrust", meta:"4×6–8 — descanso 2min"},
-    {name:"Leg Press", meta:"3×8–10 — descanso 1min30"},
-    {name:"Stiff (RDL)", meta:"3×8–10 — descanso 1min30"},
-    {name:"Bulgarian Split Squat", meta:"3×8–10 por perna — descanso 1min30"},
-    {name:"Mesa flexora", meta:"3×10–12 — descanso 1min"},
-    {name:"Glúteo na polia", meta:"2–3×12–15 — descanso 1min"},
-    {name:"Cadeira abdutora", meta:"2–3×15–20 — descanso 1min"},
-    {name:"Panturrilha", meta:"4×12–15 — descanso 1min"}
-  ],
-  "D":[
-    {name:"Supino máquina", meta:"3×12"},
-    {name:"Puxada neutra", meta:"3×12"},
-    {name:"Elevação lateral", meta:"3×15"},
-    {name:"Rosca alternada", meta:"3×12"},
-    {name:"Tríceps corda", meta:"3×15"}
-  ]
-};
-
+const STORAGE_KEY = "controle-treinos-v29";
 let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {
-  workouts: presetWorkouts, currentWorkout: "A", checks: {}, history: [],
+  workouts: {"A":[{"name":"Supino reto barra","meta":"4×6–8"}]}, currentWorkout: "A", checks: {}, history: [],
   goals: { weeklyGoal: 4, cycleWeeks: 8, cycleStart: new Date().toISOString().slice(0,10) },
   activeScreen: "importar"
 };
-
 function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function currentChecks(){ if(!state.checks[state.currentWorkout]) state.checks[state.currentWorkout] = {}; return state.checks[state.currentWorkout]; }
@@ -280,201 +169,27 @@ function getCycleEnd(){ const start = new Date(state.goals.cycleStart + "T00:00:
 function sessionsInWeek(){ const r=getWeekRange(); return state.history.filter(h=>new Date(h.date)>=r.start && new Date(h.date)<=r.end); }
 function sessionsInCycle(){ const start=new Date(state.goals.cycleStart+"T00:00:00"), end=getCycleEnd(); return state.history.filter(h=>new Date(h.date)>=start && new Date(h.date)<=end); }
 function totalCycleGoal(){ return state.goals.weeklyGoal * state.goals.cycleWeeks; }
-
 function getWorkoutOrder(){ return Object.keys(state.workouts); }
-function getNextSuggestedWorkout(){
-  const order = getWorkoutOrder();
-  if (!order.length) return "-";
-  if (!state.history.length) return order.includes("A") ? "A" : order[0];
-  const last = state.history[state.history.length - 1].workout;
-  const idx = order.indexOf(last);
-  if (idx === -1) return order[0];
-  return order[(idx + 1) % order.length];
-}
-
-function switchScreen(name){
-  state.activeScreen = name; saveState();
-  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-  const el = document.getElementById('screen-' + name);
-  if (el) el.classList.remove('hidden');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
-  window.scrollTo({top:0, behavior:'smooth'});
-}
-
-function renderTabs(){
-  const tabs=document.getElementById("tabs"); tabs.innerHTML="";
-  Object.keys(state.workouts).forEach(k=>{
-    const b=document.createElement("button");
-    b.className="tab"+(state.currentWorkout===k?" active":"");
-    b.textContent="Treino "+k;
-    b.onclick=()=>{state.currentWorkout=k;saveState();renderAll();};
-    tabs.appendChild(b);
-  });
-}
-
-function renderExercises(){
-  const wrap=document.getElementById("exerciseList"); wrap.innerHTML="";
-  const list=state.workouts[state.currentWorkout]||[]; const checks=currentChecks();
-  list.forEach((ex,idx)=>{
-    const key=String(idx), checked=!!checks[key];
-    const row=document.createElement("div"); row.className="exercise";
-    row.innerHTML =
-      "<div><div class='ename'>"+esc(ex.name)+"</div><div class='emeta'>"+esc(ex.meta||"")+"</div></div>" +
-      "<div class='exercise-grid'>" +
-        "<label class='check-chip "+(checked?"done":"")+"' data-label='"+idx+"'>" +
-          "<input type='checkbox' "+(checked?"checked":"")+" data-idx='"+idx+"'>" +
-          "<span class='check-box'>"+(checked?"✓":"")+"</span><span>Feito</span>" +
-        "</label>" +
-        "<div class='field'><label>Séries</label><input type='number' min='0' value='"+esc(checks[key+'_sets']||"")+"' data-sets='"+idx+"'></div>" +
-        "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(checks[key+'_note']||"")+"' data-note='"+idx+"' placeholder='carga, reps...'></div>" +
-      "</div>";
-    wrap.appendChild(row);
-  });
-
-  wrap.querySelectorAll("input[type='checkbox']").forEach(el=>el.addEventListener("change", e=>{
-    const idx = e.target.dataset.idx;
-    checks[idx]=e.target.checked;
-    const chip = wrap.querySelector("[data-label='"+idx+"']");
-    const box = chip.querySelector(".check-box");
-    chip.classList.toggle("done", e.target.checked);
-    box.textContent = e.target.checked ? "✓" : "";
-    saveState(); updateStats();
-  }));
-  wrap.querySelectorAll("input[data-sets]").forEach(el=>el.addEventListener("input", e=>{checks[e.target.dataset.sets+'_sets']=e.target.value; saveState();}));
-  wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{checks[e.target.dataset.note+'_note']=e.target.value; saveState();}));
-}
-
-function updateStats(){
-  const list=state.workouts[state.currentWorkout]||[];
-  const checks=currentChecks();
-  const done=list.filter((_,i)=>!!checks[String(i)]).length;
-  const pct=list.length?Math.round(done/list.length*100):0;
-  const weekDone=sessionsInWeek().length;
-  const totalDone=state.history.length;
-  const cycleDone=sessionsInCycle().length;
-  const cycleGoal=totalCycleGoal();
-  const cyclePct=cycleGoal?Math.min(100,Math.round(cycleDone/cycleGoal*100)):0;
-
-  document.getElementById("execCurrentWorkout").textContent=state.currentWorkout;
-  document.getElementById("execExercisesDone").textContent=done+"/"+list.length;
-  document.getElementById("currentPct").textContent=pct+"%";
-  document.getElementById("currentBar").style.width=pct+"%";
-
-  document.getElementById("resCurrentWorkout").textContent=state.currentWorkout;
-  document.getElementById("resNextWorkout").textContent=getNextSuggestedWorkout();
-  document.getElementById("resCyclePct").textContent=cyclePct+"%";
-  document.getElementById("resWeekCount").textContent=weekDone;
-  document.getElementById("resTotalCount").textContent=totalDone;
-  document.getElementById("cyclePctLabel").textContent=cycleDone+"/"+cycleGoal+" ("+cyclePct+"%)";
-  document.getElementById("cycleBar").style.width=cyclePct+"%";
-
-  document.getElementById("weekGoalInfo").textContent="Meta semanal: "+state.goals.weeklyGoal;
-  document.getElementById("weekDoneInfo").textContent="Feitos na semana: "+weekDone;
-  document.getElementById("remainingInfo").textContent="Faltam: "+Math.max(0,state.goals.weeklyGoal-weekDone);
-}
-
-function renderHistory(){
-  const body=document.getElementById("historyBody"); body.innerHTML="";
-  const items=[...state.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,40);
-  if(!items.length){ body.innerHTML="<tr><td colspan='4' class='muted'>Nenhum treino concluído ainda.</td></tr>"; return; }
-  items.forEach(h=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML="<td>"+formatDate(h.date)+"</td><td>Treino "+esc(h.workout)+"</td><td>"+h.done+"/"+h.total+"</td><td>"+(h.percent===100?"Completo":"Parcial")+" ("+h.percent+"%)</td>";
-    body.appendChild(tr);
-  });
-}
-
-function renderGoals(){
-  document.getElementById("weeklyGoal").value=state.goals.weeklyGoal;
-  document.getElementById("cycleStart").value=state.goals.cycleStart;
-  document.getElementById("cycleWeeks").value=state.goals.cycleWeeks;
-}
-
-function renderAll(){
-  renderTabs();
-  renderExercises();
-  renderHistory();
-  renderGoals();
-  updateStats();
-  switchScreen(state.activeScreen || "importar");
-}
-
-function completeWorkout(){
-  const list=state.workouts[state.currentWorkout]||[], checks=currentChecks();
-  const done=list.filter((_,i)=>!!checks[String(i)]).length;
-  if(!list.length) return alert("Não há exercícios carregados nesse treino.");
-  if(done===0) return alert("Marque pelo menos um exercício antes de concluir o treino.");
-  state.history.push({id:String(Date.now()), date:new Date().toISOString(), workout:state.currentWorkout, done:done, total:list.length, percent:Math.round(done/list.length*100)});
-  state.checks[state.currentWorkout]={};
-  saveState(); renderAll();
-  alert("Treino "+state.currentWorkout+" concluído: "+done+"/"+list.length+" exercícios.");
-}
+function getNextSuggestedWorkout(){ const order = getWorkoutOrder(); if (!order.length) return "-"; if (!state.history.length) return order.includes("A") ? "A" : order[0]; const last = state.history[state.history.length - 1].workout; const idx = order.indexOf(last); if (idx === -1) return order[0]; return order[(idx + 1) % order.length]; }
+function switchScreen(name){ state.activeScreen = name; saveState(); document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); const el = document.getElementById('screen-' + name); if (el) el.classList.remove('hidden'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === name)); window.scrollTo({top:0, behavior:'instant'}); }
+function renderTabs(){ const tabs=document.getElementById("tabs"); tabs.innerHTML=""; Object.keys(state.workouts).forEach(k=>{ const b=document.createElement("button"); b.className="tab"+(state.currentWorkout===k?" active":""); b.textContent="Treino "+k; b.onclick=()=>{state.currentWorkout=k;saveState();renderAll();}; tabs.appendChild(b); }); }
+function renderExercises(){ const wrap=document.getElementById("exerciseList"); wrap.innerHTML=""; const list=state.workouts[state.currentWorkout]||[]; const checks=currentChecks(); list.forEach((ex,idx)=>{ const key=String(idx), checked=!!checks[key]; const row=document.createElement("div"); row.className="exercise"; row.innerHTML = "<div><div class='ename'>"+esc(ex.name)+"</div><div class='emeta'>"+esc(ex.meta||"")+"</div></div>" + "<div class='exercise-grid'>" + "<label class='check-chip "+(checked?"done":"")+"' data-label='"+idx+"'>" + "<input type='checkbox' "+(checked?"checked":"")+" data-idx='"+idx+"'>" + "<span class='check-box'>"+(checked?"✓":"")+"</span><span>Feito</span>" + "</label>" + "<div class='field'><label>Séries</label><input type='number' min='0' value='"+esc(checks[key+'_sets']||"")+"' data-sets='"+idx+"'></div>" + "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(checks[key+'_note']||"")+"' data-note='"+idx+"' placeholder='carga, reps...'></div>" + "</div>"; wrap.appendChild(row); }); wrap.querySelectorAll("input[type='checkbox']").forEach(el=>el.addEventListener("change", e=>{ const idx = e.target.dataset.idx; checks[idx]=e.target.checked; const chip = wrap.querySelector("[data-label='"+idx+"']"); const box = chip.querySelector(".check-box"); chip.classList.toggle("done", e.target.checked); box.textContent = e.target.checked ? "✓" : ""; saveState(); updateStats(); })); wrap.querySelectorAll("input[data-sets]").forEach(el=>el.addEventListener("input", e=>{checks[e.target.dataset.sets+'_sets']=e.target.value; saveState();})); wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{checks[e.target.dataset.note+'_note']=e.target.value; saveState();})); }
+function updateStats(){ const list=state.workouts[state.currentWorkout]||[]; const checks=currentChecks(); const done=list.filter((_,i)=>!!checks[String(i)]).length; const pct=list.length?Math.round(done/list.length*100):0; const weekDone=sessionsInWeek().length; const totalDone=state.history.length; const cycleDone=sessionsInCycle().length; const cycleGoal=totalCycleGoal(); const cyclePct=cycleGoal?Math.min(100,Math.round(cycleDone/cycleGoal*100)):0; document.getElementById("execCurrentWorkout").textContent=state.currentWorkout; document.getElementById("execExercisesDone").textContent=done+"/"+list.length; document.getElementById("currentPct").textContent=pct+"%"; document.getElementById("currentBar").style.width=pct+"%"; document.getElementById("resCurrentWorkout").textContent=state.currentWorkout; document.getElementById("resNextWorkout").textContent=getNextSuggestedWorkout(); document.getElementById("resCyclePct").textContent=cyclePct+"%"; document.getElementById("resWeekCount").textContent=weekDone; document.getElementById("resTotalCount").textContent=totalDone; document.getElementById("cyclePctLabel").textContent=cycleDone+"/"+cycleGoal+" ("+cyclePct+"%)"; document.getElementById("cycleBar").style.width=cyclePct+"%"; document.getElementById("weekGoalInfo").textContent="Meta semanal: "+state.goals.weeklyGoal; document.getElementById("weekDoneInfo").textContent="Feitos na semana: "+weekDone; document.getElementById("remainingInfo").textContent="Faltam: "+Math.max(0,state.goals.weeklyGoal-weekDone); }
+function renderHistory(){ const body=document.getElementById("historyBody"); body.innerHTML=""; const items=[...state.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,40); if(!items.length){ body.innerHTML="<tr><td colspan='4' class='muted'>Nenhum treino concluído ainda.</td></tr>"; return; } items.forEach(h=>{ const tr=document.createElement("tr"); tr.innerHTML="<td>"+formatDate(h.date)+"</td><td>Treino "+esc(h.workout)+"</td><td>"+h.done+"/"+h.total+"</td><td>"+(h.percent===100?"Completo":"Parcial")+" ("+h.percent+"%)</td>"; body.appendChild(tr); }); }
+function renderGoals(){ document.getElementById("weeklyGoal").value=state.goals.weeklyGoal; document.getElementById("cycleStart").value=state.goals.cycleStart; document.getElementById("cycleWeeks").value=state.goals.cycleWeeks; }
+function renderAll(){ renderTabs(); renderExercises(); renderHistory(); renderGoals(); updateStats(); switchScreen(state.activeScreen || "importar"); }
+function normalizeText(text){ return (text || "").replace(/\u000c/g, "\n").replace(/\r/g, "\n").replace(/[•●▪◦‣]/g, "\n• ").replace(/[–—]/g, "—").replace(/\t/g, " ").replace(/[ ]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim(); }
+function isStopSection(line){ return /^(ABDOMINAIS|CORRIDA|SUGESTÃO SEMANAL|REGRAS IMPORTANTES|OBJETIVO\b|PLANO DE TREINO\b)/i.test(line); }
+function headingWorkout(line){ const m = line.match(/^TREINO\s+([A-Z])\b/i); return m ? m[1].toUpperCase() : null; }
+function cleanExerciseLine(line){ let s = line.trim(); s = s.replace(/^•\s*/, ""); s = s.replace(/^\d+\s+/, ""); s = s.replace(/\s+/g, " ").trim(); return s; }
+function parseWorkoutText(text){ const lines = normalizeText(text).split(/\n+/).map(s => s.trim()).filter(Boolean); const workouts = {}; let current = null; let stopMode = false; for (let raw of lines){ const line = raw.trim(); const heading = headingWorkout(line); if (heading){ current = heading; workouts[current] = workouts[current] || []; stopMode = false; continue; } if (isStopSection(line)){ stopMode = true; current = null; continue; } if (stopMode || !current) continue; const cleaned = cleanExerciseLine(line); if (!cleaned) continue; if (cleaned.includes("—") || cleaned.includes("-")) { let parts = cleaned.split("—"); if (parts.length === 1) parts = cleaned.split(" - "); const name = (parts[0] || "").trim(); const meta = parts.slice(1).join(" — ").trim(); if (name && meta) { workouts[current].push({name, meta}); continue; } } if (!/^(TREINO|ABDOMINAIS|CORRIDA|SUGESTÃO|REGRAS)/i.test(cleaned)) { workouts[current].push({name: cleaned, meta: ""}); } } Object.keys(workouts).forEach(k => { const seen = new Set(); workouts[k] = workouts[k].filter(ex => { const key = (ex.name + "|" + ex.meta).toLowerCase(); if (!ex.name || seen.has(key)) return false; seen.add(key); return true; }); if (!workouts[k].length) delete workouts[k]; }); return workouts; }
+async function extractPdfText(file){ const buf = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data: buf}).promise; let fullText = ""; for(let p=1; p<=pdf.numPages; p++){ const page = await pdf.getPage(p); const content = await page.getTextContent(); fullText += content.items.map(item => item.str).join(" ") + "\n"; } return fullText; }
+async function importPdf(){ const file=document.getElementById("pdfFile").files[0], status=document.getElementById("importStatus"); if(!file) return alert("Escolha um PDF primeiro."); status.textContent="Lendo PDF..."; try{ const text=await extractPdfText(file); const parsed=parseWorkoutText(text); const keys=Object.keys(parsed); if(!keys.length){ status.textContent="Não consegui reconhecer os treinos nesse PDF."; return; } state.workouts=parsed; state.currentWorkout=keys.includes("A") ? "A" : keys[0]; state.checks={}; saveState(); renderAll(); status.textContent="PDF importado com sucesso. Treinos encontrados: "+keys.join(", ")+"."; switchScreen("execucao"); }catch(err){ console.error(err); status.textContent="Falha ao ler esse PDF."; } }
+function importText(){ const txt = document.getElementById("textImport").value || ""; const status = document.getElementById("textImportStatus"); const parsed = parseWorkoutText(txt); const keys = Object.keys(parsed); if(!keys.length){ status.textContent = "Não consegui reconhecer treinos no texto. Use títulos como TREINO A, TREINO B..."; return; } state.workouts = parsed; state.currentWorkout = keys.includes("A") ? "A" : keys[0]; state.checks = {}; saveState(); renderAll(); status.textContent = "Texto importado com sucesso. Treinos encontrados: " + keys.join(", ") + "."; switchScreen("execucao"); }
+function completeWorkout(){ const list=state.workouts[state.currentWorkout]||[], checks=currentChecks(); const done=list.filter((_,i)=>!!checks[String(i)]).length; if(!list.length) return alert("Não há exercícios carregados nesse treino."); if(done===0) return alert("Marque pelo menos um exercício antes de concluir o treino."); state.history.push({id:String(Date.now()), date:new Date().toISOString(), workout:state.currentWorkout, done:done, total:list.length, percent:Math.round(done/list.length*100)}); state.checks[state.currentWorkout]={}; saveState(); renderAll(); alert("Treino "+state.currentWorkout+" concluído: "+done+"/"+list.length+" exercícios."); }
 function clearToday(){ state.checks[state.currentWorkout]={}; saveState(); renderAll(); }
-
-function saveGoals(){
-  state.goals.weeklyGoal=parseInt(document.getElementById("weeklyGoal").value||"4",10);
-  state.goals.cycleStart=document.getElementById("cycleStart").value||new Date().toISOString().slice(0,10);
-  state.goals.cycleWeeks=parseInt(document.getElementById("cycleWeeks").value||"8",10);
-  saveState(); renderAll(); alert("Meta salva.");
-}
+function saveGoals(){ state.goals.weeklyGoal=parseInt(document.getElementById("weeklyGoal").value||"4",10); state.goals.cycleStart=document.getElementById("cycleStart").value||new Date().toISOString().slice(0,10); state.goals.cycleWeeks=parseInt(document.getElementById("cycleWeeks").value||"8",10); saveState(); renderAll(); alert("Meta salva."); }
 function resetHistory(){ if(!confirm("Apagar histórico?")) return; state.history=[]; state.checks={}; saveState(); renderAll(); }
-
-function preprocessText(text){
-  text = text.replace(/\r/g,'').replace(/\s+$/gm,'').trim();
-  text = text.replace(/(Treino\s+[A-Z]\b)/gi, '\n$1');
-  text = text.replace(/(Dia Extra\s*\(opcional\))/gi, '\nTreino D');
-  return text;
-}
-function parseWorkoutText(text){
-  const clean = preprocessText(text);
-  const lines = clean.split(/\n+/).map(s=>s.trim()).filter(Boolean);
-  const workouts = {}; let current = null;
-  for (const line of lines){
-    const tm = line.match(/^Treino\s+([A-Z])\b/i);
-    if(tm){ current = tm[1].toUpperCase(); workouts[current] = workouts[current] || []; continue; }
-    if(!current) continue;
-    let m = line.match(/^\d+\s+(.+?)\s+[—-]\s+(.+)$/);
-    if(m){ workouts[current].push({name:m[1].trim(), meta:m[2].trim()}); continue; }
-    m = line.match(/^\d+\s+(.+)$/);
-    if(m){ workouts[current].push({name:m[1].trim(), meta:""}); }
-  }
-  Object.keys(workouts).forEach(k=> workouts[k] = workouts[k].filter(ex=>ex.name));
-  return workouts;
-}
-async function extractPdfText(file){
-  const buf = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({data: buf}).promise;
-  let fullText = "";
-  for(let p=1; p<=pdf.numPages; p++){
-    const page = await pdf.getPage(p);
-    const content = await page.getTextContent();
-    fullText += content.items.map(item => item.str).join(" ") + "\n";
-  }
-  return fullText;
-}
-async function importPdf(){
-  const file=document.getElementById("pdfFile").files[0], status=document.getElementById("importStatus");
-  if(!file) return alert("Escolha um PDF primeiro.");
-  status.textContent="Lendo PDF...";
-  try{
-    const text=await extractPdfText(file), parsed=parseWorkoutText(text), keys=Object.keys(parsed);
-    if(!keys.length){ status.textContent="Não consegui reconhecer os treinos nesse PDF."; return; }
-    state.workouts=parsed; state.currentWorkout=keys.includes("A") ? "A" : keys[0]; state.checks={}; saveState(); renderAll();
-    status.textContent="PDF importado com sucesso. Treinos encontrados: "+keys.join(", ")+".";
-  }catch(err){
-    console.error(err); status.textContent="Falha ao ler esse PDF.";
-  }
-}
-function importText(){
-  const txt = document.getElementById("textImport").value || "";
-  const status = document.getElementById("textImportStatus");
-  const parsed = parseWorkoutText(txt);
-  const keys = Object.keys(parsed);
-  if(!keys.length){ status.textContent = "Não consegui reconhecer treinos no texto. Use o formato Treino A, Treino B..."; return; }
-  state.workouts = parsed; state.currentWorkout = keys.includes("A") ? "A" : keys[0]; state.checks = {}; saveState(); renderAll();
-  status.textContent = "Texto importado com sucesso. Treinos encontrados: " + keys.join(", ") + ".";
-}
-
 document.getElementById("completeWorkoutBtn").addEventListener("click", completeWorkout);
 document.getElementById("clearTodayBtn").addEventListener("click", clearToday);
 document.getElementById("saveGoalsBtn").addEventListener("click", saveGoals);
