@@ -303,6 +303,10 @@ function getNextSuggestedWorkout(){
 
 function switchScreen(name){
   state.activeScreen = name;
+  if(name === 'execucao'){
+    const suggested = getNextSuggestedWorkout();
+    if(suggested && state.workouts[suggested]) state.currentWorkout = suggested;
+  }
   saveState();
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
   const target = document.getElementById('screen-' + name);
@@ -327,6 +331,7 @@ function renderTabs(){
   });
 }
 
+
 function renderExercises(){
   const wrap=document.getElementById("exerciseList");
   wrap.innerHTML="";
@@ -341,10 +346,17 @@ function renderExercises(){
     return 3;
   }
 
+  function getRepsTarget(meta){
+    const s = String(meta || "");
+    const m = s.match(/(?:\d+)(?:\s*[–-]\s*(?:\d+))?\s*[x×]\s*(\d+(?:\s*[–-]\s*\d+)?)/i);
+    return m ? m[1].replace(/\s+/g,"") : "";
+  }
+
   list.forEach((ex,idx)=>{
     if(!ex.id) ex.id = uid();
     const key=String(idx);
     const seriesTarget = getSeriesTarget(ex.meta);
+    const repsTarget = getRepsTarget(ex.meta);
     const doneSeries = Array.isArray(checks[key+'_seriesDone']) ? checks[key+'_seriesDone'] : [];
     const doneCount = doneSeries.filter(Boolean).length;
     const done = doneCount >= seriesTarget;
@@ -360,11 +372,10 @@ function renderExercises(){
     const row=document.createElement("div");
     row.className="exercise";
     row.innerHTML =
-      "<div><div class='ename'>"+esc(ex.name)+"</div><div class='emeta'>"+esc(ex.meta||"")+"</div></div>" +
+      "<div><div class='ename'>"+esc(ex.name)+"</div><div class='emeta'>"+(repsTarget ? ("Reps por série: " + esc(repsTarget)) : "")+"</div></div>" +
       "<div class='exercise-grid'>" +
-        "<div class='field'><label>Séries concluídas</label><div class='series-boxes'>"+seriesHtml+"</div></div>" +
-        "<div class='field'><label>Carga</label><input type='text' value='"+esc(loadVal)+"' data-load='"+idx+"' placeholder='ex.: 20kg'></div>" +
-        "<div class='field'><label>Séries previstas</label><input type='number' min='1' value='"+seriesTarget+"' data-series-target='"+idx+"'></div>" +
+        "<div class='field'><label>Concluir séries</label><div class='series-boxes'>"+seriesHtml+"</div></div>" +
+        "<div class='field'><label>Carga</label><div class='input-with-suffix'><input class='input-plain-number' type='number' min='0' step='0.1' inputmode='decimal' value='"+esc(loadVal)+"' data-load='"+idx+"' placeholder='0'><span class='suffix'>kg</span></div></div>" +
         "<div class='field'><label>Status</label><div class='pill' style='align-self:flex-start'>"+(done ? "✅ Concluído" : ("⏳ "+doneCount+"/"+seriesTarget))+"</div></div>" +
         "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(checks[key+'_note']||"")+"' data-note='"+idx+"' placeholder='carga, sensação...'></div>" +
         "<div class='exercise-actions' style='grid-column:1/-1'><button type='button' class='mini-btn' data-edit='"+idx+"'>Editar exercício</button><button type='button' class='mini-btn danger' data-delete='"+idx+"'>Apagar</button></div>" +
@@ -387,51 +398,44 @@ function renderExercises(){
     window.scrollTo(0, savedScroll);
   }));
 
-  wrap.querySelectorAll("input[data-series-target]").forEach(el=>el.addEventListener("input", e=>{
-    const idx = Number(e.target.dataset.seriesTarget);
-    const ex = list[idx];
-    const target = Math.max(1, parseInt(e.target.value || "1", 10));
-    const oldMeta = String(ex.meta || "");
-    if(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i.test(oldMeta)){
-      ex.meta = oldMeta.replace(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i, target + "×");
-    } else {
-      ex.meta = (oldMeta ? oldMeta + " — " : "") + target + "×";
-    }
-    const key = String(idx) + '_seriesDone';
-    const arr = Array.isArray(checks[key]) ? checks[key].slice(0, target) : [];
-    while(arr.length < target) arr.push(false);
-    checks[key] = arr;
-    saveState();
-    renderAll();
-  }));
-
   wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{
     checks[e.target.dataset.note+'_note']=e.target.value;
-    saveState();
-  }));
-  wrap.querySelectorAll("input[data-reps]").forEach(el=>el.addEventListener("input", e=>{
-    checks[e.target.dataset.reps+'_reps']=e.target.value;
     saveState();
   }));
 
   wrap.querySelectorAll("input[data-load]").forEach(el=>el.addEventListener("input", e=>{
     const ex = list[Number(e.target.dataset.load)];
     const loadKey = getLoadKey(state.currentWorkout, ex);
-    currentSessionLoads()[ex.id] = e.target.value;
-    state.lastLoads[loadKey] = e.target.value;
+    const value = e.target.value;
+    currentSessionLoads()[ex.id] = value;
+    state.lastLoads[loadKey] = value;
     saveState();
+    updateStats();
   }));
 
   wrap.querySelectorAll("[data-edit]").forEach(btn=>btn.addEventListener("click", e=>{
     const idx = Number(e.target.dataset.edit);
     const ex = list[idx];
-    const newName = prompt("Novo nome do exercício:", ex.name);
+    const currentMeta = String(ex.meta || "");
+    const seriesMatch = currentMeta.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i);
+    const repsMatch = currentMeta.match(/(?:\d+)(?:\s*[–-]\s*(?:\d+))?\s*[x×]\s*(\d+(?:\s*[–-]\s*\d+)?)/i);
+    const seriesCurrent = seriesMatch ? seriesMatch[1] : "3";
+    const repsCurrent = repsMatch ? repsMatch[1].replace(/\s+/g,"") : "10";
+    const newName = prompt("Nome do exercício:", ex.name);
     if(newName === null) return;
-    const newMeta = prompt("Nova meta/séries:", ex.meta || "");
+    const newSeries = prompt("Quantidade de séries:", seriesCurrent);
+    if(newSeries === null) return;
+    const newReps = prompt("Repetições por série:", repsCurrent);
+    if(newReps === null) return;
     ex.name = (newName || ex.name).trim();
-    ex.meta = (newMeta ?? ex.meta).trim();
+    ex.meta = String(newSeries || seriesCurrent).trim() + "×" + String(newReps || repsCurrent).trim();
+    const target = Math.max(1, parseInt(String(newSeries || seriesCurrent), 10) || 3);
+    const key = String(idx) + '_seriesDone';
+    const arr = Array.isArray(checks[key]) ? checks[key].slice(0, target) : [];
+    while(arr.length < target) arr.push(false);
+    checks[key] = arr;
     saveState();
-    renderAll();
+    renderAll({ keepScroll: true });
   }));
 
   wrap.querySelectorAll("[data-delete]").forEach(btn=>btn.addEventListener("click", e=>{
@@ -441,7 +445,7 @@ function renderExercises(){
     delete currentSessionLoads()[ex.id];
     list.splice(idx,1);
     saveState();
-    renderAll();
+    renderAll({ keepScroll: true });
   }));
 }
 
@@ -750,12 +754,16 @@ function importText(){
 function addExercise(){
   const name = prompt("Nome do exercício:");
   if(!name) return;
-  const meta = prompt("Meta/séries (opcional):", "") || "";
+  const series = prompt("Quantidade de séries:", "3");
+  if(series === null) return;
+  const reps = prompt("Repetições por série:", "10");
+  if(reps === null) return;
   if(!state.workouts[state.currentWorkout]) state.workouts[state.currentWorkout] = [];
-  state.workouts[state.currentWorkout].push({id:uid(), name:name.trim(), meta:meta.trim()});
+  state.workouts[state.currentWorkout].push({id:uid(), name:name.trim(), meta:String(series || "3").trim() + "×" + String(reps || "10").trim()});
   saveState();
-  renderAll();
+  renderAll({ keepScroll: true });
 }
+
 
 
 function getSeriesTargetFromMeta(meta){
@@ -763,6 +771,12 @@ function getSeriesTargetFromMeta(meta){
   const m = s.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i);
   if(m) return parseInt(m[1], 10);
   return 3;
+}
+function getRepsTargetFromMeta(meta){
+  const s = String(meta || "");
+  const m = s.match(/(?:\d+)(?:\s*[–-]\s*(?:\d+))?\s*[x×]\s*(\d+(?:\s*[–-]\s*\d+)?)/i);
+  if(!m) return null;
+  return parseFloat(m[1].split(/\s*[–-]\s*/)[0].replace(",", "."));
 }
 function calculateWorkoutVolume(workout){
   const list = state.workouts[workout] || [];
@@ -772,17 +786,16 @@ function calculateWorkoutVolume(workout){
   list.forEach((ex, i) => {
     const seriesDone = Array.isArray(checks[String(i)+'_seriesDone']) ? checks[String(i)+'_seriesDone'].filter(Boolean).length : 0;
     const targetSeries = getSeriesTargetFromMeta(ex.meta);
-    const effectiveSeries = Math.min(seriesDone || 0, targetSeries || 0);
-    const reps = parseFloat(String(checks[String(i)+'_reps'] || "").replace(",", "."));
+    const effectiveSeries = Math.min(seriesDone, targetSeries);
+    const repsVal = getRepsTargetFromMeta(ex.meta);
     const loadRaw = String(sessionLoads[ex.id] ?? state.lastLoads[getLoadKey(workout, ex)] ?? "").replace(",", ".").replace(/[^\d.]/g,"");
     const load = parseFloat(loadRaw);
-    if (effectiveSeries > 0 && !isNaN(reps) && !isNaN(load)) {
-      total += (effectiveSeries * reps * load) / 100;
+    if (effectiveSeries > 0 && !isNaN(repsVal) && !isNaN(load)) {
+      total += (effectiveSeries * repsVal * load) / 100;
     }
   });
   return total > 0 ? total : null;
 }
-
 function averageLoadForCurrentSession(workout){
   const list = state.workouts[workout] || [];
   const sessionLoads = state.sessionLoads[workout] || {};
