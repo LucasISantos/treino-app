@@ -1,559 +1,257 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Controle de Treinos</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0b1220">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Controle de Treinos">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <style>
-    :root{
-      --bg1:#08101d;--bg2:#111827;--card:rgba(17,24,39,.96);--surface:#0b1220;
-      --text:#e5e7eb;--muted:#94a3b8;--line:#253247;--accent:#38bdf8;--ok:#22c55e;--warn:#f59e0b;--danger:#ef4444;
-      --safeTop:env(safe-area-inset-top,0px);--safeBottom:env(safe-area-inset-bottom,0px);
-      --safeLeft:env(safe-area-inset-left,0px);--safeRight:env(safe-area-inset-right,0px);--navH:112px;
-    }
-    @media (prefers-color-scheme: light){
-      :root{
-        --bg1:#eef5ff;--bg2:#f8fbff;--card:rgba(255,255,255,.94);--surface:#f3f7fc;
-        --text:#0f172a;--muted:#5b6b80;--line:#d8e2ee;--accent:#0284c7;--ok:#16a34a;--warn:#d97706;--danger:#dc2626;
-      }
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-      background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);overflow-x:hidden;-webkit-text-size-adjust:100%;
-    }
-    .page{
-      min-height:100%;
-      padding:calc(var(--safeTop) + 20px) calc(var(--safeRight) + 16px) calc(var(--navH) + var(--safeBottom) + 36px) calc(var(--safeLeft) + 16px);
-    }
-    .wrap{max-width:780px;margin:0 auto}
-    .apphead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-    .logo{width:36px;height:36px;border-radius:10px}
-    .appname{font-weight:900;font-size:20px}
-    .card{
-      background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;
-      box-shadow:0 12px 30px rgba(0,0,0,.18);margin-bottom:14px;overflow:hidden;
-    }
-    .title{font-size:19px;font-weight:800;margin-bottom:12px}
-    .subtitle{font-size:16px;font-weight:800;margin-bottom:8px}
-    .muted{color:var(--muted)} .note{font-size:13px;color:var(--muted);line-height:1.45}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .btn{
-      border:1px solid var(--line);background:var(--surface);color:var(--text);
-      border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:800;font-size:16px;
-    }
-    .btn.primary{background:var(--accent);color:white;border-color:transparent}
-    .btn.ok{background:var(--ok);color:white;border-color:transparent}
-    .btn.warn{background:var(--warn);color:white;border-color:transparent}
-    .btn.danger{background:var(--danger);color:white;border-color:transparent}
-    .input-grid{display:grid;grid-template-columns:1fr;gap:12px}
-    .field{display:flex;flex-direction:column;gap:6px;min-width:0}
-    .field label{font-size:15px;color:var(--muted);font-weight:700;line-height:1.25}
-    input, textarea{
-      width:100%;min-width:0;background:var(--surface);color:var(--text);
-      border:1px solid var(--line);border-radius:16px;padding:14px 16px;font-size:18px;
-      appearance:none;-webkit-appearance:none;
-    }
-    textarea{min-height:220px;resize:vertical}
-    input[type='date']{min-height:56px}
-    .hidden{display:none!important}
-    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-    .stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;min-width:0}
-    .stat small{display:block;color:var(--muted)} .stat strong{display:block;margin-top:6px;font-size:22px;line-height:1.1}
-    .progress{width:100%;height:12px;background:var(--surface);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
-    .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--ok));transition:width .3s ease}
-    .tabs{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-    .tabs::-webkit-scrollbar{display:none}
-    .tab{
-      border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800;flex:0 0 auto
-    }
-    .tab.active{background:var(--accent);color:white;border-color:transparent}
-    .list{max-height:none;overflow:visible;padding-bottom:10px}
-    .exercise{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr;gap:10px}
-    .exercise:first-of-type{border-top:none}
-    .ename{font-weight:800;font-size:18px}
-    .emeta{font-size:13px;color:var(--muted);margin-top:4px}
-    .exercise-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .mini-btn{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:8px 10px;font-size:12px;font-weight:800;cursor:pointer}
-    .mini-btn.danger{border-color:rgba(239,68,68,.45);color:var(--danger)}
-    .exercise-actions{display:flex;gap:8px;flex-wrap:wrap}
-    .series-boxes{display:flex;gap:8px;flex-wrap:wrap}
-    .series-chip{
-      display:inline-flex;align-items:center;justify-content:center;
-      min-width:42px;height:42px;border-radius:12px;border:1px solid var(--line);
-      background:var(--surface);font-weight:800;cursor:pointer;user-select:none;
-      transition:transform .12s ease, background .2s ease, border-color .2s ease;
-    }
-    .series-chip.active{background:var(--ok);color:white;border-color:transparent}
-    .series-chip:active{transform:scale(.97)}
-
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
-    th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
-    .pill{font-size:12px;padding:5px 9px;border-radius:999px;display:inline-block;background:var(--surface);border:1px solid var(--line)}
-    .preview-box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px}
-    .preview-title{font-weight:800;margin-bottom:8px}
-    .tiny{font-size:12px;color:var(--muted)}
-    .dot{width:10px;height:10px;border-radius:999px;display:inline-block}
-    .bottom-nav{
-      position:fixed;left:0;right:0;bottom:0;padding:10px calc(var(--safeRight) + 12px) calc(10px + var(--safeBottom)) calc(var(--safeLeft) + 12px);
-      background:linear-gradient(180deg, rgba(8,16,29,0) 0%, rgba(8,16,29,.92) 22%, rgba(8,16,29,.95) 100%);backdrop-filter:blur(14px);z-index:1000
-    }
-    .bottom-nav-inner{
-      max-width:780px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:6px;
-      display:grid;grid-template-columns:repeat(3,1fr);gap:6px;box-shadow:0 10px 30px rgba(0,0,0,.15)
-    }
-    .nav-btn{
-      border:none;background:transparent;color:var(--muted);border-radius:16px;padding:10px 6px;cursor:pointer;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800;min-height:74px
-    }
-    .nav-btn.active{background:var(--surface);color:var(--text)}
-    .nav-icon{font-size:22px;line-height:1}
-    @media (max-width: 420px){
-      .exercise-grid{grid-template-columns:1fr}
-      .stats-grid{grid-template-columns:1fr 1fr}
-      .page{padding-top:calc(var(--safeTop) + 24px);padding-left:calc(var(--safeLeft) + 14px);padding-right:calc(var(--safeRight) + 14px);padding-bottom:calc(var(--navH) + var(--safeBottom) + 42px)}
-      .card{padding:14px}
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Controle de Treinos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b1220">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Controle de Treinos">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg1:#08101d;--bg2:#111827;--card:rgba(17,24,39,.96);--surface:#0b1220;--text:#e5e7eb;--muted:#94a3b8;--line:#253247;--accent:#38bdf8;--ok:#22c55e;--warn:#f59e0b;--danger:#ef4444;--safeTop:env(safe-area-inset-top,0px);--safeBottom:env(safe-area-inset-bottom,0px);--safeLeft:env(safe-area-inset-left,0px);--safeRight:env(safe-area-inset-right,0px);--navH:112px}
+@media (prefers-color-scheme: light){:root{--bg1:#eef5ff;--bg2:#f8fbff;--card:rgba(255,255,255,.94);--surface:#f3f7fc;--text:#0f172a;--muted:#5b6b80;--line:#d8e2ee;--accent:#0284c7;--ok:#16a34a;--warn:#d97706;--danger:#dc2626}}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);overflow-x:hidden;-webkit-text-size-adjust:100%}
+.page{min-height:100%;padding:calc(var(--safeTop) + 20px) calc(var(--safeRight) + 16px) calc(var(--navH) + var(--safeBottom) + 36px) calc(var(--safeLeft) + 16px)}
+.wrap{max-width:820px;margin:0 auto}
+.apphead{display:flex;align-items:center;gap:10px;margin-bottom:12px}.logo{width:36px;height:36px;border-radius:10px}.appname{font-weight:900;font-size:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.18);margin-bottom:14px;overflow:hidden}
+.sticky-progress{position:sticky;top:calc(var(--safeTop) + 8px);z-index:25;background:color-mix(in srgb, var(--card) 96%, transparent);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:18px;padding:12px;margin-bottom:12px;box-shadow:0 8px 20px rgba(0,0,0,.12)}
+.title{font-size:19px;font-weight:800;margin-bottom:12px}.subtitle{font-size:16px;font-weight:800;margin-bottom:8px}.muted{color:var(--muted)} .note{font-size:13px;color:var(--muted);line-height:1.45}.tiny{font-size:12px;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:800;font-size:16px}.btn.primary{background:var(--accent);color:white;border-color:transparent}.btn.ok{background:var(--ok);color:white;border-color:transparent}.btn.warn{background:var(--warn);color:white;border-color:transparent}.btn.danger{background:var(--danger);color:white;border-color:transparent}
+.mini-btn{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:8px 10px;font-size:12px;font-weight:800;cursor:pointer}.mini-btn.danger{border-color:rgba(239,68,68,.45);color:var(--danger)}
+.input-grid{display:grid;grid-template-columns:1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field label{font-size:15px;color:var(--muted);font-weight:700;line-height:1.25}
+input,textarea{width:100%;min-width:0;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:16px;padding:14px 16px;font-size:18px;appearance:none;-webkit-appearance:none}
+textarea{min-height:220px;resize:vertical} input[type='date']{min-height:56px}
+.input-with-suffix{position:relative}.input-with-suffix input{padding-right:52px}.suffix{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:800;font-size:16px;pointer-events:none}
+.input-plain-number::-webkit-outer-spin-button,.input-plain-number::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}.input-plain-number{-moz-appearance:textfield}
+.hidden{display:none!important}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;min-width:0}.stat small{display:block;color:var(--muted)}.stat strong{display:block;margin-top:6px;font-size:22px;line-height:1.1}
+.progress{width:100%;height:12px;background:var(--surface);border-radius:999px;overflow:hidden;border:1px solid var(--line)} .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--ok));transition:width .3s ease}
+.tabs{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tab{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800;flex:0 0 auto}.tab.active{background:var(--accent);color:white;border-color:transparent}
+.list{max-height:none;overflow:visible;padding-bottom:10px}.exercise{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr;gap:10px}.exercise:first-of-type{border-top:none}
+.ename{font-weight:800;font-size:18px}.emeta{font-size:13px;color:var(--muted);margin-top:4px}
+.exercise-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.exercise-actions{display:flex;gap:8px;flex-wrap:wrap}
+.series-boxes{display:flex;gap:8px;flex-wrap:wrap}.series-chip{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:800;cursor:pointer;user-select:none;transition:transform .12s ease, background .2s ease, border-color .2s ease}.series-chip.active{background:var(--ok);color:white;border-color:transparent}.series-chip:active{transform:scale(.97)}
+table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top} th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.pill{font-size:12px;padding:5px 9px;border-radius:999px;display:inline-block;background:var(--surface);border:1px solid var(--line)}
+.preview-box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px}.preview-title{font-weight:800;margin-bottom:8px}.dot{width:10px;height:10px;border-radius:999px;display:inline-block}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;padding:10px calc(var(--safeRight) + 12px) calc(10px + var(--safeBottom)) calc(var(--safeLeft) + 12px);background:linear-gradient(180deg, rgba(8,16,29,0) 0%, rgba(8,16,29,.92) 22%, rgba(8,16,29,.95) 100%);backdrop-filter:blur(14px);z-index:1000}
+.bottom-nav-inner{max-width:820px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+.nav-btn{border:none;background:transparent;color:var(--muted);border-radius:16px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800;min-height:74px}.nav-btn.active{background:var(--surface);color:var(--text)} .nav-icon{font-size:22px;line-height:1}
+@media (max-width:420px){.exercise-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}.page{padding-top:calc(var(--safeTop) + 24px);padding-left:calc(var(--safeLeft) + 14px);padding-right:calc(var(--safeRight) + 14px);padding-bottom:calc(var(--navH) + var(--safeBottom) + 42px)}.card{padding:14px}}
+</style>
 </head>
 <body>
-<div class="page">
-  <div class="wrap">
-    <div class="apphead"><img src="icon-192.png" class="logo"/><span class="appname">Controle de Treinos</span></div>
+<div class="page"><div class="wrap">
+<div class="apphead"><img src="icon-192.png" class="logo"/><span class="appname">Controle de Treinos</span></div>
 
-    <section id="screen-importar" class="screen">
-      <div class="card">
-        <div class="title">Importar</div>
-        <div class="input-grid" style="margin-bottom:12px">
-          <div class="field">
-            <label for="pdfFile">PDF do treino</label>
-            <input type="file" id="pdfFile" accept="application/pdf" />
-          </div>
-        </div>
-        <div class="row" style="margin-bottom:12px">
-          <button type="button" class="btn primary" id="importPdfBtn">Importar PDF</button>
-        </div>
-        <div id="importStatus" class="muted" style="margin-bottom:14px"></div>
-
-        <div class="field">
-          <label for="textImport">Texto do treino</label>
-          <textarea id="textImport" placeholder="TREINO A – Peito + Bíceps&#10;• Supino reto barra — 4×6–8&#10;• Supino inclinado halteres — 3×8–10"></textarea>
-        </div>
-        <div class="row" style="margin-top:12px">
-          <button type="button" class="btn ok" id="previewTextBtn">Pré-visualizar</button>
-          <button type="button" class="btn primary" id="importTextBtn">Importar texto</button>
-        </div>
-        <div class="note" style="margin-top:10px">Aceita títulos como “TREINO A – ...”, bullets “•” e linhas sem numeração.</div>
-        <div id="textImportStatus" class="muted" style="margin-top:10px"></div>
-        <div id="previewArea" class="hidden"></div>
-      </div>
-    </section>
-
-    <section id="screen-resultados" class="screen hidden">
-      <div class="card">
-        <div class="title">Resultados</div>
-        <div class="stats-grid">
-          <div class="stat"><small>Treino atual</small><strong id="resCurrentWorkout">A</strong></div>
-          <div class="stat"><small>Próximo treino sugerido</small><strong id="resNextWorkout">B</strong></div>
-          <div class="stat"><small>Conclusão do ciclo</small><strong id="resCyclePct">0%</strong></div>
-          <div class="stat"><small>Treinos nesta semana</small><strong id="resWeekCount">0</strong></div>
-          <div class="stat"><small>Treinos acumulados</small><strong id="resTotalCount">0</strong></div>
-        </div>
-        <div style="margin-top:12px">
-          <div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do ciclo</div><div id="cyclePctLabel" class="muted">0%</div></div>
-          <div class="progress"><div class="bar" id="cycleBar"></div></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="subtitle">Evolução de volume</div>
-        <table><thead><tr><th>Treino</th><th>Volume atual</th><th>Variação</th></tr></thead><tbody id="progressBody"></tbody></table>
-        <div class="tiny" style="margin-top:8px">A variação compara o volume mais recente com o volume anterior do mesmo treino, usando a fórmula (séries × repetições × carga) / 100.</div>
-      </div>
-
-      <div class="card">
-        <div class="subtitle">Gráfico de progressão</div>
-        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px">
-          <div style="height:220px"><canvas id="progressChart"></canvas></div>
-          <div id="chartLegend" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="subtitle">Meta do ciclo</div>
-        <div class="input-grid">
-          <div class="field"><label for="weeklyGoal">Meta de treinos por semana</label><input type="number" min="1" max="14" id="weeklyGoal" /></div>
-          <div class="field"><label for="cycleStart">Início do ciclo</label><input type="date" id="cycleStart" /></div>
-          <div class="field"><label for="cycleWeeks">Semanas no ciclo</label><input type="number" min="1" max="20" id="cycleWeeks" /></div>
-        </div>
-        <div class="row" style="margin-top:14px">
-          <button type="button" class="btn ok" id="saveGoalsBtn">Salvar meta</button>
-          <button type="button" class="btn warn" id="resetHistoryBtn">Zerar histórico</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="subtitle">Histórico</div>
-        <div class="row" style="gap:8px; margin-bottom:10px">
-          <span class="pill" id="weekGoalInfo">Meta semanal: 4</span>
-          <span class="pill" id="weekDoneInfo">Feitos na semana: 0</span>
-          <span class="pill" id="remainingInfo">Faltam: 0</span>
-        </div>
-        <table><thead><tr><th>Data</th><th>Treino</th><th>Exercícios</th><th>Status</th></tr></thead><tbody id="historyBody"></tbody></table>
-      </div>
-    </section>
-
-    <section id="screen-execucao" class="screen hidden">
-      <div class="card">
-        <div class="title">Execução</div>
-        <div class="stats-grid" style="margin-bottom:12px">
-          <div class="stat"><small>Treino atual</small><strong id="execCurrentWorkout">A</strong></div>
-          <div class="stat"><small>Exercícios concluídos</small><strong id="execExercisesDone">0/0</strong></div>
-        </div>
-        <div style="margin-bottom:12px">
-          <div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do treino atual</div><div id="currentPct" class="muted">0%</div></div>
-          <div class="progress"><div class="bar" id="currentBar"></div></div>
-        </div>
-        <div class="tabs" id="tabs" style="margin-bottom:10px"></div>
-        <div class="row" style="margin-bottom:10px">
-          <button type="button" class="btn ok" id="addExerciseBtn">Adicionar exercício</button>
-        </div>
-        <div id="exerciseList" class="list"></div>
-        <div class="row" style="margin-top:12px">
-          <button type="button" class="btn ok" id="completeWorkoutBtn">Concluir treino</button>
-          <button type="button" class="btn warn" id="clearTodayBtn">Limpar marcações</button>
-        </div>
-      </div>
-    </section>
+<section id="screen-meta" class="screen">
+  <div class="card">
+    <div class="title">Meta</div>
+    <div class="subtitle">Meta do ciclo</div>
+    <div class="input-grid">
+      <div class="field"><label for="weeklyGoal">Meta de treinos por semana</label><input type="number" min="1" max="14" id="weeklyGoal" /></div>
+      <div class="field"><label for="cycleStart">Início do ciclo</label><input type="date" id="cycleStart" /></div>
+      <div class="field"><label for="cycleWeeks">Semanas no ciclo</label><input type="number" min="1" max="20" id="cycleWeeks" /></div>
+    </div>
+    <div class="row" style="margin-top:14px"><button type="button" class="btn ok" id="saveGoalsBtn">Salvar meta</button></div>
   </div>
-</div>
 
-<nav class="bottom-nav">
-  <div class="bottom-nav-inner">
-    <button type="button" class="nav-btn active" data-screen="importar"><span class="nav-icon">⬆️</span><span>Importar</span></button>
-    <button type="button" class="nav-btn" data-screen="resultados"><span class="nav-icon">📊</span><span>Resultados</span></button>
-    <button type="button" class="nav-btn" data-screen="execucao"><span class="nav-icon">💪</span><span>Execução</span></button>
+  <div class="card">
+    <div class="title">Importar</div>
+    <div class="input-grid" style="margin-bottom:12px"><div class="field"><label for="pdfFile">PDF do treino</label><input type="file" id="pdfFile" accept="application/pdf" /></div></div>
+    <div class="row" style="margin-bottom:12px"><button type="button" class="btn primary" id="importPdfBtn">Importar PDF</button></div>
+    <div id="importStatus" class="muted" style="margin-bottom:14px"></div>
+    <div class="field"><label for="textImport">Texto do treino</label><textarea id="textImport" placeholder="TREINO A – Peito + Bíceps&#10;• Supino reto barra — 4×10&#10;• Supino inclinado halteres — 3×10"></textarea></div>
+    <div class="row" style="margin-top:12px"><button type="button" class="btn ok" id="previewTextBtn">Pré-visualizar</button><button type="button" class="btn primary" id="importTextBtn">Importar texto</button></div>
+    <div class="note" style="margin-top:10px">Aceita títulos como “TREINO A – ...”, bullets “•” e linhas sem numeração.</div>
+    <div id="textImportStatus" class="muted" style="margin-top:10px"></div>
+    <div id="previewArea" class="hidden"></div>
   </div>
-</nav>
+</section>
+
+<section id="screen-execucao" class="screen hidden">
+  <div class="sticky-progress">
+    <div class="stats-grid" style="margin-bottom:12px"><div class="stat"><small>Treino atual</small><strong id="execCurrentWorkout">A</strong></div><div class="stat"><small>Exercícios concluídos</small><strong id="execExercisesDone">0/0</strong></div></div>
+    <div><div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do treino atual</div><div id="currentPct" class="muted">0%</div></div><div class="progress"><div class="bar" id="currentBar"></div></div></div>
+  </div>
+  <div class="card">
+    <div class="title">Execução</div>
+    <div class="tabs" id="tabs" style="margin-bottom:10px"></div>
+    <div class="row" style="margin-bottom:10px"><button type="button" class="btn ok" id="addExerciseBtn">Adicionar exercício</button></div>
+    <div id="exerciseList" class="list"></div>
+    <div class="row" style="margin-top:12px"><button type="button" class="btn ok" id="completeWorkoutBtn">Concluir treino</button><button type="button" class="btn warn" id="clearTodayBtn">Limpar marcações</button></div>
+  </div>
+</section>
+
+<section id="screen-resultados" class="screen hidden">
+  <div class="card">
+    <div class="title">Resultados</div>
+    <div class="stats-grid">
+      <div class="stat"><small>Treino atual</small><strong id="resCurrentWorkout">A</strong></div>
+      <div class="stat"><small>Próximo treino sugerido</small><strong id="resNextWorkout">B</strong></div>
+      <div class="stat"><small>Conclusão do ciclo</small><strong id="resCyclePct">0%</strong></div>
+      <div class="stat"><small>Treinos nesta semana</small><strong id="resWeekCount">0</strong></div>
+      <div class="stat"><small>Treinos acumulados</small><strong id="resTotalCount">0</strong></div>
+    </div>
+    <div style="margin-top:12px"><div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do ciclo</div><div id="cyclePctLabel" class="muted">0%</div></div><div class="progress"><div class="bar" id="cycleBar"></div></div></div>
+  </div>
+
+  <div class="card">
+    <div class="subtitle">Evolução de volume</div>
+    <table><thead><tr><th>Treino</th><th>Volume anterior</th><th>Volume atual</th><th>Variação atual vs anterior</th><th>Variação acumulada</th></tr></thead><tbody id="progressBody"></tbody></table>
+    <div class="tiny" style="margin-top:8px">A variação usa a fórmula (séries × repetições × carga) / 100.</div>
+  </div>
+
+  <div class="card">
+    <div class="subtitle">Gráfico de progressão</div>
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px"><div style="height:220px"><canvas id="progressChart"></canvas></div><div id="chartLegend" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="subtitle">Exportação e backup</div>
+    <div class="row">
+      <button type="button" class="btn primary" id="exportExcelBtn">Exportar Excel</button>
+      <button type="button" class="btn warn" id="exportPdfBtn">Exportar PDF</button>
+      <button type="button" class="btn ok" id="exportBackupBtn">Exportar backup</button>
+      <button type="button" class="btn" id="importBackupBtn">Importar backup</button>
+      <input type="file" id="backupFile" accept="application/json" class="hidden">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="subtitle">Histórico</div>
+    <div class="row" style="gap:8px; margin-bottom:10px"><span class="pill" id="weekGoalInfo">Meta semanal: 4</span><span class="pill" id="weekDoneInfo">Feitos na semana: 0</span><span class="pill" id="remainingInfo">Faltam: 0</span></div>
+    <table><thead><tr><th>Data</th><th>Treino</th><th>Exercícios</th><th>Volume</th><th>Status</th><th>Ações</th></tr></thead><tbody id="historyBody"></tbody></table>
+  </div>
+</section>
+</div></div>
+
+<nav class="bottom-nav"><div class="bottom-nav-inner">
+  <button type="button" class="nav-btn active" data-screen="meta"><span class="nav-icon">🎯</span><span>Meta</span></button>
+  <button type="button" class="nav-btn" data-screen="execucao"><span class="nav-icon">💪</span><span>Execução</span></button>
+  <button type="button" class="nav-btn" data-screen="resultados"><span class="nav-icon">📊</span><span>Resultados</span></button>
+</div></nav>
 
 <script>
-if (window.pdfjsLib) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
-}
+if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
 
-const STORAGE_KEY = "controle-treinos-v36";
-let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {
-  workouts: {"A":[{"id":"a1","name":"Supino reto barra","meta":"4×6–8"}],"B":[],"C":[],"D":[]},
-  currentWorkout: "A",
-  checks: {},
-  history: [],
-  goals: { weeklyGoal: 4, cycleWeeks: 8, cycleStart: new Date().toISOString().slice(0,10) },
-  activeScreen: "importar",
-  lastLoads: {},
-  sessionLoads: {}
-};
+const STORAGE_KEY = "controle-treinos-v42";
+const LEGACY_KEYS = ["controle-treinos-v41","controle-treinos-v40","controle-treinos-v39","controle-treinos-v38","controle-treinos-v37","controle-treinos-v36","controle-treinos-v35","controle-treinos-v34","controle-treinos-v33","controle-treinos-v32","controle-treinos-v31","controle-treinos-v30"];
+
+function loadState(){ try{ const c=localStorage.getItem(STORAGE_KEY); if(c) return JSON.parse(c); for(const k of LEGACY_KEYS){ const raw=localStorage.getItem(k); if(raw){ localStorage.setItem(STORAGE_KEY, raw); return JSON.parse(raw);} } }catch(e){console.error(e)} return null; }
+function uid(){ return "id" + Math.random().toString(36).slice(2,10); }
+
+let state = loadState() || {workouts:{"A":[{"id":"a1","name":"Supino reto barra","meta":"4×10","note":""}],"B":[],"C":[],"D":[]},currentWorkout:"A",checks:{},history:[],goals:{weeklyGoal:4,cycleWeeks:8,cycleStart:new Date().toISOString().slice(0,10)},activeScreen:"meta",lastLoads:{},sessionLoads:{}};
+
+function normalizeState(){
+  if(!state.workouts) state.workouts={"A":[],"B":[],"C":[],"D":[]};
+  ["A","B","C","D"].forEach(k=>{ if(!state.workouts[k]) state.workouts[k]=[]; });
+  if(!state.currentWorkout) state.currentWorkout="A";
+  if(!state.checks) state.checks={};
+  if(!state.history) state.history=[];
+  if(!state.goals) state.goals={weeklyGoal:4,cycleWeeks:8,cycleStart:new Date().toISOString().slice(0,10)};
+  if(!state.activeScreen) state.activeScreen="meta";
+  if(!state.lastLoads) state.lastLoads={};
+  if(!state.sessionLoads) state.sessionLoads={};
+  Object.keys(state.workouts).forEach(w=> state.workouts[w]=(state.workouts[w]||[]).map(ex=>({id:ex.id||uid(),name:ex.name||"",meta:ex.meta||"",note:ex.note||""})));
+  state.history = state.history.map(h=>({id:h.id||uid(),date:h.date||new Date().toISOString(),workout:h.workout||"A",done:h.done??0,total:h.total??0,percent:h.percent??0,volumeScore:h.volumeScore ?? h.avgLoad ?? null,details:Array.isArray(h.details)?h.details:[]}));
+}
+normalizeState();
 
 function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-function uid(){ return "id" + Math.random().toString(36).slice(2,10); }
-function currentChecks(){ if(!state.checks[state.currentWorkout]) state.checks[state.currentWorkout] = {}; return state.checks[state.currentWorkout]; }
-function currentSessionLoads(){ if(!state.sessionLoads[state.currentWorkout]) state.sessionLoads[state.currentWorkout] = {}; return state.sessionLoads[state.currentWorkout]; }
+function currentChecks(){ if(!state.checks[state.currentWorkout]) state.checks[state.currentWorkout]={}; return state.checks[state.currentWorkout]; }
+function currentSessionLoads(){ if(!state.sessionLoads[state.currentWorkout]) state.sessionLoads[state.currentWorkout]={}; return state.sessionLoads[state.currentWorkout]; }
 function formatDate(d){ return new Date(d).toLocaleDateString("pt-BR"); }
-
-function getWeekRange(date = new Date()){
-  const d = new Date(date);
-  const day = (d.getDay()+6)%7;
-  d.setHours(0,0,0,0);
-  const monday = new Date(d);
-  monday.setDate(d.getDate()-day);
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate()+6);
-  sunday.setHours(23,59,59,999);
-  return {start:monday, end:sunday};
-}
-function getCycleEnd(){
-  const start = new Date(state.goals.cycleStart + "T00:00:00");
-  const end = new Date(start);
-  end.setDate(start.getDate() + state.goals.cycleWeeks*7 - 1);
-  end.setHours(23,59,59,999);
-  return end;
-}
+function getWeekRange(date=new Date()){ const d=new Date(date); const day=(d.getDay()+6)%7; d.setHours(0,0,0,0); const monday=new Date(d); monday.setDate(d.getDate()-day); const sunday=new Date(monday); sunday.setDate(monday.getDate()+6); sunday.setHours(23,59,59,999); return {start:monday,end:sunday}; }
+function getCycleEnd(){ const start=new Date(state.goals.cycleStart+"T00:00:00"); const end=new Date(start); end.setDate(start.getDate()+state.goals.cycleWeeks*7-1); end.setHours(23,59,59,999); return end; }
 function sessionsInWeek(){ const r=getWeekRange(); return state.history.filter(h=>new Date(h.date)>=r.start && new Date(h.date)<=r.end); }
 function sessionsInCycle(){ const start=new Date(state.goals.cycleStart+"T00:00:00"), end=getCycleEnd(); return state.history.filter(h=>new Date(h.date)>=start && new Date(h.date)<=end); }
 function totalCycleGoal(){ return state.goals.weeklyGoal * state.goals.cycleWeeks; }
 function getWorkoutOrder(){ return Object.keys(state.workouts); }
-function getNextSuggestedWorkout(){
-  const order = getWorkoutOrder();
-  if (!order.length) return "-";
-  if (!state.history.length) return order.includes("A") ? "A" : order[0];
-  const last = state.history[state.history.length - 1].workout;
-  const idx = order.indexOf(last);
-  if (idx === -1) return order[0];
-  return order[(idx + 1) % order.length];
-}
+function getNextSuggestedWorkout(){ const order=getWorkoutOrder(); if(!order.length) return "-"; if(!state.history.length) return order.includes("A")?"A":order[0]; const last=state.history[state.history.length-1].workout; const idx=order.indexOf(last); if(idx===-1) return order[0]; return order[(idx+1)%order.length]; }
+function getLoadKey(workout, ex){ return workout + "|" + (ex.id || ex.name); }
+function getSeriesTargetFromMeta(meta){ const s=String(meta||""); const m=s.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i); return m?parseInt(m[1],10):3; }
+function getRepsTargetFromMeta(meta){ const s=String(meta||""); const m=s.match(/(?:\d+)(?:\s*[–-]\s*(?:\d+))?\s*[x×]\s*(\d+(?:\s*[–-]\s*\d+)?)/i); return m?m[1].replace(/\s+/g,""):""; }
+function calculateWorkoutVolume(workout){ const list=state.workouts[workout]||[]; const checks=state.checks[workout]||{}; const sessionLoads=state.sessionLoads[workout]||{}; let total=0; list.forEach((ex,i)=>{ const seriesDone=Array.isArray(checks[String(i)+"_seriesDone"])?checks[String(i)+"_seriesDone"].filter(Boolean).length:0; const targetSeries=getSeriesTargetFromMeta(ex.meta); const effectiveSeries=Math.min(seriesDone,targetSeries); const repsString=getRepsTargetFromMeta(ex.meta); const repsVal=parseFloat(String(repsString).split(/\s*[–-]\s*/)[0].replace(",", ".")); const loadRaw=String(sessionLoads[ex.id] ?? state.lastLoads[getLoadKey(workout, ex)] ?? "").replace(",", ".").replace(/[^\d.]/g,""); const load=parseFloat(loadRaw); if(effectiveSeries>0 && !isNaN(repsVal) && !isNaN(load)) total += (effectiveSeries * repsVal * load) / 100; }); return total>0?total:null; }
 
 function switchScreen(name){
-  state.activeScreen = name;
-  if(name === 'execucao'){
-    const suggested = getNextSuggestedWorkout();
-    if(suggested && state.workouts[suggested]) state.currentWorkout = suggested;
-  }
+  state.activeScreen=name;
+  if(name==="execucao"){ const suggested=getNextSuggestedWorkout(); if(suggested && state.workouts[suggested]) state.currentWorkout=suggested; }
   saveState();
-  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-  const target = document.getElementById('screen-' + name);
-  if (target) target.classList.remove('hidden');
-  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.screen === name));
+  document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
+  const target=document.getElementById("screen-"+name); if(target) target.classList.remove("hidden");
+  document.querySelectorAll(".nav-btn").forEach(btn=>btn.classList.toggle("active", btn.dataset.screen===name));
   window.scrollTo(0,0);
-  if(name === 'resultados') setTimeout(drawProgressChart, 40);
+  if(name==="resultados") setTimeout(drawProgressChart,40);
 }
 
-function getLoadKey(workout, ex){ return workout + "|" + (ex.id || ex.name); }
-
-function renderTabs(){
-  const tabs = document.getElementById("tabs");
-  tabs.innerHTML = "";
-  Object.keys(state.workouts).forEach(k=>{
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "tab" + (state.currentWorkout===k ? " active" : "");
-    b.textContent = "Treino " + k;
-    b.addEventListener("click", ()=>{ state.currentWorkout = k; saveState(); renderAll(); });
-    tabs.appendChild(b);
-  });
-}
-
+function renderTabs(){ const tabs=document.getElementById("tabs"); tabs.innerHTML=""; Object.keys(state.workouts).forEach(k=>{ const b=document.createElement("button"); b.type="button"; b.className="tab"+(state.currentWorkout===k?" active":""); b.textContent="Treino "+k; b.addEventListener("click",()=>{ state.currentWorkout=k; saveState(); renderAll({keepScroll:true}); }); tabs.appendChild(b); }); }
 
 function renderExercises(){
-  const wrap=document.getElementById("exerciseList");
-  wrap.innerHTML="";
-  const list=state.workouts[state.currentWorkout]||[];
-  const checks=currentChecks();
-  const sessionLoads=currentSessionLoads();
-
-  function getSeriesTarget(meta){
-    const s = String(meta || "");
-    const m = s.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i);
-    if(m) return parseInt(m[1], 10);
-    return 3;
-  }
-
-  function getRepsTarget(meta){
-    const s = String(meta || "");
-    const m = s.match(/(?:\d+)(?:\s*[–-]\s*(?:\d+))?\s*[x×]\s*(\d+(?:\s*[–-]\s*\d+)?)/i);
-    return m ? m[1].replace(/\s+/g,"") : "";
-  }
-
+  const wrap=document.getElementById("exerciseList"); wrap.innerHTML="";
+  const list=state.workouts[state.currentWorkout]||[]; const checks=currentChecks(); const sessionLoads=currentSessionLoads();
   list.forEach((ex,idx)=>{
-    if(!ex.id) ex.id = uid();
-    const key=String(idx);
-    const seriesTarget = getSeriesTarget(ex.meta);
-    const repsTarget = getRepsTarget(ex.meta);
-    const doneSeries = Array.isArray(checks[key+'_seriesDone']) ? checks[key+'_seriesDone'] : [];
-    const doneCount = doneSeries.filter(Boolean).length;
-    const done = doneCount >= seriesTarget;
-    const loadKey = getLoadKey(state.currentWorkout, ex);
-    const loadVal = (sessionLoads[ex.id] ?? state.lastLoads[loadKey] ?? "");
-
-    let seriesHtml = "";
-    for(let i=0;i<seriesTarget;i++){
-      const active = !!doneSeries[i];
-      seriesHtml += "<button type='button' class='series-chip "+(active?"active":"")+"' data-series-idx='"+idx+"' data-series-num='"+i+"'>"+(i+1)+"</button>";
-    }
-
-    const row=document.createElement("div");
-    row.className="exercise";
-    row.innerHTML =
-      "<div><div class='ename'>"+esc(ex.name)+"</div><div class='emeta'>"+(repsTarget ? ("Reps por série: " + esc(repsTarget)) : "")+"</div></div>" +
-      "<div class='exercise-grid'>" +
-        "<div class='field'><label>Concluir séries</label><div class='series-boxes'>"+seriesHtml+"</div></div>" +
-        "<div class='field'><label>Carga</label><div class='input-with-suffix'><input class='input-plain-number' type='number' min='0' step='0.1' inputmode='decimal' value='"+esc(loadVal)+"' data-load='"+idx+"' placeholder='0'><span class='suffix'>kg</span></div></div>" +
-        "<div class='field'><label>Status</label><div class='pill' style='align-self:flex-start'>"+(done ? "✅ Concluído" : ("⏳ "+doneCount+"/"+seriesTarget))+"</div></div>" +
-        "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(checks[key+'_note']||"")+"' data-note='"+idx+"' placeholder='carga, sensação...'></div>" +
-        "<div class='exercise-actions' style='grid-column:1/-1'><button type='button' class='mini-btn' data-edit='"+idx+"'>Editar exercício</button><button type='button' class='mini-btn danger' data-delete='"+idx+"'>Apagar</button></div>" +
+    if(!ex.id) ex.id=uid();
+    const key=String(idx), seriesTarget=getSeriesTargetFromMeta(ex.meta), repsTarget=getRepsTargetFromMeta(ex.meta);
+    const doneSeries=Array.isArray(checks[key+"_seriesDone"])?checks[key+"_seriesDone"]:[];
+    const doneCount=doneSeries.filter(Boolean).length, done=doneCount>=seriesTarget;
+    const loadKey=getLoadKey(state.currentWorkout, ex), loadVal=(sessionLoads[ex.id] ?? state.lastLoads[loadKey] ?? "");
+    let seriesHtml=""; for(let i=0;i<seriesTarget;i++){ const active=!!doneSeries[i]; seriesHtml += "<button type='button' class='series-chip "+(active?"active":"")+"' data-series-idx='"+idx+"' data-series-num='"+i+"'>"+(i+1)+"</button>"; }
+    const row=document.createElement("div"); row.className="exercise";
+    row.innerHTML = "<div><div class='ename'>"+esc(ex.name)+"</div><div class='emeta'>"+(repsTarget?("Reps por série: "+esc(repsTarget)):"")+"</div></div>"+
+      "<div class='exercise-grid'>"+
+      "<div class='field'><label>Concluir séries</label><div class='series-boxes'>"+seriesHtml+"</div></div>"+
+      "<div class='field'><label>Carga</label><div class='input-with-suffix'><input class='input-plain-number' type='number' min='0' step='0.1' inputmode='decimal' value='"+esc(loadVal)+"' data-load='"+idx+"' placeholder='0'><span class='suffix'>kg</span></div></div>"+
+      "<div class='field'><label>Status</label><div class='pill' style='align-self:flex-start'>"+(done?"✅ Concluído":("⏳ "+doneCount+"/"+seriesTarget))+"</div></div>"+
+      "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(ex.note||"")+"' data-note='"+idx+"' placeholder='carga, sensação...'></div>"+
+      "<div class='exercise-actions' style='grid-column:1/-1'><button type='button' class='mini-btn' data-edit='"+idx+"'>Editar exercício</button><button type='button' class='mini-btn danger' data-delete='"+idx+"'>Apagar</button></div>"+
       "</div>";
     wrap.appendChild(row);
   });
-
-  wrap.querySelectorAll("button[data-series-idx]").forEach(btn=>btn.addEventListener("click", e=>{
-    e.preventDefault();
-    e.stopPropagation();
-    const savedScroll = window.scrollY;
-    const idx = e.currentTarget.dataset.seriesIdx;
-    const num = Number(e.currentTarget.dataset.seriesNum);
-    const key = String(idx) + '_seriesDone';
-    const arr = Array.isArray(checks[key]) ? checks[key].slice() : [];
-    arr[num] = !arr[num];
-    checks[key] = arr;
-    saveState();
-    renderAll({ keepScroll: true });
-    window.scrollTo(0, savedScroll);
-  }));
-
-  wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{
-    checks[e.target.dataset.note+'_note']=e.target.value;
-    saveState();
-  }));
-
-  wrap.querySelectorAll("input[data-load]").forEach(el=>el.addEventListener("input", e=>{
-    const ex = list[Number(e.target.dataset.load)];
-    const loadKey = getLoadKey(state.currentWorkout, ex);
-    const value = e.target.value;
-    currentSessionLoads()[ex.id] = value;
-    state.lastLoads[loadKey] = value;
-    saveState();
-    updateStats();
-  }));
-
-  wrap.querySelectorAll("[data-edit]").forEach(btn=>btn.addEventListener("click", e=>{
-    const idx = Number(e.target.dataset.edit);
-    const ex = list[idx];
-    const currentMeta = String(ex.meta || "");
-    const seriesMatch = currentMeta.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i);
-    const repsMatch = currentMeta.match(/(?:\d+)(?:\s*[–-]\s*(?:\d+))?\s*[x×]\s*(\d+(?:\s*[–-]\s*\d+)?)/i);
-    const seriesCurrent = seriesMatch ? seriesMatch[1] : "3";
-    const repsCurrent = repsMatch ? repsMatch[1].replace(/\s+/g,"") : "10";
-    const newName = prompt("Nome do exercício:", ex.name);
-    if(newName === null) return;
-    const newSeries = prompt("Quantidade de séries:", seriesCurrent);
-    if(newSeries === null) return;
-    const newReps = prompt("Repetições por série:", repsCurrent);
-    if(newReps === null) return;
-    ex.name = (newName || ex.name).trim();
-    ex.meta = String(newSeries || seriesCurrent).trim() + "×" + String(newReps || repsCurrent).trim();
-    const target = Math.max(1, parseInt(String(newSeries || seriesCurrent), 10) || 3);
-    const key = String(idx) + '_seriesDone';
-    const arr = Array.isArray(checks[key]) ? checks[key].slice(0, target) : [];
-    while(arr.length < target) arr.push(false);
-    checks[key] = arr;
-    saveState();
-    renderAll({ keepScroll: true });
-  }));
-
-  wrap.querySelectorAll("[data-delete]").forEach(btn=>btn.addEventListener("click", e=>{
-    const idx = Number(e.target.dataset.delete);
-    if(!confirm("Apagar esse exercício?")) return;
-    const ex = list[idx];
-    delete currentSessionLoads()[ex.id];
-    list.splice(idx,1);
-    saveState();
-    renderAll({ keepScroll: true });
-  }));
+  wrap.querySelectorAll("button[data-series-idx]").forEach(btn=>btn.addEventListener("click", e=>{ e.preventDefault(); e.stopPropagation(); const savedScroll=window.scrollY; const idx=e.currentTarget.dataset.seriesIdx; const num=Number(e.currentTarget.dataset.seriesNum); const key=String(idx)+"_seriesDone"; const arr=Array.isArray(checks[key])?checks[key].slice():[]; arr[num]=!arr[num]; checks[key]=arr; saveState(); renderAll({keepScroll:true}); window.scrollTo(0,savedScroll); }));
+  wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{ const idx=Number(e.target.dataset.note); list[idx].note=e.target.value; saveState(); }));
+  wrap.querySelectorAll("input[data-load]").forEach(el=>el.addEventListener("input", e=>{ const ex=list[Number(e.target.dataset.load)]; const loadKey=getLoadKey(state.currentWorkout, ex); const value=e.target.value; currentSessionLoads()[ex.id]=value; state.lastLoads[loadKey]=value; saveState(); updateStats(); }));
+  wrap.querySelectorAll("[data-edit]").forEach(btn=>btn.addEventListener("click", e=>{ const idx=Number(e.target.dataset.edit); const ex=list[idx]; const seriesCurrent=String(getSeriesTargetFromMeta(ex.meta)); const repsCurrent=String(getRepsTargetFromMeta(ex.meta)||"10"); const newName=prompt("Nome do exercício:", ex.name); if(newName===null) return; const newSeries=prompt("Quantidade de séries:", seriesCurrent); if(newSeries===null) return; const newReps=prompt("Repetições por série:", repsCurrent); if(newReps===null) return; ex.name=(newName||ex.name).trim(); ex.meta=String(newSeries||seriesCurrent).trim()+"×"+String(newReps||repsCurrent).trim(); const target=Math.max(1, parseInt(String(newSeries||seriesCurrent),10)||3); const key=String(idx)+"_seriesDone"; const arr=Array.isArray(checks[key])?checks[key].slice(0,target):[]; while(arr.length<target) arr.push(false); checks[key]=arr; saveState(); renderAll({keepScroll:true}); }));
+  wrap.querySelectorAll("[data-delete]").forEach(btn=>btn.addEventListener("click", e=>{ const idx=Number(e.target.dataset.delete); if(!confirm("Apagar esse exercício?")) return; const ex=list[idx]; delete currentSessionLoads()[ex.id]; list.splice(idx,1); saveState(); renderAll({keepScroll:true}); }));
 }
 
-function renderProgressTable(){
-  const body = document.getElementById("progressBody");
-  body.innerHTML = "";
-  Object.keys(state.workouts).forEach(w=>{
-    const sessions = state.history.filter(h=>h.workout===w && typeof h.volumeScore === "number");
-    let current = "-", diff = "-";
-    if(sessions.length){
-      const latest = sessions[sessions.length-1].volumeScore;
-      current = latest.toFixed(1);
-      if(sessions.length >= 2){
-        const prev = sessions[sessions.length-2].volumeScore;
-        const delta = latest - prev;
-        diff = (delta>0?"+":"") + delta.toFixed(1);
-      }
-    }
-    const tr = document.createElement("tr");
-    tr.innerHTML = "<td>Treino "+esc(w)+"</td><td>"+current+"</td><td>"+diff+"</td>";
-    body.appendChild(tr);
-  });
-}
+function renderProgressTable(){ const body=document.getElementById("progressBody"); body.innerHTML=""; Object.keys(state.workouts).forEach(w=>{ const sessions=state.history.filter(h=>h.workout===w && typeof h.volumeScore==="number"); let previous="-", current="-", diff="-", accumulated="-"; if(sessions.length){ const latest=sessions[sessions.length-1].volumeScore; current=latest.toFixed(1); if(sessions.length>=2){ const prev=sessions[sessions.length-2].volumeScore; previous=prev.toFixed(1); const delta=latest-prev; diff=(delta>0?"+":"")+delta.toFixed(1); } const first=sessions[0].volumeScore; const acc=latest-first; accumulated=(acc>0?"+":"")+acc.toFixed(1); } const tr=document.createElement("tr"); tr.innerHTML="<td>Treino "+esc(w)+"</td><td>"+previous+"</td><td>"+current+"</td><td>"+diff+"</td><td>"+accumulated+"</td>"; body.appendChild(tr); }); }
 
 function drawProgressChart(){
-  const canvas = document.getElementById("progressChart");
-  const legend = document.getElementById("chartLegend");
+  const canvas=document.getElementById("progressChart"), legend=document.getElementById("chartLegend");
   if(!canvas || !legend) return;
-  const rect = canvas.parentElement.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = rect.width * dpr;
-  canvas.height = rect.height * dpr;
-  canvas.style.width = rect.width + "px";
-  canvas.style.height = rect.height + "px";
-  const ctx = canvas.getContext("2d");
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  const w = rect.width, h = rect.height;
-  ctx.clearRect(0,0,w,h);
-
-  const palette = ['#38bdf8','#22c55e','#f59e0b','#ef4444'];
-  const lineColor = getComputedStyle(document.documentElement).getPropertyValue('--line').trim();
-  const textColor = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
-
-  const series = {};
-  Object.keys(state.workouts).forEach((wk)=>{
-    series[wk] = state.history.filter(h=>h.workout===wk && typeof h.volumeScore === "number").map((h,idx)=>({x:idx+1,y:h.volumeScore}));
-  });
-  const all = Object.values(series).flat();
-  legend.innerHTML = "";
-  if(!all.length){
-    ctx.fillStyle = textColor;
-    ctx.font = "14px sans-serif";
-    ctx.fillText("Sem dados de volume ainda.", 12, 24);
-    return;
-  }
-  const minY = Math.min(...all.map(p=>p.y));
-  const maxY = Math.max(...all.map(p=>p.y));
-  const maxX = Math.max(...all.map(p=>p.x));
-  const pad = {l:34,r:10,t:12,b:24}, plotW = w-pad.l-pad.r, plotH = h-pad.t-pad.b;
-  const yMin = Math.floor(Math.max(0, minY-1)), yMax = Math.ceil(maxY+1);
-
-  ctx.strokeStyle = lineColor;
-  ctx.lineWidth = 1;
-  for(let i=0;i<4;i++){ const y = pad.t + (plotH/3)*i; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke(); }
-  ctx.fillStyle = textColor;
-  ctx.font = "11px sans-serif";
-  for(let i=0;i<4;i++){ const val = yMax - ((yMax-yMin)/3)*i; const y = pad.t + (plotH/3)*i; ctx.fillText(String(val.toFixed(0)), 4, y+4); }
-
-  Object.keys(series).forEach((wk, idx)=>{
-    const pts = series[wk];
-    if(!pts.length) return;
-    const color = palette[idx % palette.length];
-    legend.innerHTML += "<div style='display:flex;align-items:center;gap:6px'><span class='dot' style='background:"+color+"'></span>Treino "+wk+"</div>";
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color;
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    pts.forEach((p,i)=>{
-      const x = pad.l + ((p.x-1)/Math.max(1,maxX-1))*plotW;
-      const y = pad.t + (1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH;
-      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-    });
-    ctx.stroke();
-    pts.forEach((p)=>{
-      const x = pad.l + ((p.x-1)/Math.max(1,maxX-1))*plotW;
-      const y = pad.t + (1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH;
-      ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fill();
-    });
-  });
+  const rect=canvas.parentElement.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+  canvas.width=rect.width*dpr; canvas.height=rect.height*dpr; canvas.style.width=rect.width+"px"; canvas.style.height=rect.height+"px";
+  const ctx=canvas.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+  const w=rect.width, h=rect.height; ctx.clearRect(0,0,w,h);
+  const palette=['#38bdf8','#22c55e','#f59e0b','#ef4444'], lineColor=getComputedStyle(document.documentElement).getPropertyValue('--line').trim(), textColor=getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
+  const cycleSessions=sessionsInCycle(), cycleLength=Math.max(1,totalCycleGoal()), series={};
+  Object.keys(state.workouts).forEach(wk=>{ let count=0; series[wk]=cycleSessions.filter(h=>h.workout===wk && typeof h.volumeScore==="number").map(h=>({x:++count,y:h.volumeScore})); });
+  const all=Object.values(series).flat(); legend.innerHTML="";
+  if(!all.length){ ctx.fillStyle=textColor; ctx.font="14px sans-serif"; ctx.fillText("Sem dados de volume ainda.",12,24); return; }
+  const minY=Math.min(...all.map(p=>p.y)), maxY=Math.max(...all.map(p=>p.y)), pad={l:34,r:10,t:12,b:24}, plotW=w-pad.l-pad.r, plotH=h-pad.t-pad.b, yMin=Math.floor(Math.max(0,minY-1)), yMax=Math.ceil(maxY+1);
+  ctx.strokeStyle=lineColor; ctx.lineWidth=1;
+  for(let i=0;i<4;i++){ const y=pad.t+(plotH/3)*i; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke(); }
+  ctx.fillStyle=textColor; ctx.font="11px sans-serif";
+  for(let i=0;i<4;i++){ const val=yMax-((yMax-yMin)/3)*i; const y=pad.t+(plotH/3)*i; ctx.fillText(String(val.toFixed(0)),4,y+4); }
+  Object.keys(series).forEach((wk,idx)=>{ const pts=series[wk]; if(!pts.length) return; const color=palette[idx%palette.length]; legend.innerHTML += "<div style='display:flex;align-items:center;gap:6px'><span class='dot' style='background:"+color+"'></span>Treino "+wk+"</div>"; ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=2.5; ctx.beginPath(); pts.forEach((p,i)=>{ const x=pad.l+((p.x-1)/Math.max(1,cycleLength-1))*plotW; const y=pad.t+(1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }); ctx.stroke(); pts.forEach(p=>{ const x=pad.l+((p.x-1)/Math.max(1,cycleLength-1))*plotW; const y=pad.t+(1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH; ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fill(); }); });
 }
 
 function updateStats(){
-  const list=state.workouts[state.currentWorkout]||[];
-  const checks=currentChecks();
-  const done=list.filter((ex,i)=>{
-    const meta = String(ex.meta || "");
-    const m = meta.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i);
-    const target = m ? parseInt(m[1],10) : 3;
-    const arr = Array.isArray(checks[String(i)+'_seriesDone']) ? checks[String(i)+'_seriesDone'] : [];
-    return arr.filter(Boolean).length >= target;
-  }).length;
-  const pct=list.length?Math.round(done/list.length*100):0;
-  const weekDone=sessionsInWeek().length;
-  const totalDone=state.history.length;
-  const cycleDone=sessionsInCycle().length;
-  const cycleGoal=totalCycleGoal();
-  const cyclePct=cycleGoal?Math.min(100,Math.round(cycleDone/cycleGoal*100)):0;
-
+  const list=state.workouts[state.currentWorkout]||[], checks=currentChecks();
+  const done=list.filter((ex,i)=>{ const target=getSeriesTargetFromMeta(ex.meta); const arr=Array.isArray(checks[String(i)+"_seriesDone"])?checks[String(i)+"_seriesDone"]:[]; return arr.filter(Boolean).length>=target; }).length;
+  const pct=list.length?Math.round(done/list.length*100):0, weekDone=sessionsInWeek().length, totalDone=state.history.length, cycleDone=sessionsInCycle().length, cycleGoal=totalCycleGoal(), cyclePct=cycleGoal?Math.min(100,Math.round(cycleDone/cycleGoal*100)):0;
   document.getElementById("execCurrentWorkout").textContent=state.currentWorkout;
   document.getElementById("execExercisesDone").textContent=done+"/"+list.length;
   document.getElementById("currentPct").textContent=pct+"%";
@@ -568,310 +266,68 @@ function updateStats(){
   document.getElementById("weekGoalInfo").textContent="Meta semanal: "+state.goals.weeklyGoal;
   document.getElementById("weekDoneInfo").textContent="Feitos na semana: "+weekDone;
   document.getElementById("remainingInfo").textContent="Faltam: "+Math.max(0,state.goals.weeklyGoal-weekDone);
-  renderProgressTable();
-  drawProgressChart();
+  renderProgressTable(); drawProgressChart();
 }
 
 function renderHistory(){
-  const body=document.getElementById("historyBody");
-  body.innerHTML="";
-  const items=[...state.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,60);
-  if(!items.length){ body.innerHTML="<tr><td colspan='4' class='muted'>Nenhum treino concluído ainda.</td></tr>"; return; }
-  items.forEach(h=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML="<td>"+formatDate(h.date)+"</td><td>Treino "+esc(h.workout)+"</td><td>"+h.done+"/"+h.total+"</td><td>"+(h.percent===100?"Completo":"Parcial")+" ("+h.percent+"%)</td>";
-    body.appendChild(tr);
-  });
+  const body=document.getElementById("historyBody"); body.innerHTML="";
+  const items=[...state.history].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(!items.length){ body.innerHTML="<tr><td colspan='6' class='muted'>Nenhum treino concluído ainda.</td></tr>"; return; }
+  items.forEach(h=>{ const tr=document.createElement("tr"); const vol=typeof h.volumeScore==="number"?h.volumeScore.toFixed(1):"-"; tr.innerHTML="<td>"+formatDate(h.date)+"</td><td>Treino "+esc(h.workout)+"</td><td>"+h.done+"/"+h.total+"</td><td>"+vol+"</td><td>"+(h.percent===100?"Completo":"Parcial")+" ("+h.percent+"%)</td><td><button type='button' class='mini-btn' data-history-edit='"+esc(h.id)+"'>Editar</button> <button type='button' class='mini-btn danger' data-history-delete='"+esc(h.id)+"'>Apagar</button></td>"; body.appendChild(tr); });
+  body.querySelectorAll("[data-history-edit]").forEach(btn=>btn.addEventListener("click", e=>{ const id=e.target.dataset.historyEdit; const item=state.history.find(h=>h.id===id); if(!item) return; const newDone=prompt("Exercícios concluídos:", String(item.done)); if(newDone===null) return; const newTotal=prompt("Total de exercícios:", String(item.total)); if(newTotal===null) return; const newVolume=prompt("Volume do treino:", item.volumeScore!=null?String(item.volumeScore):""); if(newVolume===null) return; item.done=Math.max(0, parseInt(newDone||item.done,10)||0); item.total=Math.max(1, parseInt(newTotal||item.total,10)||1); item.percent=Math.round((item.done/item.total)*100); const pv=parseFloat(String(newVolume).replace(",", ".")); item.volumeScore=isNaN(pv)?item.volumeScore:pv; saveState(); renderAll({keepScroll:true}); }));
+  body.querySelectorAll("[data-history-delete]").forEach(btn=>btn.addEventListener("click", e=>{ const id=e.target.dataset.historyDelete; if(!confirm("Apagar esse treino do histórico?")) return; state.history=state.history.filter(h=>h.id!==id); saveState(); renderAll({keepScroll:true}); }));
 }
 
-function renderGoals(){
-  document.getElementById("weeklyGoal").value=state.goals.weeklyGoal;
-  document.getElementById("cycleStart").value=state.goals.cycleStart;
-  document.getElementById("cycleWeeks").value=state.goals.cycleWeeks;
+function renderGoals(){ document.getElementById("weeklyGoal").value=state.goals.weeklyGoal; document.getElementById("cycleStart").value=state.goals.cycleStart; document.getElementById("cycleWeeks").value=state.goals.cycleWeeks; }
+
+function renderAll(options={}){
+  const keepScroll=!!options.keepScroll, savedScroll=window.scrollY, activeScreen=state.activeScreen||"meta";
+  renderTabs(); renderExercises(); renderHistory(); renderGoals(); updateStats();
+  document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
+  const target=document.getElementById("screen-"+activeScreen); if(target) target.classList.remove("hidden");
+  document.querySelectorAll(".nav-btn").forEach(btn=>btn.classList.toggle("active", btn.dataset.screen===activeScreen));
+  if(keepScroll) window.scrollTo(0,savedScroll); else window.scrollTo(0,0);
+  if(activeScreen==="resultados") setTimeout(drawProgressChart,40);
 }
 
-function renderAll(options = {}){
-  const keepScroll = !!options.keepScroll;
-  const savedScroll = window.scrollY;
-  const activeScreen = state.activeScreen || "importar";
-  renderTabs();
-  renderExercises();
-  renderHistory();
-  renderGoals();
-  updateStats();
-
-  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-  const target = document.getElementById('screen-' + activeScreen);
-  if (target) target.classList.remove('hidden');
-  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.screen === activeScreen));
-
-  if (keepScroll) {
-    window.scrollTo(0, savedScroll);
-  } else {
-    window.scrollTo(0, 0);
-  }
-  if(activeScreen === 'resultados') setTimeout(drawProgressChart, 40);
-}
-
-function normalizeText(text){
-  return (text || "")
-    .replace(/\u000c/g, "\n")
-    .replace(/\r/g, "\n")
-    .replace(/[•●▪◦‣]/g, "\n• ")
-    .replace(/[–—]/g, "—")
-    .replace(/\t/g, " ")
-    .replace(/[ ]{2,}/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
+function normalizeText(text){ return (text||"").replace(/\u000c/g,"\n").replace(/\r/g,"\n").replace(/[•●▪◦‣]/g,"\n• ").replace(/[–—]/g,"—").replace(/\t/g," ").replace(/[ ]{2,}/g," ").replace(/\n{3,}/g,"\n\n").trim(); }
 function isStopSection(line){ return /^(ABDOMINAIS|CORRIDA|SUGESTÃO SEMANAL|REGRAS IMPORTANTES|OBJETIVO\b|PLANO DE TREINO\b)/i.test(line); }
-function headingWorkout(line){ const m = line.match(/^TREINO\s+([A-Z])\b/i); return m ? m[1].toUpperCase() : null; }
-function cleanExerciseLine(line){
-  let s = line.trim();
-  s = s.replace(/^•\s*/, "");
-  s = s.replace(/^\d+\s+/, "");
-  s = s.replace(/\s+/g, " ").trim();
-  return s;
-}
-function parseWorkoutText(text){
-  const lines = normalizeText(text).split(/\n+/).map(s => s.trim()).filter(Boolean);
-  const workouts = {};
-  let current = null;
-  let stopMode = false;
-  for (let raw of lines){
-    const line = raw.trim();
-    const heading = headingWorkout(line);
-    if (heading){ current = heading; workouts[current] = workouts[current] || []; stopMode = false; continue; }
-    if (isStopSection(line)){ stopMode = true; current = null; continue; }
-    if (stopMode || !current) continue;
-    const cleaned = cleanExerciseLine(line);
-    if (!cleaned) continue;
-    let name = cleaned, meta = "";
-    if (cleaned.includes("—") || cleaned.includes("-")) {
-      let parts = cleaned.split("—");
-      if (parts.length === 1) parts = cleaned.split(" - ");
-      const maybeName = (parts[0] || "").trim();
-      const maybeMeta = parts.slice(1).join(" — ").trim();
-      if (maybeName && maybeMeta) { name = maybeName; meta = maybeMeta; }
-    }
-    if (!/^(TREINO|ABDOMINAIS|CORRIDA|SUGESTÃO|REGRAS)/i.test(name)) workouts[current].push({id:uid(), name, meta});
-  }
-  Object.keys(workouts).forEach(k => {
-    const seen = new Set();
-    workouts[k] = workouts[k].filter(ex => {
-      const key = (ex.name + "|" + ex.meta).toLowerCase();
-      if (!ex.name || seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-    if (!workouts[k].length) delete workouts[k];
-  });
-  return workouts;
-}
+function headingWorkout(line){ const m=line.match(/^TREINO\s+([A-Z])\b/i); return m?m[1].toUpperCase():null; }
+function cleanExerciseLine(line){ let s=line.trim(); s=s.replace(/^•\s*/,""); s=s.replace(/^\d+\s+/,""); s=s.replace(/\s+/g," ").trim(); return s; }
+function parseWorkoutText(text){ const lines=normalizeText(text).split(/\n+/).map(s=>s.trim()).filter(Boolean); const workouts={}; let current=null, stopMode=false; for(let raw of lines){ const line=raw.trim(), heading=headingWorkout(line); if(heading){ current=heading; workouts[current]=workouts[current]||[]; stopMode=false; continue; } if(isStopSection(line)){ stopMode=true; current=null; continue; } if(stopMode || !current) continue; const cleaned=cleanExerciseLine(line); if(!cleaned) continue; let name=cleaned, meta=""; if(cleaned.includes("—")||cleaned.includes("-")){ let parts=cleaned.split("—"); if(parts.length===1) parts=cleaned.split(" - "); const maybeName=(parts[0]||"").trim(), maybeMeta=parts.slice(1).join(" — ").trim(); if(maybeName && maybeMeta){ name=maybeName; meta=maybeMeta; } } if(!/^(TREINO|ABDOMINAIS|CORRIDA|SUGESTÃO|REGRAS)/i.test(name)) workouts[current].push({id:uid(), name, meta, note:""}); } Object.keys(workouts).forEach(k=>{ const seen=new Set(); workouts[k]=workouts[k].filter(ex=>{ const key=(ex.name+"|"+ex.meta).toLowerCase(); if(!ex.name || seen.has(key)) return false; seen.add(key); return true; }); if(!workouts[k].length) delete workouts[k]; }); return workouts; }
+function renderPreview(parsed){ const area=document.getElementById("previewArea"), keys=Object.keys(parsed); if(!keys.length){ area.classList.add("hidden"); area.innerHTML=""; return; } let html="<div class='preview-box'><div class='preview-title'>Pré-visualização</div>"; keys.forEach(k=>{ html += "<div style='margin-bottom:10px'><div class='subtitle'>Treino "+esc(k)+"</div><div class='tiny'>"+parsed[k].length+" exercícios</div>"; parsed[k].slice(0,8).forEach(ex=>{ html += "<div class='tiny'>• "+esc(ex.name)+" "+(ex.meta?("— "+esc(ex.meta)):"")+"</div>"; }); html += "</div>"; }); html += "</div>"; area.innerHTML=html; area.classList.remove("hidden"); }
+async function extractPdfText(file){ const buf=await file.arrayBuffer(); const pdf=await pdfjsLib.getDocument({data:buf}).promise; let fullText=""; for(let p=1;p<=pdf.numPages;p++){ const page=await pdf.getPage(p); const content=await page.getTextContent(); fullText += content.items.map(item=>item.str).join(" ") + "\n"; } return fullText; }
+async function importPdf(){ const file=document.getElementById("pdfFile").files[0], status=document.getElementById("importStatus"); if(!file) return alert("Escolha um PDF primeiro."); status.textContent="Lendo PDF..."; try{ const text=await extractPdfText(file), parsed=parseWorkoutText(text), keys=Object.keys(parsed); renderPreview(parsed); if(!keys.length){ status.textContent="Não consegui reconhecer os treinos nesse PDF."; return; } const previousHistory=state.history||[], previousLastLoads=state.lastLoads||{}; state.workouts=parsed; ["A","B","C","D"].forEach(k=>{ if(!state.workouts[k]) state.workouts[k]=[]; }); state.currentWorkout=keys.includes("A")?"A":keys[0]; state.checks={}; state.sessionLoads={}; state.history=previousHistory; state.lastLoads=previousLastLoads; saveState(); renderAll(); status.textContent="PDF importado com sucesso. Treinos encontrados: "+keys.join(", ")+"."; switchScreen("execucao"); }catch(err){ console.error(err); status.textContent="Falha ao ler esse PDF."; } }
+function importText(){ const txt=document.getElementById("textImport").value||"", status=document.getElementById("textImportStatus"), parsed=parseWorkoutText(txt), keys=Object.keys(parsed); renderPreview(parsed); if(!keys.length){ status.textContent="Não consegui reconhecer treinos no texto. Use títulos como TREINO A, TREINO B..."; return; } const previousHistory=state.history||[], previousLastLoads=state.lastLoads||{}; state.workouts=parsed; ["A","B","C","D"].forEach(k=>{ if(!state.workouts[k]) state.workouts[k]=[]; }); state.currentWorkout=keys.includes("A")?"A":keys[0]; state.checks={}; state.sessionLoads={}; state.history=previousHistory; state.lastLoads=previousLastLoads; saveState(); renderAll(); status.textContent="Texto importado com sucesso. Treinos encontrados: "+keys.join(", ")+"."; switchScreen("execucao"); }
+function addExercise(){ const name=prompt("Nome do exercício:"); if(!name) return; const series=prompt("Quantidade de séries:","3"); if(series===null) return; const reps=prompt("Repetições por série:","10"); if(reps===null) return; if(!state.workouts[state.currentWorkout]) state.workouts[state.currentWorkout]=[]; state.workouts[state.currentWorkout].push({id:uid(), name:name.trim(), meta:String(series||"3").trim()+"×"+String(reps||"10").trim(), note:""}); saveState(); renderAll({keepScroll:true}); }
+function completeWorkout(){ const list=state.workouts[state.currentWorkout]||[], checks=currentChecks(); const done=list.filter((ex,i)=>{ const target=getSeriesTargetFromMeta(ex.meta); const arr=Array.isArray(checks[String(i)+"_seriesDone"])?checks[String(i)+"_seriesDone"]:[]; return arr.filter(Boolean).length>=target; }).length; if(!list.length) return alert("Não há exercícios carregados nesse treino."); if(done===0) return alert("Conclua todas as séries de pelo menos um exercício antes de concluir o treino."); const volumeScore=calculateWorkoutVolume(state.currentWorkout); const details=list.map((ex,i)=>{ const arr=Array.isArray(checks[String(i)+"_seriesDone"])?checks[String(i)+"_seriesDone"]:[]; return {name:ex.name,meta:ex.meta,note:ex.note||"",load:state.sessionLoads[state.currentWorkout]?.[ex.id] ?? state.lastLoads[getLoadKey(state.currentWorkout, ex)] ?? "",seriesDone:arr.filter(Boolean).length,seriesTarget:getSeriesTargetFromMeta(ex.meta),repsTarget:getRepsTargetFromMeta(ex.meta)}; }); state.history.push({id:String(Date.now()),date:new Date().toISOString(),workout:state.currentWorkout,done:done,total:list.length,percent:Math.round(done/list.length*100),volumeScore:volumeScore,details:details}); state.checks[state.currentWorkout]={}; state.sessionLoads[state.currentWorkout]={}; state.currentWorkout=getNextSuggestedWorkout(); saveState(); renderAll(); switchScreen("execucao"); alert("Treino concluído."); }
+function clearToday(){ state.checks[state.currentWorkout]={}; state.sessionLoads[state.currentWorkout]={}; saveState(); renderAll(); }
+function saveGoals(){ state.goals.weeklyGoal=parseInt(document.getElementById("weeklyGoal").value||"4",10); state.goals.cycleStart=document.getElementById("cycleStart").value||new Date().toISOString().slice(0,10); state.goals.cycleWeeks=parseInt(document.getElementById("cycleWeeks").value||"8",10); saveState(); renderAll(); }
 
-function renderPreview(parsed){
-  const area = document.getElementById("previewArea");
-  const keys = Object.keys(parsed);
-  if(!keys.length){ area.classList.add("hidden"); area.innerHTML = ""; return; }
-  let html = "<div class='preview-box'><div class='preview-title'>Pré-visualização</div>";
-  keys.forEach(k=>{
-    html += "<div style='margin-bottom:10px'><div class='subtitle'>Treino "+esc(k)+"</div><div class='tiny'>"+parsed[k].length+" exercícios</div>";
-    parsed[k].slice(0,8).forEach(ex=>{ html += "<div class='tiny'>• "+esc(ex.name)+" "+(ex.meta?("— "+esc(ex.meta)):"")+"</div>"; });
-    html += "</div>";
-  });
-  html += "</div>";
-  area.innerHTML = html;
-  area.classList.remove("hidden");
-}
-
-async function extractPdfText(file){
-  const buf = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({data: buf}).promise;
-  let fullText = "";
-  for(let p=1; p<=pdf.numPages; p++){
-    const page = await pdf.getPage(p);
-    const content = await page.getTextContent();
-    fullText += content.items.map(item => item.str).join(" ") + "\n";
-  }
-  return fullText;
-}
-
-async function importPdf(){
-  const file=document.getElementById("pdfFile").files[0];
-  const status=document.getElementById("importStatus");
-  if(!file) return alert("Escolha um PDF primeiro.");
-  status.textContent="Lendo PDF...";
-  try{
-    const text=await extractPdfText(file);
-    const parsed=parseWorkoutText(text);
-    const keys=Object.keys(parsed);
-    renderPreview(parsed);
-    if(!keys.length){ status.textContent="Não consegui reconhecer os treinos nesse PDF."; return; }
-    const previousHistory = state.history || [];
-    const previousLastLoads = state.lastLoads || {};
-    state.workouts=parsed;
-    ["A","B","C","D"].forEach(k=>{ if(!state.workouts[k]) state.workouts[k]=[]; });
-    state.currentWorkout=keys.includes("A") ? "A" : keys[0];
-    state.checks={};
-    state.sessionLoads={};
-    state.history=previousHistory;
-    state.lastLoads=previousLastLoads;
-    saveState();
-    renderAll();
-    status.textContent="PDF importado com sucesso. Treinos encontrados: "+keys.join(", ")+".";
-    switchScreen("execucao");
-  }catch(err){
-    console.error(err);
-    status.textContent="Falha ao ler esse PDF.";
-  }
-}
-
-function importText(){
-  const txt = document.getElementById("textImport").value || "";
-  const status = document.getElementById("textImportStatus");
-  const parsed = parseWorkoutText(txt);
-  const keys = Object.keys(parsed);
-  renderPreview(parsed);
-  if(!keys.length){
-    status.textContent = "Não consegui reconhecer treinos no texto. Use títulos como TREINO A, TREINO B...";
-    return;
-  }
-  const previousHistory = state.history || [];
-  const previousLastLoads = state.lastLoads || {};
-  state.workouts = parsed;
-  ["A","B","C","D"].forEach(k=>{ if(!state.workouts[k]) state.workouts[k]=[]; });
-  state.currentWorkout = keys.includes("A") ? "A" : keys[0];
-  state.checks = {};
-  state.sessionLoads = {};
-  state.history = previousHistory;
-  state.lastLoads = previousLastLoads;
-  saveState();
-  renderAll();
-  status.textContent = "Texto importado com sucesso. Treinos encontrados: " + keys.join(", ") + ".";
-  switchScreen("execucao");
-}
-
-function addExercise(){
-  const name = prompt("Nome do exercício:");
-  if(!name) return;
-  const series = prompt("Quantidade de séries:", "3");
-  if(series === null) return;
-  const reps = prompt("Repetições por série:", "10");
-  if(reps === null) return;
-  if(!state.workouts[state.currentWorkout]) state.workouts[state.currentWorkout] = [];
-  state.workouts[state.currentWorkout].push({id:uid(), name:name.trim(), meta:String(series || "3").trim() + "×" + String(reps || "10").trim()});
-  saveState();
-  renderAll({ keepScroll: true });
-}
-
-
-
-function getSeriesTargetFromMeta(meta){
-  const s = String(meta || "");
-  const m = s.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i);
-  if(m) return parseInt(m[1], 10);
-  return 3;
-}
-function getRepsTargetFromMeta(meta){
-  const s = String(meta || "");
-  const m = s.match(/(?:\d+)(?:\s*[–-]\s*(?:\d+))?\s*[x×]\s*(\d+(?:\s*[–-]\s*\d+)?)/i);
-  if(!m) return null;
-  return parseFloat(m[1].split(/\s*[–-]\s*/)[0].replace(",", "."));
-}
-function calculateWorkoutVolume(workout){
-  const list = state.workouts[workout] || [];
-  const checks = state.checks[workout] || {};
-  const sessionLoads = state.sessionLoads[workout] || {};
-  let total = 0;
-  list.forEach((ex, i) => {
-    const seriesDone = Array.isArray(checks[String(i)+'_seriesDone']) ? checks[String(i)+'_seriesDone'].filter(Boolean).length : 0;
-    const targetSeries = getSeriesTargetFromMeta(ex.meta);
-    const effectiveSeries = Math.min(seriesDone, targetSeries);
-    const repsVal = getRepsTargetFromMeta(ex.meta);
-    const loadRaw = String(sessionLoads[ex.id] ?? state.lastLoads[getLoadKey(workout, ex)] ?? "").replace(",", ".").replace(/[^\d.]/g,"");
-    const load = parseFloat(loadRaw);
-    if (effectiveSeries > 0 && !isNaN(repsVal) && !isNaN(load)) {
-      total += (effectiveSeries * repsVal * load) / 100;
-    }
-  });
-  return total > 0 ? total : null;
-}
-function averageLoadForCurrentSession(workout){
-  const list = state.workouts[workout] || [];
-  const sessionLoads = state.sessionLoads[workout] || {};
-  const nums = list.map(ex => parseFloat(String(sessionLoads[ex.id] ?? "").replace(",", ".").replace(/[^\d.]/g,""))).filter(x => !isNaN(x));
-  if(!nums.length) return null;
-  return nums.reduce((a,b)=>a+b,0)/nums.length;
-}
-
-function completeWorkout(){
-  const list=state.workouts[state.currentWorkout]||[];
-  const checks=currentChecks();
-  const done=list.filter((ex,i)=>{
-    const meta = String(ex.meta || "");
-    const m = meta.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i);
-    const target = m ? parseInt(m[1],10) : 3;
-    const arr = Array.isArray(checks[String(i)+'_seriesDone']) ? checks[String(i)+'_seriesDone'] : [];
-    return arr.filter(Boolean).length >= target;
-  }).length;
-  if(!list.length) return alert("Não há exercícios carregados nesse treino.");
-  if(done===0) return alert("Conclua todas as séries de pelo menos um exercício antes de concluir o treino.");
-  const volumeScore = calculateWorkoutVolume(state.currentWorkout);
-  state.history.push({
-    id:String(Date.now()),
-    date:new Date().toISOString(),
-    workout:state.currentWorkout,
-    done:done,
-    total:list.length,
-    percent:Math.round(done/list.length*100),
-    volumeScore:volumeScore
-  });
-  state.checks[state.currentWorkout]={};
-  state.sessionLoads[state.currentWorkout]={};
-  saveState();
-  renderAll();
-  alert("Treino "+state.currentWorkout+" concluído: "+done+"/"+list.length+" exercícios.");
-}
-
-function clearToday(){
-  state.checks[state.currentWorkout]={};
-  state.sessionLoads[state.currentWorkout]={};
-  saveState();
-  renderAll();
-}
-
-function saveGoals(){
-  state.goals.weeklyGoal=parseInt(document.getElementById("weeklyGoal").value||"4",10);
-  state.goals.cycleStart=document.getElementById("cycleStart").value||new Date().toISOString().slice(0,10);
-  state.goals.cycleWeeks=parseInt(document.getElementById("cycleWeeks").value||"8",10);
-  saveState();
-  renderAll();
-}
-
-function resetHistory(){
-  if(!confirm("Apagar histórico?")) return;
-  state.history=[];
-  saveState();
-  renderAll();
-}
+function buildWorkbookXml(){ const escXml=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); let summaryRows="", detailRows=""; state.history.forEach(h=>{ summaryRows += `<Row><Cell><Data ss:Type="String">${escXml(formatDate(h.date))}</Data></Cell><Cell><Data ss:Type="String">${escXml(h.workout)}</Data></Cell><Cell><Data ss:Type="Number">${h.done}</Data></Cell><Cell><Data ss:Type="Number">${h.total}</Data></Cell><Cell><Data ss:Type="Number">${h.percent}</Data></Cell><Cell><Data ss:Type="String">${escXml(h.volumeScore ?? "")}</Data></Cell></Row>`; (h.details||[]).forEach(d=>{ detailRows += `<Row><Cell><Data ss:Type="String">${escXml(formatDate(h.date))}</Data></Cell><Cell><Data ss:Type="String">${escXml(h.workout)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.name)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.meta)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.load)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.seriesDone)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.seriesTarget)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.repsTarget)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.note)}</Data></Cell></Row>`; }); }); return `<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Resumo"><Table><Row><Cell><Data ss:Type="String">Data</Data></Cell><Cell><Data ss:Type="String">Treino</Data></Cell><Cell><Data ss:Type="String">Concluídos</Data></Cell><Cell><Data ss:Type="String">Total</Data></Cell><Cell><Data ss:Type="String">Percentual</Data></Cell><Cell><Data ss:Type="String">Volume</Data></Cell></Row>${summaryRows}</Table></Worksheet><Worksheet ss:Name="Detalhes"><Table><Row><Cell><Data ss:Type="String">Data</Data></Cell><Cell><Data ss:Type="String">Treino</Data></Cell><Cell><Data ss:Type="String">Exercício</Data></Cell><Cell><Data ss:Type="String">Meta</Data></Cell><Cell><Data ss:Type="String">Carga</Data></Cell><Cell><Data ss:Type="String">Séries feitas</Data></Cell><Cell><Data ss:Type="String">Séries meta</Data></Cell><Cell><Data ss:Type="String">Reps meta</Data></Cell><Cell><Data ss:Type="String">Observação</Data></Cell></Row>${detailRows}</Table></Worksheet></Workbook>`; }
+function downloadBlob(blob, filename){ const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 500); }
+function exportExcel(){ downloadBlob(new Blob([buildWorkbookXml()], {type:"application/vnd.ms-excel"}), "historico_treinos.xls"); }
+async function exportPdf(){ const { jsPDF } = window.jspdf; const doc=new jsPDF(); let y=12; doc.setFontSize(16); doc.text("Relatório - Controle de Treinos",14,y); y+=10; doc.setFontSize(11); doc.text(`Treino atual: ${state.currentWorkout}`,14,y); y+=6; doc.text(`Próximo treino sugerido: ${getNextSuggestedWorkout()}`,14,y); y+=6; doc.text(`Treinos na semana: ${sessionsInWeek().length}`,14,y); y+=6; doc.text(`Treinos acumulados: ${state.history.length}`,14,y); y+=8; doc.text("Histórico:",14,y); y+=6; state.history.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(h=>{ const line=`${formatDate(h.date)} | ${h.workout} | ${h.done}/${h.total} | vol ${typeof h.volumeScore==='number'?h.volumeScore.toFixed(1):'-'}`; if(y>280){ doc.addPage(); y=14; } doc.text(line,14,y); y+=6; }); doc.save("relatorio_treinos.pdf"); }
+function exportBackup(){ downloadBlob(new Blob([JSON.stringify(state,null,2)], {type:"application/json"}), "backup_controle_treinos.json"); }
+function importBackupFile(file){ const reader=new FileReader(); reader.onload=()=>{ try{ state=JSON.parse(reader.result); normalizeState(); saveState(); renderAll(); alert("Backup importado com sucesso."); }catch(e){ alert("Não foi possível importar esse backup."); } }; reader.readAsText(file); }
+function resetHistory(){ if(!confirm("Apagar histórico?")) return; state.history=[]; saveState(); renderAll(); }
 
 document.getElementById("importPdfBtn").addEventListener("click", importPdf);
 document.getElementById("previewTextBtn").addEventListener("click", ()=>renderPreview(parseWorkoutText(document.getElementById("textImport").value || "")));
 document.getElementById("importTextBtn").addEventListener("click", importText);
 document.getElementById("saveGoalsBtn").addEventListener("click", saveGoals);
-document.getElementById("resetHistoryBtn").addEventListener("click", resetHistory);
 document.getElementById("addExerciseBtn").addEventListener("click", addExercise);
 document.getElementById("completeWorkoutBtn").addEventListener("click", completeWorkout);
 document.getElementById("clearTodayBtn").addEventListener("click", clearToday);
-document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", (e) => {
-  e.preventDefault();
-  switchScreen(btn.dataset.screen);
-}));
-window.addEventListener("resize", ()=>{ if(state.activeScreen==='resultados') drawProgressChart(); });
+document.getElementById("exportExcelBtn").addEventListener("click", exportExcel);
+document.getElementById("exportPdfBtn").addEventListener("click", exportPdf);
+document.getElementById("exportBackupBtn").addEventListener("click", exportBackup);
+document.getElementById("importBackupBtn").addEventListener("click", ()=>document.getElementById("backupFile").click());
+document.getElementById("backupFile").addEventListener("change", (e)=>{ if(e.target.files[0]) importBackupFile(e.target.files[0]); });
+document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", (e)=>{ e.preventDefault(); switchScreen(btn.dataset.screen); }));
+window.addEventListener("resize", ()=>{ if(state.activeScreen==="resultados") drawProgressChart(); });
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
-}
 renderAll();
 </script>
 </body>
