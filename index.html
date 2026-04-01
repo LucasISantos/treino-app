@@ -44,6 +44,11 @@ textarea{min-height:220px;resize:vertical} input[type='date']{min-height:56px}
 table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top} th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
 .pill{font-size:12px;padding:5px 9px;border-radius:999px;display:inline-block;background:var(--surface);border:1px solid var(--line)}
 .preview-box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px}.preview-title{font-weight:800;margin-bottom:8px}.dot{width:10px;height:10px;border-radius:999px;display:inline-block}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:16px}
+.volume-table{min-width:860px;border-collapse:separate;border-spacing:0;width:100%}
+.volume-table th,.volume-table td{background:transparent}
+.volume-table .sticky-col{position:sticky;left:0;background:var(--card);z-index:2;min-width:140px}
+.volume-table thead .sticky-col{z-index:3}
 .bottom-nav{position:fixed;left:0;right:0;bottom:0;padding:10px calc(var(--safeRight) + 12px) calc(10px + var(--safeBottom)) calc(var(--safeLeft) + 12px);background:linear-gradient(180deg, rgba(8,16,29,0) 0%, rgba(8,16,29,.92) 22%, rgba(8,16,29,.95) 100%);backdrop-filter:blur(14px);z-index:1000}
 .bottom-nav-inner{max-width:820px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;box-shadow:0 10px 30px rgba(0,0,0,.15)}
 .nav-btn{border:none;background:transparent;color:var(--muted);border-radius:16px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800;min-height:74px}.nav-btn.active{background:var(--surface);color:var(--text)} .nav-icon{font-size:22px;line-height:1}
@@ -108,7 +113,20 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
 
   <div class="card">
     <div class="subtitle">Evolução de volume</div>
-    <table><thead><tr><th>Treino</th><th>Volume anterior</th><th>Volume atual</th><th>Variação atual vs anterior</th><th>Variação acumulada</th></tr></thead><tbody id="progressBody"></tbody></table>
+    <div class="table-scroll">
+      <table class="volume-table">
+        <thead>
+          <tr>
+            <th class="sticky-col">Treino</th>
+            <th>Volume anterior</th>
+            <th>Volume atual</th>
+            <th>Variação atual vs anterior</th>
+            <th>Variação acumulada</th>
+          </tr>
+        </thead>
+        <tbody id="progressBody"></tbody>
+      </table>
+    </div>
     <div class="tiny" style="margin-top:8px">A variação usa a fórmula (séries × repetições × carga) / 100.</div>
   </div>
 
@@ -145,10 +163,40 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
 <script>
 if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
 
-const STORAGE_KEY = "controle-treinos-v42";
+const STORAGE_KEY = "controle-treinos-v44";
 const LEGACY_KEYS = ["controle-treinos-v41","controle-treinos-v40","controle-treinos-v39","controle-treinos-v38","controle-treinos-v37","controle-treinos-v36","controle-treinos-v35","controle-treinos-v34","controle-treinos-v33","controle-treinos-v32","controle-treinos-v31","controle-treinos-v30"];
 
-function loadState(){ try{ const c=localStorage.getItem(STORAGE_KEY); if(c) return JSON.parse(c); for(const k of LEGACY_KEYS){ const raw=localStorage.getItem(k); if(raw){ localStorage.setItem(STORAGE_KEY, raw); return JSON.parse(raw);} } }catch(e){console.error(e)} return null; }
+function loadState(){
+  try{
+    const current = localStorage.getItem(STORAGE_KEY);
+    if(current) return JSON.parse(current);
+
+    let best = null;
+    let bestRaw = null;
+    let bestScore = -1;
+
+    for(const k of LEGACY_KEYS){
+      const raw = localStorage.getItem(k);
+      if(!raw) continue;
+      try{
+        const parsed = JSON.parse(raw);
+        const historyLen = Array.isArray(parsed?.history) ? parsed.history.length : 0;
+        const score = historyLen;
+        if(score > bestScore){
+          best = parsed;
+          bestRaw = raw;
+          bestScore = score;
+        }
+      }catch(_e){}
+    }
+
+    if(bestRaw){
+      localStorage.setItem(STORAGE_KEY, bestRaw);
+      return best;
+    }
+  }catch(e){ console.error(e); }
+  return null;
+}
 function uid(){ return "id" + Math.random().toString(36).slice(2,10); }
 
 let state = loadState() || {workouts:{"A":[{"id":"a1","name":"Supino reto barra","meta":"4×10","note":""}],"B":[],"C":[],"D":[]},currentWorkout:"A",checks:{},history:[],goals:{weeklyGoal:4,cycleWeeks:8,cycleStart:new Date().toISOString().slice(0,10)},activeScreen:"meta",lastLoads:{},sessionLoads:{}};
