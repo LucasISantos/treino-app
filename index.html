@@ -153,7 +153,7 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
       <div class="stat"><small>Próximo treino sugerido</small><strong id="resNextWorkout">B</strong></div>
       <div class="stat"><small>Conclusão do ciclo</small><strong id="resCyclePct">0%</strong></div>
       <div class="stat"><small>Treinos nesta semana</small><strong id="resWeekCount">0</strong></div>
-      <div class="stat"><small>Treinos acumulados</small><strong id="resTotalCount">0</strong></div>
+      
     </div>
     <div style="margin-top:12px"><div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do ciclo</div><div id="cyclePctLabel" class="muted">0%</div></div><div class="progress"><div class="bar" id="cycleBar"></div></div></div>
   </div>
@@ -260,7 +260,7 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
 <script>
 if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
 
-const STORAGE_KEY = "controle-treinos-v51";
+const STORAGE_KEY = "controle-treinos-v52";
 const LEGACY_KEYS = ["controle-treinos-v41","controle-treinos-v40","controle-treinos-v39","controle-treinos-v38","controle-treinos-v37","controle-treinos-v36","controle-treinos-v35","controle-treinos-v34","controle-treinos-v33","controle-treinos-v32","controle-treinos-v31","controle-treinos-v30"];
 
 function loadState(){
