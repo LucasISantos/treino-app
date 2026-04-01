@@ -32,6 +32,7 @@ input,textarea{width:100%;min-width:0;background:var(--surface);color:var(--text
 textarea{min-height:220px;resize:vertical} input[type='date']{min-height:56px}
 .input-with-suffix{position:relative}.input-with-suffix input{padding-right:52px}.suffix{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:800;font-size:16px;pointer-events:none}
 .input-plain-number::-webkit-outer-spin-button,.input-plain-number::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}.input-plain-number{-moz-appearance:textfield}
+select{width:100%;min-width:0;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:16px;padding:14px 16px;font-size:18px;appearance:none;-webkit-appearance:none}
 .hidden{display:none!important}
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;min-width:0}.stat small{display:block;color:var(--muted)}.stat strong{display:block;margin-top:6px;font-size:22px;line-height:1.1}
 .progress{width:100%;height:12px;background:var(--surface);border-radius:999px;overflow:hidden;border:1px solid var(--line)} .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--ok));transition:width .3s ease}
@@ -71,7 +72,7 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
   white-space:normal;
 }
 .volume-table th{min-width:180px}
-.volume-table .sticky-col{
+.volume-table .sticky-col-unused{
   position:-webkit-sticky;
   position:sticky;
   left:0;
@@ -83,11 +84,11 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
   background-clip:padding-box;
   box-shadow: 10px 0 0 var(--card), 12px 0 14px rgba(0,0,0,.22);
 }
-.volume-table thead .sticky-col{
+.volume-table thead .sticky-col-unused{
   z-index:6;
   background:var(--card);
 }
-.volume-table tbody .sticky-col{
+.volume-table tbody .sticky-col-unused{
   font-weight:800;
 }
 .bottom-nav{position:fixed;left:0;right:0;bottom:0;padding:10px calc(var(--safeRight) + 12px) calc(10px + var(--safeBottom)) calc(var(--safeLeft) + 12px);background:linear-gradient(180deg, rgba(8,16,29,0) 0%, rgba(8,16,29,.92) 22%, rgba(8,16,29,.95) 100%);backdrop-filter:blur(14px);z-index:1000}
@@ -163,7 +164,7 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
       <table class="volume-table">
         <thead>
           <tr>
-            <th class="sticky-col" style="text-align:left"><div style="min-width:170px">Treino</div></th>
+            <th style="text-align:left;min-width:170px"><div style="min-width:170px">Treino</div></th>
             <th>Volume anterior</th>
             <th>Volume atual</th>
             <th>Variação atual vs anterior</th>
@@ -178,11 +179,51 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
 
   <div class="card">
     <div class="subtitle">Gráfico de progressão</div>
-    <div class="row" style="margin-bottom:10px">
-      <button type="button" class="mini-btn graph-range active" data-range="ciclo">Ciclo</button>
-      <button type="button" class="mini-btn graph-range" data-range="semana">Semana</button>
-      <button type="button" class="mini-btn graph-range" data-range="mes">Mês</button>
-      <button type="button" class="mini-btn graph-range" data-range="ano">Ano</button>
+    <div class="input-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:10px">
+      <div class="field">
+        <label for="rangeSessions">Sessões</label>
+        <select id="rangeSessions">
+          <option value="">Selecione</option>
+          <option value="4">Últimas 4</option>
+          <option value="8">Últimas 8</option>
+          <option value="16">Últimas 16</option>
+          <option value="20">Últimas 20</option>
+          <option value="24">Últimas 24</option>
+          <option value="28">Últimas 28</option>
+          <option value="32">Últimas 32</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="rangeWeeks">Semanas</label>
+        <select id="rangeWeeks">
+          <option value="">Selecione</option>
+          <option value="1">Última semana</option>
+          <option value="2">Última quinzena</option>
+          <option value="4">Últimas 4 semanas</option>
+          <option value="8">Últimas 8 semanas</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="rangeMonths">Meses</label>
+        <select id="rangeMonths">
+          <option value="">Selecione</option>
+          <option value="1">Último mês</option>
+          <option value="2">Último bimestre</option>
+          <option value="3">Último trimestre</option>
+          <option value="6">Último semestre</option>
+          <option value="12">Último ano</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="rangeYears">Ano</label>
+        <select id="rangeYears">
+          <option value="">Selecione</option>
+          <option value="1">Último ano</option>
+          <option value="2">Últimos 2 anos</option>
+          <option value="5">Últimos 5 anos</option>
+          <option value="10">Últimos 10 anos</option>
+        </select>
+      </div>
     </div>
     <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px"><div style="height:220px"><canvas id="progressChart"></canvas></div><div id="chartLegend" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)"></div></div>
   </div>
@@ -219,7 +260,7 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
 <script>
 if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
 
-const STORAGE_KEY = "controle-treinos-v50";
+const STORAGE_KEY = "controle-treinos-v51";
 const LEGACY_KEYS = ["controle-treinos-v41","controle-treinos-v40","controle-treinos-v39","controle-treinos-v38","controle-treinos-v37","controle-treinos-v36","controle-treinos-v35","controle-treinos-v34","controle-treinos-v33","controle-treinos-v32","controle-treinos-v31","controle-treinos-v30"];
 
 function loadState(){
@@ -255,7 +296,7 @@ function loadState(){
 }
 function uid(){ return "id" + Math.random().toString(36).slice(2,10); }
 
-let state = loadState() || {workouts:{"A":[{"id":"a1","name":"Supino reto barra","meta":"4×10","note":""}],"B":[],"C":[],"D":[]},currentWorkout:"A",checks:{},history:[],goals:{weeklyGoal:4,cycleWeeks:8,cycleStart:new Date().toISOString().slice(0,10)},activeScreen:"meta",lastLoads:{},sessionLoads:{},graphRange:"ciclo"};
+let state = loadState() || {workouts:{"A":[{"id":"a1","name":"Supino reto barra","meta":"4×10","note":""}],"B":[],"C":[],"D":[]},currentWorkout:"A",checks:{},history:[],goals:{weeklyGoal:4,cycleWeeks:8,cycleStart:new Date().toISOString().slice(0,10)},activeScreen:"meta",lastLoads:{},sessionLoads:{},graphFilters:{mode:"sessions",value:"8"}};
 
 function normalizeState(){
   if(!state.workouts) state.workouts={"A":[],"B":[],"C":[],"D":[]};
@@ -267,8 +308,8 @@ function normalizeState(){
   if(!state.activeScreen) state.activeScreen="meta";
   if(!state.lastLoads) state.lastLoads={};
   if(!state.sessionLoads) state.sessionLoads={};
-  if(!state.graphRange) state.graphRange="ciclo";
-  if(!state.graphRange) state.graphRange="ciclo";
+  if(!state.graphFilters) state.graphFilters={mode:"sessions",value:"8"};
+  if(!state.graphFilters) state.graphFilters={mode:"sessions",value:"8"};
   Object.keys(state.workouts).forEach(w=> state.workouts[w]=(state.workouts[w]||[]).map(ex=>({id:ex.id||uid(),name:ex.name||"",meta:ex.meta||"",note:ex.note||""})));
   state.history = state.history.map(h=>({id:h.id||uid(),date:h.date||new Date().toISOString(),workout:h.workout||"A",done:h.done??0,total:h.total??0,percent:h.percent??0,volumeScore:h.volumeScore ?? h.avgLoad ?? null,details:Array.isArray(h.details)?h.details:[]}));
 }
@@ -335,60 +376,71 @@ function renderExercises(){
 function renderProgressTable(){ const body=document.getElementById("progressBody"); body.innerHTML=""; Object.keys(state.workouts).forEach(w=>{ const sessions=state.history.filter(h=>h.workout===w && typeof h.volumeScore==="number"); let previous="-", current="-", diff="-", accumulated="-"; if(sessions.length){ const latest=sessions[sessions.length-1].volumeScore; current=latest.toFixed(1); if(sessions.length>=2){ const prev=sessions[sessions.length-2].volumeScore; previous=prev.toFixed(1); const delta=latest-prev; diff=(delta>0?"+":"")+delta.toFixed(1); } const first=sessions[0].volumeScore; const acc=latest-first; accumulated=(acc>0?"+":"")+acc.toFixed(1); } const tr=document.createElement("tr"); tr.innerHTML="<td>Treino "+esc(w)+"</td><td>"+previous+"</td><td>"+current+"</td><td>"+diff+"</td><td>"+accumulated+"</td>"; body.appendChild(tr); }); }
 
 
-function getGraphBuckets(){
-  const range = state.graphRange || "ciclo";
-  const all = state.history.filter(h => typeof h.volumeScore === "number");
-  if(range === "ciclo"){
-    const cycleSessions = sessionsInCycle();
-    const maxX = Math.max(1, totalCycleGoal());
-    const series = {};
-    Object.keys(state.workouts).forEach((wk)=>{
-      let count = 0;
-      series[wk] = cycleSessions.filter(h=>h.workout===wk && typeof h.volumeScore==="number").map(h=>({x:++count,y:h.volumeScore}));
-    });
-    return {series, maxX, label: "ciclo"};
+
+function getFilteredHistory(){
+  const all = [...state.history].filter(h => typeof h.volumeScore === "number").sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const filters = state.graphFilters || {mode:"sessions", value:"8"};
+  const now = new Date();
+
+  if(filters.mode === "sessions"){
+    const n = parseInt(filters.value || "8", 10) || 8;
+    return all.slice(-n);
   }
-  if(range === "semana"){
-    const weeks = {};
-    const currentYear = new Date().getFullYear();
-    all.filter(h => new Date(h.date).getFullYear() === currentYear).forEach(h=>{
-      const d = new Date(h.date);
+  if(filters.mode === "weeks"){
+    const weeks = parseInt(filters.value || "1", 10) || 1;
+    const start = new Date(now);
+    start.setDate(now.getDate() - (weeks * 7));
+    return all.filter(h => new Date(h.date) >= start);
+  }
+  if(filters.mode === "months"){
+    const months = parseInt(filters.value || "1", 10) || 1;
+    const start = new Date(now);
+    start.setMonth(now.getMonth() - months);
+    return all.filter(h => new Date(h.date) >= start);
+  }
+  if(filters.mode === "years"){
+    const years = parseInt(filters.value || "1", 10) || 1;
+    const start = new Date(now);
+    start.setFullYear(now.getFullYear() - years);
+    return all.filter(h => new Date(h.date) >= start);
+  }
+  return all;
+}
+
+function getGraphBuckets(){
+  const filters = state.graphFilters || {mode:"sessions", value:"8"};
+  const filtered = getFilteredHistory();
+
+  if(filters.mode === "sessions"){
+    const series = {};
+    Object.keys(state.workouts).forEach(wk=>{
+      let count = 0;
+      series[wk] = filtered.filter(h=>h.workout===wk).map(h=>({x:++count,y:h.volumeScore,label:h.workout}));
+    });
+    return {series, maxX: Math.max(1, parseInt(filters.value || "8", 10) || 8)};
+  }
+
+  const buckets = {};
+  filtered.forEach(h=>{
+    const d = new Date(h.date);
+    let key = "";
+    if(filters.mode === "weeks"){
       const firstJan = new Date(d.getFullYear(),0,1);
       const day = Math.floor((d - firstJan) / 86400000);
       const week = Math.ceil((day + firstJan.getDay()+1) / 7);
-      const key = week;
-      if(!weeks[key]) weeks[key] = [];
-      weeks[key].push(h.volumeScore);
-    });
-    const keys = Object.keys(weeks).map(Number).sort((a,b)=>a-b);
-    const series = {"Volume": keys.map((k,i)=>({x:i+1,y:weeks[k].reduce((a,b)=>a+b,0)/weeks[k].length, label:"S"+k}))};
-    return {series, maxX: Math.max(1, keys.length), label:"semana"};
-  }
-  if(range === "mes"){
-    const months = {};
-    all.forEach(h=>{
-      const d = new Date(h.date);
-      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
-      if(!months[key]) months[key] = [];
-      months[key].push(h.volumeScore);
-    });
-    const keys = Object.keys(months).sort();
-    const series = {"Volume": keys.map((k,i)=>({x:i+1,y:months[k].reduce((a,b)=>a+b,0)/months[k].length, label:k}))};
-    return {series, maxX: Math.max(1, keys.length), label:"mês"};
-  }
-  if(range === "ano"){
-    const years = {};
-    all.forEach(h=>{
-      const d = new Date(h.date);
-      const key = String(d.getFullYear());
-      if(!years[key]) years[key] = [];
-      years[key].push(h.volumeScore);
-    });
-    const keys = Object.keys(years).sort();
-    const series = {"Volume": keys.map((k,i)=>({x:i+1,y:years[k].reduce((a,b)=>a+b,0)/years[k].length, label:k}))};
-    return {series, maxX: Math.max(1, keys.length), label:"ano"};
-  }
-  return {series:{}, maxX:1, label:"ciclo"};
+      key = d.getFullYear() + "-S" + String(week).padStart(2,"0");
+    } else if(filters.mode === "months"){
+      key = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
+    } else if(filters.mode === "years"){
+      key = String(d.getFullYear());
+    }
+    if(!buckets[key]) buckets[key] = [];
+    buckets[key].push(h.volumeScore);
+  });
+
+  const keys = Object.keys(buckets).sort();
+  const series = {"Volume": keys.map((k,i)=>({x:i+1,y:buckets[k].reduce((a,b)=>a+b,0)/buckets[k].length,label:k}))};
+  return {series, maxX: Math.max(1, keys.length)};
 }
 
 function drawProgressChart(){
@@ -400,10 +452,17 @@ function drawProgressChart(){
   const w=rect.width, h=rect.height; ctx.clearRect(0,0,w,h);
   const palette=['#38bdf8','#22c55e','#f59e0b','#ef4444'], lineColor=getComputedStyle(document.documentElement).getPropertyValue('--line').trim(), textColor=getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
 
-  const {series, maxX, label} = getGraphBuckets();
+  const {series, maxX} = getGraphBuckets();
   const all = Object.values(series).flat();
   legend.innerHTML="";
-  document.querySelectorAll(".graph-range").forEach(btn => btn.classList.toggle("active", btn.dataset.range === (state.graphRange||"ciclo")));
+
+  const rs = document.getElementById("rangeSessions"), rw = document.getElementById("rangeWeeks"), rm = document.getElementById("rangeMonths"), ry = document.getElementById("rangeYears");
+  if(rs && rw && rm && ry){
+    rs.value = state.graphFilters?.mode === "sessions" ? String(state.graphFilters.value) : "";
+    rw.value = state.graphFilters?.mode === "weeks" ? String(state.graphFilters.value) : "";
+    rm.value = state.graphFilters?.mode === "months" ? String(state.graphFilters.value) : "";
+    ry.value = state.graphFilters?.mode === "years" ? String(state.graphFilters.value) : "";
+  }
 
   if(!all.length){
     ctx.fillStyle=textColor; ctx.font="14px sans-serif"; ctx.fillText("Sem dados de volume ainda.",12,24); return;
@@ -666,8 +725,21 @@ function buildCsvContent(){
   ).join("\n");
 }
 
-function downloadBlob(blob, filename){ const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 500); }
-function exportCsv(){ downloadBlob(new Blob(["\ufeff" + buildCsvContent()], {type:"text/csv;charset=utf-8;"}), "historico_treinos.csv"); }
+function downloadBlob(blob, filename){
+  const a=document.createElement("a");
+  const url=URL.createObjectURL(blob);
+  a.href=url;
+  a.download=filename;
+  a.style.display="none";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1200);
+}
+function exportCsv(){
+  const content = "\ufeff" + buildCsvContent();
+  const blob = new Blob([content], {type:"text/csv;charset=utf-8;"});
+  downloadBlob(blob, "historico_treinos.csv");
+}
 
 async function exportPdf(){
   const { jsPDF } = window.jspdf;
@@ -740,11 +812,20 @@ document.getElementById("exportBackupBtn").addEventListener("click", exportBacku
 document.getElementById("importBackupBtn").addEventListener("click", ()=>document.getElementById("backupFile").click());
 document.getElementById("backupFile").addEventListener("change", (e)=>{ if(e.target.files[0]) importBackupFile(e.target.files[0]); });
 document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", (e)=>{ e.preventDefault(); switchScreen(btn.dataset.screen); }));
-document.querySelectorAll(".graph-range").forEach(btn=>btn.addEventListener("click", ()=>{
-  state.graphRange = btn.dataset.range;
-  saveState();
-  drawProgressChart();
-}));
+["rangeSessions","rangeWeeks","rangeMonths","rangeYears"].forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.addEventListener("change", ()=>{
+    const value = el.value;
+    if(!value) return;
+    if(id==="rangeSessions") state.graphFilters = {mode:"sessions", value};
+    if(id==="rangeWeeks") state.graphFilters = {mode:"weeks", value};
+    if(id==="rangeMonths") state.graphFilters = {mode:"months", value};
+    if(id==="rangeYears") state.graphFilters = {mode:"years", value};
+    saveState();
+    drawProgressChart();
+  });
+});
 window.addEventListener("resize", ()=>{ if(state.activeScreen==="resultados") drawProgressChart(); });
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
 
