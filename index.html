@@ -44,6 +44,14 @@ textarea{min-height:220px;resize:vertical} input[type='date']{min-height:56px}
 table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top} th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
 .pill{font-size:12px;padding:5px 9px;border-radius:999px;display:inline-block;background:var(--surface);border:1px solid var(--line)}
 .preview-box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px}.preview-title{font-weight:800;margin-bottom:8px}.dot{width:10px;height:10px;border-radius:999px;display:inline-block}
+.meta-highlight{background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, var(--surface)), var(--surface));border:1px solid color-mix(in srgb, var(--accent) 45%, var(--line));border-radius:18px;padding:14px}
+.meta-highlight strong{display:block;font-size:28px;line-height:1.1;margin-top:4px}
+.table-scroll-history{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:16px}
+.table-scroll-history table{min-width:760px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--navH) + var(--safeBottom) + 16px);background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;max-width:86vw;z-index:1200;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1300}
+.modal-card{width:min(560px,100%);background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.28)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
 .table-scroll{
   overflow-x:auto;
   -webkit-overflow-scrolling:touch;
@@ -102,6 +110,11 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
       <div class="field"><label for="cycleWeeks">Semanas no ciclo</label><input type="number" min="1" max="20" id="cycleWeeks" /></div>
     </div>
     <div class="row" style="margin-top:14px"><button type="button" class="btn ok" id="saveGoalsBtn">Salvar meta</button></div>
+    <div class="meta-highlight" style="margin-top:14px">
+      <div class="tiny">Meta total do ciclo</div>
+      <strong id="metaSessionsTotal">32 sessões</strong>
+      <div class="note">Acompanhe a evolução na aba Resultados.</div>
+    </div>
   </div>
 
   <div class="card">
@@ -188,7 +201,9 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
   <div class="card">
     <div class="subtitle">Histórico</div>
     <div class="row" style="gap:8px; margin-bottom:10px"><span class="pill" id="weekGoalInfo">Meta semanal: 4</span><span class="pill" id="weekDoneInfo">Feitos na semana: 0</span><span class="pill" id="remainingInfo">Faltam: 0</span></div>
-    <table><thead><tr><th>Data</th><th>Treino</th><th>Exercícios</th><th>Volume</th><th>Status</th><th>Ações</th></tr></thead><tbody id="historyBody"></tbody></table>
+    <div class="table-scroll-history">
+      <table><thead><tr><th>Data</th><th>Treino</th><th>Exercícios</th><th>Volume</th><th>Status</th><th>Ações</th></tr></thead><tbody id="historyBody"></tbody></table>
+    </div>
   </div>
 </section>
 </div></div>
@@ -198,11 +213,13 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
   <button type="button" class="nav-btn" data-screen="execucao"><span class="nav-icon">💪</span><span>Execução</span></button>
   <button type="button" class="nav-btn" data-screen="resultados"><span class="nav-icon">📊</span><span>Resultados</span></button>
 </div></nav>
+<div id='toastRoot'></div>
+<div id='modalRoot'></div>
 
 <script>
 if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
 
-const STORAGE_KEY = "controle-treinos-v47";
+const STORAGE_KEY = "controle-treinos-v48";
 const LEGACY_KEYS = ["controle-treinos-v41","controle-treinos-v40","controle-treinos-v39","controle-treinos-v38","controle-treinos-v37","controle-treinos-v36","controle-treinos-v35","controle-treinos-v34","controle-treinos-v33","controle-treinos-v32","controle-treinos-v31","controle-treinos-v30"];
 
 function loadState(){
@@ -429,45 +446,64 @@ function updateStats(){
 }
 
 
+
 function renderHistory(){
   const body=document.getElementById("historyBody"); body.innerHTML="";
   const items=[...state.history].sort((a,b)=>new Date(b.date)-new Date(a.date));
   if(!items.length){ body.innerHTML="<tr><td colspan='6' class='muted'>Nenhum treino concluído ainda.</td></tr>"; return; }
   items.forEach(h=>{
     const tr=document.createElement("tr");
+    tr.dataset.historyId = h.id;
+    tr.style.cursor = "pointer";
     const vol=typeof h.volumeScore==="number"?h.volumeScore.toFixed(1):"-";
-    tr.innerHTML="<td>"+formatDate(h.date)+"</td><td>Treino "+esc(h.workout)+"</td><td>"+h.done+"/"+h.total+"</td><td>"+vol+"</td><td>"+(h.percent===100?"Completo":"Parcial")+" ("+h.percent+"%)</td><td><button type='button' class='mini-btn' data-history-edit='"+esc(h.id)+"'>Editar</button> <button type='button' class='mini-btn danger' data-history-delete='"+esc(h.id)+"'>Apagar</button></td>";
+    tr.innerHTML="<td>"+formatDate(h.date)+"</td><td>Treino "+esc(h.workout)+"</td><td>"+h.done+"/"+h.total+"</td><td>"+vol+"</td><td>"+(h.percent===100?"Completo":"Parcial")+" ("+h.percent+"%)</td><td><span class='tiny'>Pressione e segure</span></td>";
     body.appendChild(tr);
   });
 
-  body.querySelectorAll("[data-history-edit]").forEach(btn=>btn.addEventListener("click", e=>{
-    const id=e.target.dataset.historyEdit;
-    const item=state.history.find(h=>h.id===id);
-    if(!item) return;
-    const newDone=prompt("Exercícios concluídos:", String(item.done));
-    if(newDone===null) return;
-    const newTotal=prompt("Total de exercícios:", String(item.total));
-    if(newTotal===null) return;
-    const newVolume=prompt("Volume do treino:", item.volumeScore!=null?String(item.volumeScore):"");
-    if(newVolume===null) return;
-    item.done=Math.max(0, parseInt(newDone||item.done,10)||0);
-    item.total=Math.max(1, parseInt(newTotal||item.total,10)||1);
-    item.percent=Math.round((item.done/item.total)*100);
-    const pv=parseFloat(String(newVolume).replace(",", "."));
-    item.volumeScore=isNaN(pv)?item.volumeScore:pv;
-    saveState();
-    renderAll({keepScroll:true});
-  }));
+  body.querySelectorAll("tr[data-history-id]").forEach(row=>{
+    let pressTimer = null;
+    const itemId = row.dataset.historyId;
 
-  body.querySelectorAll("[data-history-delete]").forEach(btn=>btn.addEventListener("click", e=>{
-    const id=e.target.dataset.historyDelete;
-    if(!confirm("Apagar esse treino do histórico?")) return;
-    state.history=state.history.filter(h=>h.id!==id);
-    saveState();
-    renderAll({keepScroll:true});
-  }));
+    const openMenu = ()=>{
+      const root = document.getElementById("modalRoot");
+      root.innerHTML = "<div class='modal-backdrop'><div class='modal-card'>"
+        + "<div class='title'>Ações do treino salvo</div>"
+        + "<div class='note'>Escolha o que deseja fazer com esse registro.</div>"
+        + "<div class='modal-actions' style='justify-content:flex-start'>"
+        + "<button type='button' class='btn primary' id='historyMenuEdit'>Editar</button>"
+        + "<button type='button' class='btn danger' id='historyMenuDelete'>Excluir</button>"
+        + "<button type='button' class='btn' id='historyMenuClose'>Fechar</button>"
+        + "</div></div></div>";
+      document.getElementById("historyMenuClose").onclick = ()=>{ root.innerHTML = ""; };
+      document.getElementById("historyMenuEdit").onclick = ()=>{ root.innerHTML = ""; openHistoryEditModal(itemId); };
+      document.getElementById("historyMenuDelete").onclick = ()=>{ root.innerHTML = ""; openHistoryDeleteConfirm(itemId); };
+    };
+
+    const startPress = (e)=>{
+      e.preventDefault();
+      clearTimeout(pressTimer);
+      pressTimer = setTimeout(openMenu, 450);
+    };
+    const cancelPress = ()=>{ clearTimeout(pressTimer); };
+
+    row.addEventListener("touchstart", startPress, {passive:false});
+    row.addEventListener("touchend", cancelPress);
+    row.addEventListener("touchmove", cancelPress);
+    row.addEventListener("mousedown", startPress);
+    row.addEventListener("mouseup", cancelPress);
+    row.addEventListener("mouseleave", cancelPress);
+    row.addEventListener("contextmenu", (e)=>{ e.preventDefault(); openMenu(); });
+  });
 }
-function renderGoals(){ document.getElementById("weeklyGoal").value=state.goals.weeklyGoal; document.getElementById("cycleStart").value=state.goals.cycleStart; document.getElementById("cycleWeeks").value=state.goals.cycleWeeks; }
+
+function renderGoals(){
+  document.getElementById("weeklyGoal").value=state.goals.weeklyGoal;
+  document.getElementById("cycleStart").value=state.goals.cycleStart;
+  document.getElementById("cycleWeeks").value=state.goals.cycleWeeks;
+  const total = totalCycleGoal();
+  const metaEl = document.getElementById("metaSessionsTotal");
+  if(metaEl) metaEl.textContent = total + " sessões";
+}
 
 function renderAll(options={}){
   const keepScroll=!!options.keepScroll, savedScroll=window.scrollY, activeScreen=state.activeScreen||"meta";
@@ -491,7 +527,66 @@ function importText(){ const txt=document.getElementById("textImport").value||""
 function addExercise(){ const name=prompt("Nome do exercício:"); if(!name) return; const series=prompt("Quantidade de séries:","3"); if(series===null) return; const reps=prompt("Repetições por série:","10"); if(reps===null) return; if(!state.workouts[state.currentWorkout]) state.workouts[state.currentWorkout]=[]; state.workouts[state.currentWorkout].push({id:uid(), name:name.trim(), meta:String(series||"3").trim()+"×"+String(reps||"10").trim(), note:""}); saveState(); renderAll({keepScroll:true}); }
 function completeWorkout(){ const list=state.workouts[state.currentWorkout]||[], checks=currentChecks(); const done=list.filter((ex,i)=>{ const target=getSeriesTargetFromMeta(ex.meta); const arr=Array.isArray(checks[String(i)+"_seriesDone"])?checks[String(i)+"_seriesDone"]:[]; return arr.filter(Boolean).length>=target; }).length; if(!list.length) return alert("Não há exercícios carregados nesse treino."); if(done===0) return alert("Conclua todas as séries de pelo menos um exercício antes de concluir o treino."); const volumeScore=calculateWorkoutVolume(state.currentWorkout); const details=list.map((ex,i)=>{ const arr=Array.isArray(checks[String(i)+"_seriesDone"])?checks[String(i)+"_seriesDone"]:[]; return {name:ex.name,meta:ex.meta,note:ex.note||"",load:state.sessionLoads[state.currentWorkout]?.[ex.id] ?? state.lastLoads[getLoadKey(state.currentWorkout, ex)] ?? "",seriesDone:arr.filter(Boolean).length,seriesTarget:getSeriesTargetFromMeta(ex.meta),repsTarget:getRepsTargetFromMeta(ex.meta)}; }); state.history.push({id:String(Date.now()),date:new Date().toISOString(),workout:state.currentWorkout,done:done,total:list.length,percent:Math.round(done/list.length*100),volumeScore:volumeScore,details:details}); state.checks[state.currentWorkout]={}; state.sessionLoads[state.currentWorkout]={}; state.currentWorkout=getNextSuggestedWorkout(); saveState(); renderAll(); switchScreen("execucao"); alert("Treino concluído."); }
 function clearToday(){ state.checks[state.currentWorkout]={}; state.sessionLoads[state.currentWorkout]={}; saveState(); renderAll(); }
-function saveGoals(){ state.goals.weeklyGoal=parseInt(document.getElementById("weeklyGoal").value||"4",10); state.goals.cycleStart=document.getElementById("cycleStart").value||new Date().toISOString().slice(0,10); state.goals.cycleWeeks=parseInt(document.getElementById("cycleWeeks").value||"8",10); saveState(); renderAll(); }
+
+function showToast(message){
+  const root = document.getElementById("toastRoot");
+  if(!root) return;
+  root.innerHTML = "<div class='toast'>"+esc(message)+"</div>";
+  setTimeout(()=>{ if(root) root.innerHTML = ""; }, 3200);
+}
+
+function openHistoryEditModal(itemId){
+  const item = state.history.find(h=>h.id===itemId);
+  if(!item) return;
+  const root = document.getElementById("modalRoot");
+  const volume = item.volumeScore != null ? String(item.volumeScore) : "";
+  root.innerHTML = "<div class='modal-backdrop'><div class='modal-card'>"
+    + "<div class='title'>Editar treino salvo</div>"
+    + "<div class='input-grid'>"
+    + "<div class='field'><label>Exercícios concluídos</label><input id='editDone' type='number' min='0' value='"+esc(item.done)+"'></div>"
+    + "<div class='field'><label>Total de exercícios</label><input id='editTotal' type='number' min='1' value='"+esc(item.total)+"'></div>"
+    + "<div class='field'><label>Volume do treino</label><input id='editVolume' type='number' step='0.1' value='"+esc(volume)+"'></div>"
+    + "</div>"
+    + "<div class='modal-actions'><button type='button' class='btn' id='closeEditModal'>Cancelar</button><button type='button' class='btn ok' id='saveEditModal'>Salvar</button></div>"
+    + "</div></div>";
+  document.getElementById("closeEditModal").onclick = ()=>{ root.innerHTML = ""; };
+  document.getElementById("saveEditModal").onclick = ()=>{
+    const newDone = parseInt(document.getElementById("editDone").value || item.done, 10);
+    const newTotal = parseInt(document.getElementById("editTotal").value || item.total, 10);
+    const newVolume = parseFloat(String(document.getElementById("editVolume").value || volume).replace(",", "."));
+    item.done = Math.max(0, newDone || 0);
+    item.total = Math.max(1, newTotal || 1);
+    item.percent = Math.round((item.done / item.total) * 100);
+    item.volumeScore = isNaN(newVolume) ? item.volumeScore : newVolume;
+    saveState();
+    root.innerHTML = "";
+    renderAll({keepScroll:true});
+  };
+}
+
+function openHistoryDeleteConfirm(itemId){
+  const root = document.getElementById("modalRoot");
+  root.innerHTML = "<div class='modal-backdrop'><div class='modal-card'>"
+    + "<div class='title'>Excluir treino</div>"
+    + "<div class='note'>Tem certeza que deseja excluir? O resultado não pode ser desfeito!</div>"
+    + "<div class='modal-actions'><button type='button' class='btn' id='cancelDeleteModal'>Cancelar</button><button type='button' class='btn danger' id='confirmDeleteModal'>Excluir</button></div>"
+    + "</div></div>";
+  document.getElementById("cancelDeleteModal").onclick = ()=>{ root.innerHTML = ""; };
+  document.getElementById("confirmDeleteModal").onclick = ()=>{
+    state.history = state.history.filter(h=>h.id !== itemId);
+    saveState();
+    root.innerHTML = "";
+    renderAll({keepScroll:true});
+  };
+}
+function saveGoals(){
+  state.goals.weeklyGoal=parseInt(document.getElementById("weeklyGoal").value||"4",10);
+  state.goals.cycleStart=document.getElementById("cycleStart").value||new Date().toISOString().slice(0,10);
+  state.goals.cycleWeeks=parseInt(document.getElementById("cycleWeeks").value||"8",10);
+  saveState();
+  renderAll();
+  showToast("Meta definida em " + totalCycleGoal() + " sessões de treino, acompanhe os resultados na aba Resultados!");
+}
 
 
 function buildWorkbookXml(){
