@@ -190,7 +190,7 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
   <div class="card">
     <div class="subtitle">Exportação e backup</div>
     <div class="row">
-      <button type="button" class="btn primary" id="exportExcelBtn">Exportar Excel</button>
+      <button type="button" class="btn primary" id="exportCsvBtn">Exportar CSV</button>
       <button type="button" class="btn warn" id="exportPdfBtn">Exportar PDF</button>
       <button type="button" class="btn ok" id="exportBackupBtn">Exportar backup</button>
       <button type="button" class="btn" id="importBackupBtn">Importar backup</button>
@@ -219,7 +219,7 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
 <script>
 if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
 
-const STORAGE_KEY = "controle-treinos-v48";
+const STORAGE_KEY = "controle-treinos-v50";
 const LEGACY_KEYS = ["controle-treinos-v41","controle-treinos-v40","controle-treinos-v39","controle-treinos-v38","controle-treinos-v37","controle-treinos-v36","controle-treinos-v35","controle-treinos-v34","controle-treinos-v33","controle-treinos-v32","controle-treinos-v31","controle-treinos-v30"];
 
 function loadState(){
@@ -427,16 +427,23 @@ function drawProgressChart(){
 function updateStats(){
   const list=state.workouts[state.currentWorkout]||[], checks=currentChecks();
   const done=list.filter((ex,i)=>{ const target=getSeriesTargetFromMeta(ex.meta); const arr=Array.isArray(checks[String(i)+"_seriesDone"])?checks[String(i)+"_seriesDone"]:[]; return arr.filter(Boolean).length>=target; }).length;
-  const pct=list.length?Math.round(done/list.length*100):0, weekDone=sessionsInWeek().length, totalDone=state.history.length, cycleDone=sessionsInCycle().length, cycleGoal=totalCycleGoal(), cyclePct=cycleGoal?Math.min(100,Math.round(cycleDone/cycleGoal*100)):0;
+  const pct=list.length?Math.round(done/list.length*100):0,
+    weekDone=sessionsInWeek().length,
+    totalDone=state.history.length,
+    cycleDone=sessionsInCycle().length,
+    cycleGoal=totalCycleGoal(),
+    cyclePct=cycleGoal?Math.min(100,Math.round(cycleDone/cycleGoal*100)):0,
+    today=new Date(),
+    weekIndexInCycle=Math.max(1, Math.ceil((((today - new Date(state.goals.cycleStart+"T00:00:00"))/86400000)+1)/7)),
+    accumulatedWeeklyGoal=state.goals.weeklyGoal * weekIndexInCycle;
   document.getElementById("execCurrentWorkout").textContent=state.currentWorkout;
   document.getElementById("execExercisesDone").textContent=done+"/"+list.length;
   document.getElementById("currentPct").textContent=pct+"%";
   document.getElementById("currentBar").style.width=pct+"%";
   document.getElementById("resCurrentWorkout").textContent=state.currentWorkout;
   document.getElementById("resNextWorkout").textContent=getNextSuggestedWorkout();
-  document.getElementById("resCyclePct").textContent=cyclePct+"%";
-  document.getElementById("resWeekCount").textContent=weekDone;
-  document.getElementById("resTotalCount").textContent=totalDone;
+  document.getElementById("resCyclePct").textContent=weekDone+"/"+state.goals.weeklyGoal;
+  document.getElementById("resWeekCount").textContent=cycleDone+"/"+accumulatedWeeklyGoal;
   document.getElementById("cyclePctLabel").textContent=cycleDone+"/"+cycleGoal+" ("+cyclePct+"%)";
   document.getElementById("cycleBar").style.width=cyclePct+"%";
   document.getElementById("weekGoalInfo").textContent="Meta semanal: "+state.goals.weeklyGoal;
@@ -535,29 +542,59 @@ function showToast(message){
   setTimeout(()=>{ if(root) root.innerHTML = ""; }, 3200);
 }
 
+
 function openHistoryEditModal(itemId){
   const item = state.history.find(h=>h.id===itemId);
   if(!item) return;
   const root = document.getElementById("modalRoot");
-  const volume = item.volumeScore != null ? String(item.volumeScore) : "";
-  root.innerHTML = "<div class='modal-backdrop'><div class='modal-card'>"
+
+  let detailsHtml = "";
+  const details = Array.isArray(item.details) ? item.details : [];
+  details.forEach((d, idx)=>{
+    detailsHtml += "<div class='card' style='margin-bottom:10px;padding:12px'>"
+      + "<div class='subtitle' style='margin-bottom:10px'>"+esc(d.name || ("Exercício "+(idx+1)))+"</div>"
+      + "<div class='input-grid'>"
+      + "<div class='field'><label>Nome do exercício</label><input id='histName_"+idx+"' type='text' value='"+esc(d.name || "")+"'></div>"
+      + "<div class='field'><label>Meta</label><input id='histMeta_"+idx+"' type='text' value='"+esc(d.meta || "")+"'></div>"
+      + "<div class='field'><label>Séries concluídas</label><input id='histSeriesDone_"+idx+"' type='number' min='0' value='"+esc(d.seriesDone ?? 0)+"'></div>"
+      + "<div class='field'><label>Carga</label><input id='histLoad_"+idx+"' type='number' step='0.1' value='"+esc(String(d.load || '').replace(/[^\d.,-]/g,''))+"'></div>"
+      + "<div class='field'><label>Observação</label><input id='histNote_"+idx+"' type='text' value='"+esc(d.note || "")+"'></div>"
+      + "</div></div>";
+  });
+
+  root.innerHTML = "<div class='modal-backdrop'><div class='modal-card' style='max-height:85vh;overflow:auto'>"
     + "<div class='title'>Editar treino salvo</div>"
-    + "<div class='input-grid'>"
-    + "<div class='field'><label>Exercícios concluídos</label><input id='editDone' type='number' min='0' value='"+esc(item.done)+"'></div>"
-    + "<div class='field'><label>Total de exercícios</label><input id='editTotal' type='number' min='1' value='"+esc(item.total)+"'></div>"
-    + "<div class='field'><label>Volume do treino</label><input id='editVolume' type='number' step='0.1' value='"+esc(volume)+"'></div>"
-    + "</div>"
+    + "<div class='note' style='margin-bottom:12px'>Edite os itens do treino exatamente como foram registrados.</div>"
+    + detailsHtml
     + "<div class='modal-actions'><button type='button' class='btn' id='closeEditModal'>Cancelar</button><button type='button' class='btn ok' id='saveEditModal'>Salvar</button></div>"
     + "</div></div>";
+
   document.getElementById("closeEditModal").onclick = ()=>{ root.innerHTML = ""; };
   document.getElementById("saveEditModal").onclick = ()=>{
-    const newDone = parseInt(document.getElementById("editDone").value || item.done, 10);
-    const newTotal = parseInt(document.getElementById("editTotal").value || item.total, 10);
-    const newVolume = parseFloat(String(document.getElementById("editVolume").value || volume).replace(",", "."));
-    item.done = Math.max(0, newDone || 0);
-    item.total = Math.max(1, newTotal || 1);
-    item.percent = Math.round((item.done / item.total) * 100);
-    item.volumeScore = isNaN(newVolume) ? item.volumeScore : newVolume;
+    let doneCount = 0;
+    let total = details.length;
+    let volume = 0;
+
+    details.forEach((d, idx)=>{
+      d.name = document.getElementById("histName_"+idx).value || d.name || "";
+      d.meta = document.getElementById("histMeta_"+idx).value || d.meta || "";
+      d.seriesDone = Math.max(0, parseInt(document.getElementById("histSeriesDone_"+idx).value || d.seriesDone || 0, 10) || 0);
+      d.load = document.getElementById("histLoad_"+idx).value || d.load || "";
+      d.note = document.getElementById("histNote_"+idx).value || "";
+      if(d.seriesDone >= (parseInt(String(d.seriesTarget || 0),10) || getSeriesTargetFromMeta(d.meta))) doneCount += 1;
+
+      const repsSource = String(d.repsTarget || getRepsTargetFromMeta(d.meta) || "");
+      const repsNum = parseFloat(repsSource.split(/\s*[–-]\s*/)[0].replace(",", "."));
+      const loadNum = parseFloat(String(d.load || "").replace(",", "."));
+      if(!isNaN(repsNum) && !isNaN(loadNum) && !isNaN(d.seriesDone)){
+        volume += (Number(d.seriesDone) * repsNum * loadNum) / 100;
+      }
+    });
+
+    item.done = doneCount;
+    item.total = total;
+    item.percent = total ? Math.round((doneCount/total)*100) : 0;
+    item.volumeScore = volume > 0 ? volume : item.volumeScore;
     saveState();
     root.innerHTML = "";
     renderAll({keepScroll:true});
@@ -585,13 +622,21 @@ function saveGoals(){
   state.goals.cycleWeeks=parseInt(document.getElementById("cycleWeeks").value||"8",10);
   saveState();
   renderAll();
-  showToast("Meta definida em " + totalCycleGoal() + " sessões de treino, acompanhe os resultados na aba Resultados!");
 }
 
 
-function buildWorkbookXml(){
-  const escXml=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  let detailRows="";
+
+function buildCsvContent(){
+  const rows = [[
+    "Data treino concluído",
+    "Hora conclusão",
+    "Tipo treino",
+    "Nome do exercício",
+    "Quantidade de séries concluídas",
+    "Carga realizada",
+    "Volume realizado"
+  ]];
+
   state.history.forEach(h=>{
     (h.details||[]).forEach(d=>{
       const dateObj = new Date(h.date);
@@ -600,42 +645,29 @@ function buildWorkbookXml(){
       const loadNum = parseFloat(String(d.load ?? "").replace(",", ".").replace(/[^\d.]/g,""));
       const repsNum = parseFloat(String(d.repsTarget ?? "").split(/\s*[–-]\s*/)[0].replace(",", "."));
       const seriesNum = parseFloat(d.seriesDone ?? 0);
-      const volume = (!isNaN(loadNum) && !isNaN(repsNum) && !isNaN(seriesNum)) ? ((seriesNum*repsNum*loadNum)/100).toFixed(1) : "";
-      detailRows += `<Row>
-        <Cell><Data ss:Type="String">${escXml(dateStr)}</Data></Cell>
-        <Cell><Data ss:Type="String">${escXml(timeStr)}</Data></Cell>
-        <Cell><Data ss:Type="String">${escXml(h.workout)}</Data></Cell>
-        <Cell><Data ss:Type="String">${escXml(d.name)}</Data></Cell>
-        <Cell><Data ss:Type="String">${escXml(d.seriesDone)}</Data></Cell>
-        <Cell><Data ss:Type="String">${escXml(d.load)}</Data></Cell>
-        <Cell><Data ss:Type="String">${escXml(volume)}</Data></Cell>
-      </Row>`;
+      const volume = (!isNaN(loadNum) && !isNaN(repsNum) && !isNaN(seriesNum))
+        ? ((seriesNum * repsNum * loadNum) / 100).toFixed(1)
+        : "";
+
+      rows.push([
+        dateStr,
+        timeStr,
+        h.workout || "",
+        d.name || "",
+        d.seriesDone ?? "",
+        d.load ?? "",
+        volume
+      ]);
     });
   });
-  return `<?xml version="1.0"?>
-  <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
-   xmlns:o="urn:schemas-microsoft-com:office:office"
-   xmlns:x="urn:schemas-microsoft-com:office:excel"
-   xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
-    <Worksheet ss:Name="HistoricoDetalhado">
-      <Table>
-        <Row>
-          <Cell><Data ss:Type="String">Data treino concluído</Data></Cell>
-          <Cell><Data ss:Type="String">Hora conclusão</Data></Cell>
-          <Cell><Data ss:Type="String">Tipo treino</Data></Cell>
-          <Cell><Data ss:Type="String">Nome do exercício</Data></Cell>
-          <Cell><Data ss:Type="String">Quantidade de séries concluídas</Data></Cell>
-          <Cell><Data ss:Type="String">Carga realizada</Data></Cell>
-          <Cell><Data ss:Type="String">Volume realizado</Data></Cell>
-        </Row>
-        ${detailRows}
-      </Table>
-    </Worksheet>
-  </Workbook>`;
+
+  return rows.map(row =>
+    row.map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(";")
+  ).join("\n");
 }
 
 function downloadBlob(blob, filename){ const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 500); }
-function exportExcel(){ downloadBlob(new Blob([buildWorkbookXml()], {type:"application/vnd.ms-excel"}), "historico_treinos.xls"); }
+function exportCsv(){ downloadBlob(new Blob(["\ufeff" + buildCsvContent()], {type:"text/csv;charset=utf-8;"}), "historico_treinos.csv"); }
 
 async function exportPdf(){
   const { jsPDF } = window.jspdf;
@@ -702,7 +734,7 @@ document.getElementById("saveGoalsBtn").addEventListener("click", saveGoals);
 document.getElementById("addExerciseBtn").addEventListener("click", addExercise);
 document.getElementById("completeWorkoutBtn").addEventListener("click", completeWorkout);
 document.getElementById("clearTodayBtn").addEventListener("click", clearToday);
-document.getElementById("exportExcelBtn").addEventListener("click", exportExcel);
+document.getElementById("exportCsvBtn").addEventListener("click", exportCsv);
 document.getElementById("exportPdfBtn").addEventListener("click", exportPdf);
 document.getElementById("exportBackupBtn").addEventListener("click", exportBackup);
 document.getElementById("importBackupBtn").addEventListener("click", ()=>document.getElementById("backupFile").click());
