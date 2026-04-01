@@ -165,6 +165,12 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
 
   <div class="card">
     <div class="subtitle">Gráfico de progressão</div>
+    <div class="row" style="margin-bottom:10px">
+      <button type="button" class="mini-btn graph-range active" data-range="ciclo">Ciclo</button>
+      <button type="button" class="mini-btn graph-range" data-range="semana">Semana</button>
+      <button type="button" class="mini-btn graph-range" data-range="mes">Mês</button>
+      <button type="button" class="mini-btn graph-range" data-range="ano">Ano</button>
+    </div>
     <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px"><div style="height:220px"><canvas id="progressChart"></canvas></div><div id="chartLegend" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)"></div></div>
   </div>
 
@@ -196,7 +202,7 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
 <script>
 if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
 
-const STORAGE_KEY = "controle-treinos-v46";
+const STORAGE_KEY = "controle-treinos-v47";
 const LEGACY_KEYS = ["controle-treinos-v41","controle-treinos-v40","controle-treinos-v39","controle-treinos-v38","controle-treinos-v37","controle-treinos-v36","controle-treinos-v35","controle-treinos-v34","controle-treinos-v33","controle-treinos-v32","controle-treinos-v31","controle-treinos-v30"];
 
 function loadState(){
@@ -232,7 +238,7 @@ function loadState(){
 }
 function uid(){ return "id" + Math.random().toString(36).slice(2,10); }
 
-let state = loadState() || {workouts:{"A":[{"id":"a1","name":"Supino reto barra","meta":"4×10","note":""}],"B":[],"C":[],"D":[]},currentWorkout:"A",checks:{},history:[],goals:{weeklyGoal:4,cycleWeeks:8,cycleStart:new Date().toISOString().slice(0,10)},activeScreen:"meta",lastLoads:{},sessionLoads:{}};
+let state = loadState() || {workouts:{"A":[{"id":"a1","name":"Supino reto barra","meta":"4×10","note":""}],"B":[],"C":[],"D":[]},currentWorkout:"A",checks:{},history:[],goals:{weeklyGoal:4,cycleWeeks:8,cycleStart:new Date().toISOString().slice(0,10)},activeScreen:"meta",lastLoads:{},sessionLoads:{},graphRange:"ciclo"};
 
 function normalizeState(){
   if(!state.workouts) state.workouts={"A":[],"B":[],"C":[],"D":[]};
@@ -244,6 +250,8 @@ function normalizeState(){
   if(!state.activeScreen) state.activeScreen="meta";
   if(!state.lastLoads) state.lastLoads={};
   if(!state.sessionLoads) state.sessionLoads={};
+  if(!state.graphRange) state.graphRange="ciclo";
+  if(!state.graphRange) state.graphRange="ciclo";
   Object.keys(state.workouts).forEach(w=> state.workouts[w]=(state.workouts[w]||[]).map(ex=>({id:ex.id||uid(),name:ex.name||"",meta:ex.meta||"",note:ex.note||""})));
   state.history = state.history.map(h=>({id:h.id||uid(),date:h.date||new Date().toISOString(),workout:h.workout||"A",done:h.done??0,total:h.total??0,percent:h.percent??0,volumeScore:h.volumeScore ?? h.avgLoad ?? null,details:Array.isArray(h.details)?h.details:[]}));
 }
@@ -309,6 +317,63 @@ function renderExercises(){
 
 function renderProgressTable(){ const body=document.getElementById("progressBody"); body.innerHTML=""; Object.keys(state.workouts).forEach(w=>{ const sessions=state.history.filter(h=>h.workout===w && typeof h.volumeScore==="number"); let previous="-", current="-", diff="-", accumulated="-"; if(sessions.length){ const latest=sessions[sessions.length-1].volumeScore; current=latest.toFixed(1); if(sessions.length>=2){ const prev=sessions[sessions.length-2].volumeScore; previous=prev.toFixed(1); const delta=latest-prev; diff=(delta>0?"+":"")+delta.toFixed(1); } const first=sessions[0].volumeScore; const acc=latest-first; accumulated=(acc>0?"+":"")+acc.toFixed(1); } const tr=document.createElement("tr"); tr.innerHTML="<td>Treino "+esc(w)+"</td><td>"+previous+"</td><td>"+current+"</td><td>"+diff+"</td><td>"+accumulated+"</td>"; body.appendChild(tr); }); }
 
+
+function getGraphBuckets(){
+  const range = state.graphRange || "ciclo";
+  const all = state.history.filter(h => typeof h.volumeScore === "number");
+  if(range === "ciclo"){
+    const cycleSessions = sessionsInCycle();
+    const maxX = Math.max(1, totalCycleGoal());
+    const series = {};
+    Object.keys(state.workouts).forEach((wk)=>{
+      let count = 0;
+      series[wk] = cycleSessions.filter(h=>h.workout===wk && typeof h.volumeScore==="number").map(h=>({x:++count,y:h.volumeScore}));
+    });
+    return {series, maxX, label: "ciclo"};
+  }
+  if(range === "semana"){
+    const weeks = {};
+    const currentYear = new Date().getFullYear();
+    all.filter(h => new Date(h.date).getFullYear() === currentYear).forEach(h=>{
+      const d = new Date(h.date);
+      const firstJan = new Date(d.getFullYear(),0,1);
+      const day = Math.floor((d - firstJan) / 86400000);
+      const week = Math.ceil((day + firstJan.getDay()+1) / 7);
+      const key = week;
+      if(!weeks[key]) weeks[key] = [];
+      weeks[key].push(h.volumeScore);
+    });
+    const keys = Object.keys(weeks).map(Number).sort((a,b)=>a-b);
+    const series = {"Volume": keys.map((k,i)=>({x:i+1,y:weeks[k].reduce((a,b)=>a+b,0)/weeks[k].length, label:"S"+k}))};
+    return {series, maxX: Math.max(1, keys.length), label:"semana"};
+  }
+  if(range === "mes"){
+    const months = {};
+    all.forEach(h=>{
+      const d = new Date(h.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+      if(!months[key]) months[key] = [];
+      months[key].push(h.volumeScore);
+    });
+    const keys = Object.keys(months).sort();
+    const series = {"Volume": keys.map((k,i)=>({x:i+1,y:months[k].reduce((a,b)=>a+b,0)/months[k].length, label:k}))};
+    return {series, maxX: Math.max(1, keys.length), label:"mês"};
+  }
+  if(range === "ano"){
+    const years = {};
+    all.forEach(h=>{
+      const d = new Date(h.date);
+      const key = String(d.getFullYear());
+      if(!years[key]) years[key] = [];
+      years[key].push(h.volumeScore);
+    });
+    const keys = Object.keys(years).sort();
+    const series = {"Volume": keys.map((k,i)=>({x:i+1,y:years[k].reduce((a,b)=>a+b,0)/years[k].length, label:k}))};
+    return {series, maxX: Math.max(1, keys.length), label:"ano"};
+  }
+  return {series:{}, maxX:1, label:"ciclo"};
+}
+
 function drawProgressChart(){
   const canvas=document.getElementById("progressChart"), legend=document.getElementById("chartLegend");
   if(!canvas || !legend) return;
@@ -317,18 +382,31 @@ function drawProgressChart(){
   const ctx=canvas.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
   const w=rect.width, h=rect.height; ctx.clearRect(0,0,w,h);
   const palette=['#38bdf8','#22c55e','#f59e0b','#ef4444'], lineColor=getComputedStyle(document.documentElement).getPropertyValue('--line').trim(), textColor=getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
-  const cycleSessions=sessionsInCycle(), cycleLength=Math.max(1,totalCycleGoal()), series={};
-  Object.keys(state.workouts).forEach(wk=>{ let count=0; series[wk]=cycleSessions.filter(h=>h.workout===wk && typeof h.volumeScore==="number").map(h=>({x:++count,y:h.volumeScore})); });
-  const all=Object.values(series).flat(); legend.innerHTML="";
-  if(!all.length){ ctx.fillStyle=textColor; ctx.font="14px sans-serif"; ctx.fillText("Sem dados de volume ainda.",12,24); return; }
+
+  const {series, maxX, label} = getGraphBuckets();
+  const all = Object.values(series).flat();
+  legend.innerHTML="";
+  document.querySelectorAll(".graph-range").forEach(btn => btn.classList.toggle("active", btn.dataset.range === (state.graphRange||"ciclo")));
+
+  if(!all.length){
+    ctx.fillStyle=textColor; ctx.font="14px sans-serif"; ctx.fillText("Sem dados de volume ainda.",12,24); return;
+  }
   const minY=Math.min(...all.map(p=>p.y)), maxY=Math.max(...all.map(p=>p.y)), pad={l:34,r:10,t:12,b:24}, plotW=w-pad.l-pad.r, plotH=h-pad.t-pad.b, yMin=Math.floor(Math.max(0,minY-1)), yMax=Math.ceil(maxY+1);
   ctx.strokeStyle=lineColor; ctx.lineWidth=1;
   for(let i=0;i<4;i++){ const y=pad.t+(plotH/3)*i; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke(); }
   ctx.fillStyle=textColor; ctx.font="11px sans-serif";
   for(let i=0;i<4;i++){ const val=yMax-((yMax-yMin)/3)*i; const y=pad.t+(plotH/3)*i; ctx.fillText(String(val.toFixed(0)),4,y+4); }
-  Object.keys(series).forEach((wk,idx)=>{ const pts=series[wk]; if(!pts.length) return; const color=palette[idx%palette.length]; legend.innerHTML += "<div style='display:flex;align-items:center;gap:6px'><span class='dot' style='background:"+color+"'></span>Treino "+wk+"</div>"; ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=2.5; ctx.beginPath(); pts.forEach((p,i)=>{ const x=pad.l+((p.x-1)/Math.max(1,cycleLength-1))*plotW; const y=pad.t+(1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }); ctx.stroke(); pts.forEach(p=>{ const x=pad.l+((p.x-1)/Math.max(1,cycleLength-1))*plotW; const y=pad.t+(1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH; ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fill(); }); });
-}
 
+  Object.keys(series).forEach((wk,idx)=>{
+    const pts=series[wk]; if(!pts.length) return;
+    const color=palette[idx%palette.length];
+    legend.innerHTML += "<div style='display:flex;align-items:center;gap:6px'><span class='dot' style='background:"+color+"'></span>"+wk+"</div>";
+    ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=2.5; ctx.beginPath();
+    pts.forEach((p,i)=>{ const x=pad.l+((p.x-1)/Math.max(1,maxX-1))*plotW; const y=pad.t+(1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    ctx.stroke();
+    pts.forEach(p=>{ const x=pad.l+((p.x-1)/Math.max(1,maxX-1))*plotW; const y=pad.t+(1-((p.y-yMin)/Math.max(1,(yMax-yMin))))*plotH; ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fill(); });
+  });
+}
 function updateStats(){
   const list=state.workouts[state.currentWorkout]||[], checks=currentChecks();
   const done=list.filter((ex,i)=>{ const target=getSeriesTargetFromMeta(ex.meta); const arr=Array.isArray(checks[String(i)+"_seriesDone"])?checks[String(i)+"_seriesDone"]:[]; return arr.filter(Boolean).length>=target; }).length;
@@ -350,15 +428,45 @@ function updateStats(){
   renderProgressTable(); drawProgressChart();
 }
 
+
 function renderHistory(){
   const body=document.getElementById("historyBody"); body.innerHTML="";
   const items=[...state.history].sort((a,b)=>new Date(b.date)-new Date(a.date));
   if(!items.length){ body.innerHTML="<tr><td colspan='6' class='muted'>Nenhum treino concluído ainda.</td></tr>"; return; }
-  items.forEach(h=>{ const tr=document.createElement("tr"); const vol=typeof h.volumeScore==="number"?h.volumeScore.toFixed(1):"-"; tr.innerHTML="<td>"+formatDate(h.date)+"</td><td>Treino "+esc(h.workout)+"</td><td>"+h.done+"/"+h.total+"</td><td>"+vol+"</td><td>"+(h.percent===100?"Completo":"Parcial")+" ("+h.percent+"%)</td><td><button type='button' class='mini-btn' data-history-edit='"+esc(h.id)+"'>Editar</button> <button type='button' class='mini-btn danger' data-history-delete='"+esc(h.id)+"'>Apagar</button></td>"; body.appendChild(tr); });
-  body.querySelectorAll("[data-history-edit]").forEach(btn=>btn.addEventListener("click", e=>{ const id=e.target.dataset.historyEdit; const item=state.history.find(h=>h.id===id); if(!item) return; const newDone=prompt("Exercícios concluídos:", String(item.done)); if(newDone===null) return; const newTotal=prompt("Total de exercícios:", String(item.total)); if(newTotal===null) return; const newVolume=prompt("Volume do treino:", item.volumeScore!=null?String(item.volumeScore):""); if(newVolume===null) return; item.done=Math.max(0, parseInt(newDone||item.done,10)||0); item.total=Math.max(1, parseInt(newTotal||item.total,10)||1); item.percent=Math.round((item.done/item.total)*100); const pv=parseFloat(String(newVolume).replace(",", ".")); item.volumeScore=isNaN(pv)?item.volumeScore:pv; saveState(); renderAll({keepScroll:true}); }));
-  body.querySelectorAll("[data-history-delete]").forEach(btn=>btn.addEventListener("click", e=>{ const id=e.target.dataset.historyDelete; if(!confirm("Apagar esse treino do histórico?")) return; state.history=state.history.filter(h=>h.id!==id); saveState(); renderAll({keepScroll:true}); }));
-}
+  items.forEach(h=>{
+    const tr=document.createElement("tr");
+    const vol=typeof h.volumeScore==="number"?h.volumeScore.toFixed(1):"-";
+    tr.innerHTML="<td>"+formatDate(h.date)+"</td><td>Treino "+esc(h.workout)+"</td><td>"+h.done+"/"+h.total+"</td><td>"+vol+"</td><td>"+(h.percent===100?"Completo":"Parcial")+" ("+h.percent+"%)</td><td><button type='button' class='mini-btn' data-history-edit='"+esc(h.id)+"'>Editar</button> <button type='button' class='mini-btn danger' data-history-delete='"+esc(h.id)+"'>Apagar</button></td>";
+    body.appendChild(tr);
+  });
 
+  body.querySelectorAll("[data-history-edit]").forEach(btn=>btn.addEventListener("click", e=>{
+    const id=e.target.dataset.historyEdit;
+    const item=state.history.find(h=>h.id===id);
+    if(!item) return;
+    const newDone=prompt("Exercícios concluídos:", String(item.done));
+    if(newDone===null) return;
+    const newTotal=prompt("Total de exercícios:", String(item.total));
+    if(newTotal===null) return;
+    const newVolume=prompt("Volume do treino:", item.volumeScore!=null?String(item.volumeScore):"");
+    if(newVolume===null) return;
+    item.done=Math.max(0, parseInt(newDone||item.done,10)||0);
+    item.total=Math.max(1, parseInt(newTotal||item.total,10)||1);
+    item.percent=Math.round((item.done/item.total)*100);
+    const pv=parseFloat(String(newVolume).replace(",", "."));
+    item.volumeScore=isNaN(pv)?item.volumeScore:pv;
+    saveState();
+    renderAll({keepScroll:true});
+  }));
+
+  body.querySelectorAll("[data-history-delete]").forEach(btn=>btn.addEventListener("click", e=>{
+    const id=e.target.dataset.historyDelete;
+    if(!confirm("Apagar esse treino do histórico?")) return;
+    state.history=state.history.filter(h=>h.id!==id);
+    saveState();
+    renderAll({keepScroll:true});
+  }));
+}
 function renderGoals(){ document.getElementById("weeklyGoal").value=state.goals.weeklyGoal; document.getElementById("cycleStart").value=state.goals.cycleStart; document.getElementById("cycleWeeks").value=state.goals.cycleWeeks; }
 
 function renderAll(options={}){
@@ -385,10 +493,109 @@ function completeWorkout(){ const list=state.workouts[state.currentWorkout]||[],
 function clearToday(){ state.checks[state.currentWorkout]={}; state.sessionLoads[state.currentWorkout]={}; saveState(); renderAll(); }
 function saveGoals(){ state.goals.weeklyGoal=parseInt(document.getElementById("weeklyGoal").value||"4",10); state.goals.cycleStart=document.getElementById("cycleStart").value||new Date().toISOString().slice(0,10); state.goals.cycleWeeks=parseInt(document.getElementById("cycleWeeks").value||"8",10); saveState(); renderAll(); }
 
-function buildWorkbookXml(){ const escXml=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); let summaryRows="", detailRows=""; state.history.forEach(h=>{ summaryRows += `<Row><Cell><Data ss:Type="String">${escXml(formatDate(h.date))}</Data></Cell><Cell><Data ss:Type="String">${escXml(h.workout)}</Data></Cell><Cell><Data ss:Type="Number">${h.done}</Data></Cell><Cell><Data ss:Type="Number">${h.total}</Data></Cell><Cell><Data ss:Type="Number">${h.percent}</Data></Cell><Cell><Data ss:Type="String">${escXml(h.volumeScore ?? "")}</Data></Cell></Row>`; (h.details||[]).forEach(d=>{ detailRows += `<Row><Cell><Data ss:Type="String">${escXml(formatDate(h.date))}</Data></Cell><Cell><Data ss:Type="String">${escXml(h.workout)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.name)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.meta)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.load)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.seriesDone)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.seriesTarget)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.repsTarget)}</Data></Cell><Cell><Data ss:Type="String">${escXml(d.note)}</Data></Cell></Row>`; }); }); return `<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Resumo"><Table><Row><Cell><Data ss:Type="String">Data</Data></Cell><Cell><Data ss:Type="String">Treino</Data></Cell><Cell><Data ss:Type="String">Concluídos</Data></Cell><Cell><Data ss:Type="String">Total</Data></Cell><Cell><Data ss:Type="String">Percentual</Data></Cell><Cell><Data ss:Type="String">Volume</Data></Cell></Row>${summaryRows}</Table></Worksheet><Worksheet ss:Name="Detalhes"><Table><Row><Cell><Data ss:Type="String">Data</Data></Cell><Cell><Data ss:Type="String">Treino</Data></Cell><Cell><Data ss:Type="String">Exercício</Data></Cell><Cell><Data ss:Type="String">Meta</Data></Cell><Cell><Data ss:Type="String">Carga</Data></Cell><Cell><Data ss:Type="String">Séries feitas</Data></Cell><Cell><Data ss:Type="String">Séries meta</Data></Cell><Cell><Data ss:Type="String">Reps meta</Data></Cell><Cell><Data ss:Type="String">Observação</Data></Cell></Row>${detailRows}</Table></Worksheet></Workbook>`; }
+
+function buildWorkbookXml(){
+  const escXml=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  let detailRows="";
+  state.history.forEach(h=>{
+    (h.details||[]).forEach(d=>{
+      const dateObj = new Date(h.date);
+      const dateStr = dateObj.toLocaleDateString("pt-BR");
+      const timeStr = dateObj.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+      const loadNum = parseFloat(String(d.load ?? "").replace(",", ".").replace(/[^\d.]/g,""));
+      const repsNum = parseFloat(String(d.repsTarget ?? "").split(/\s*[–-]\s*/)[0].replace(",", "."));
+      const seriesNum = parseFloat(d.seriesDone ?? 0);
+      const volume = (!isNaN(loadNum) && !isNaN(repsNum) && !isNaN(seriesNum)) ? ((seriesNum*repsNum*loadNum)/100).toFixed(1) : "";
+      detailRows += `<Row>
+        <Cell><Data ss:Type="String">${escXml(dateStr)}</Data></Cell>
+        <Cell><Data ss:Type="String">${escXml(timeStr)}</Data></Cell>
+        <Cell><Data ss:Type="String">${escXml(h.workout)}</Data></Cell>
+        <Cell><Data ss:Type="String">${escXml(d.name)}</Data></Cell>
+        <Cell><Data ss:Type="String">${escXml(d.seriesDone)}</Data></Cell>
+        <Cell><Data ss:Type="String">${escXml(d.load)}</Data></Cell>
+        <Cell><Data ss:Type="String">${escXml(volume)}</Data></Cell>
+      </Row>`;
+    });
+  });
+  return `<?xml version="1.0"?>
+  <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+   xmlns:o="urn:schemas-microsoft-com:office:office"
+   xmlns:x="urn:schemas-microsoft-com:office:excel"
+   xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+    <Worksheet ss:Name="HistoricoDetalhado">
+      <Table>
+        <Row>
+          <Cell><Data ss:Type="String">Data treino concluído</Data></Cell>
+          <Cell><Data ss:Type="String">Hora conclusão</Data></Cell>
+          <Cell><Data ss:Type="String">Tipo treino</Data></Cell>
+          <Cell><Data ss:Type="String">Nome do exercício</Data></Cell>
+          <Cell><Data ss:Type="String">Quantidade de séries concluídas</Data></Cell>
+          <Cell><Data ss:Type="String">Carga realizada</Data></Cell>
+          <Cell><Data ss:Type="String">Volume realizado</Data></Cell>
+        </Row>
+        ${detailRows}
+      </Table>
+    </Worksheet>
+  </Workbook>`;
+}
+
 function downloadBlob(blob, filename){ const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 500); }
 function exportExcel(){ downloadBlob(new Blob([buildWorkbookXml()], {type:"application/vnd.ms-excel"}), "historico_treinos.xls"); }
-async function exportPdf(){ const { jsPDF } = window.jspdf; const doc=new jsPDF(); let y=12; doc.setFontSize(16); doc.text("Relatório - Controle de Treinos",14,y); y+=10; doc.setFontSize(11); doc.text(`Treino atual: ${state.currentWorkout}`,14,y); y+=6; doc.text(`Próximo treino sugerido: ${getNextSuggestedWorkout()}`,14,y); y+=6; doc.text(`Treinos na semana: ${sessionsInWeek().length}`,14,y); y+=6; doc.text(`Treinos acumulados: ${state.history.length}`,14,y); y+=8; doc.text("Histórico:",14,y); y+=6; state.history.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(h=>{ const line=`${formatDate(h.date)} | ${h.workout} | ${h.done}/${h.total} | vol ${typeof h.volumeScore==='number'?h.volumeScore.toFixed(1):'-'}`; if(y>280){ doc.addPage(); y=14; } doc.text(line,14,y); y+=6; }); doc.save("relatorio_treinos.pdf"); }
+
+async function exportPdf(){
+  const { jsPDF } = window.jspdf;
+  const doc=new jsPDF();
+  let y=12;
+  doc.setFontSize(16);
+  doc.text("Relatório - Controle de Treinos",14,y);
+  y+=10;
+
+  doc.setFontSize(12);
+  doc.text("Treinos cadastrados (formato padrão):",14,y);
+  y+=8;
+  Object.keys(state.workouts).forEach(w=>{
+    if(y>270){ doc.addPage(); y=14; }
+    doc.setFontSize(12);
+    doc.text("Treino "+w,14,y); y+=6;
+    doc.setFontSize(10);
+    (state.workouts[w]||[]).forEach(ex=>{
+      const line = `- ${ex.name} | ${ex.meta || ""}`;
+      if(y>280){ doc.addPage(); y=14; }
+      doc.text(line,18,y); y+=5;
+    });
+    y+=3;
+  });
+
+  if(y>250){ doc.addPage(); y=14; }
+  doc.setFontSize(12);
+  doc.text("Histórico e evolução:",14,y); y+=8;
+  doc.setFontSize(10);
+  state.history.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(h=>{
+    const line=`${formatDate(h.date)} ${new Date(h.date).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})} | ${h.workout} | ${h.done}/${h.total} | vol ${typeof h.volumeScore==='number'?h.volumeScore.toFixed(1):'-'}`;
+    if(y>280){ doc.addPage(); y=14; }
+    doc.text(line,14,y); y+=5;
+  });
+
+  if(y>250){ doc.addPage(); y=14; }
+  doc.setFontSize(12);
+  doc.text("Tabela de evolução:",14,y); y+=8;
+  doc.setFontSize(10);
+  Object.keys(state.workouts).forEach(w=>{
+    const sessions=state.history.filter(h=>h.workout===w && typeof h.volumeScore==="number");
+    let previous="-", current="-", diff="-", accumulated="-";
+    if(sessions.length){
+      const latest=sessions[sessions.length-1].volumeScore; current=latest.toFixed(1);
+      if(sessions.length>=2){ const prev=sessions[sessions.length-2].volumeScore; previous=prev.toFixed(1); diff=((latest-prev)>0?"+":"")+(latest-prev).toFixed(1); }
+      const first=sessions[0].volumeScore; const acc=latest-first; accumulated=(acc>0?"+":"")+acc.toFixed(1);
+    }
+    const line=`Treino ${w} | ant ${previous} | atual ${current} | var ${diff} | acum ${accumulated}`;
+    if(y>280){ doc.addPage(); y=14; }
+    doc.text(line,14,y); y+=5;
+  });
+
+  doc.save("relatorio_treinos.pdf");
+}
+
 function exportBackup(){ downloadBlob(new Blob([JSON.stringify(state,null,2)], {type:"application/json"}), "backup_controle_treinos.json"); }
 function importBackupFile(file){ const reader=new FileReader(); reader.onload=()=>{ try{ state=JSON.parse(reader.result); normalizeState(); saveState(); renderAll(); alert("Backup importado com sucesso."); }catch(e){ alert("Não foi possível importar esse backup."); } }; reader.readAsText(file); }
 function resetHistory(){ if(!confirm("Apagar histórico?")) return; state.history=[]; saveState(); renderAll(); }
@@ -406,6 +613,11 @@ document.getElementById("exportBackupBtn").addEventListener("click", exportBacku
 document.getElementById("importBackupBtn").addEventListener("click", ()=>document.getElementById("backupFile").click());
 document.getElementById("backupFile").addEventListener("change", (e)=>{ if(e.target.files[0]) importBackupFile(e.target.files[0]); });
 document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", (e)=>{ e.preventDefault(); switchScreen(btn.dataset.screen); }));
+document.querySelectorAll(".graph-range").forEach(btn=>btn.addEventListener("click", ()=>{
+  state.graphRange = btn.dataset.range;
+  saveState();
+  drawProgressChart();
+}));
 window.addEventListener("resize", ()=>{ if(state.activeScreen==="resultados") drawProgressChart(); });
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
 
