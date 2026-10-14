@@ -96,7 +96,7 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
 .nav-btn{border:none;background:transparent;color:var(--muted);border-radius:16px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800;min-height:74px}.nav-btn.active{background:var(--surface);color:var(--text)} .nav-icon{font-size:22px;line-height:1}
 @media (max-width:420px){.exercise-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}.page{padding-top:calc(var(--safeTop) + 24px);padding-left:calc(var(--safeLeft) + 14px);padding-right:calc(var(--safeRight) + 14px);padding-bottom:calc(var(--navH) + var(--safeBottom) + 42px)}.card{padding:14px}}
 </style>
-</head>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>\n</head>
 <body>
 <div class="page"><div class="wrap">
 <div class="apphead"><img src="icon-192.png" class="logo"/><span class="appname">Controle de Treinos</span></div>
@@ -106,6 +106,7 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
     <div class="title">Meta</div>
     <div class="subtitle">Meta do ciclo</div>
     <div class="input-grid">
+      <div class="field"><label for="monthlyGoal">Meta de dias treinados nos últimos 30 dias</label><input type="number" min="1" max="30" id="monthlyGoal" /></div>
       <div class="field"><label for="weeklyGoal">Meta de treinos por semana</label><input type="number" min="1" max="14" id="weeklyGoal" /></div>
       <div class="field"><label for="cycleStart">Início do ciclo</label><input type="date" id="cycleStart" /></div>
       <div class="field"><label for="cycleWeeks">Semanas no ciclo</label><input type="number" min="1" max="20" id="cycleWeeks" /></div>
@@ -120,13 +121,16 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
 
   <div class="card">
     <div class="title">Importar</div>
-    <div class="input-grid" style="margin-bottom:12px"><div class="field"><label for="pdfFile">PDF do treino</label><input type="file" id="pdfFile" accept="application/pdf" /></div></div>
-    <div class="row" style="margin-bottom:12px"><button type="button" class="btn primary" id="importPdfBtn">Importar PDF</button></div>
-    <div id="importStatus" class="muted" style="margin-bottom:14px"></div>
-    <div class="field"><label for="textImport">Texto do treino</label><textarea id="textImport" placeholder="TREINO A – Peito + Bíceps&#10;• Supino reto barra — 4×10&#10;• Supino inclinado halteres — 3×10"></textarea></div>
-    <div class="row" style="margin-top:12px"><button type="button" class="btn ok" id="previewTextBtn">Pré-visualizar</button><button type="button" class="btn primary" id="importTextBtn">Importar texto</button></div>
-    <div class="note" style="margin-top:10px">Aceita títulos como “TREINO A – ...”, bullets “•” e linhas sem numeração.</div>
+    <div class="field"><label for="workoutFile">Arquivo de treino (.csv, .txt ou .xlsx)</label>
+      <input type="file" id="workoutFile" accept=".csv,.txt,.xlsx,text/plain,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" /></div>
+    <div class="row" style="margin-top:12px"><button type="button" class="btn primary" id="importWorkoutFileBtn">Pré-visualizar arquivo</button>
+      <button type="button" class="btn ok" id="downloadWorkoutTemplateBtn">Baixar modelo CSV</button></div>
+    <div id="importStatus" class="muted" style="margin:12px 0"></div>
+    <div class="field"><label for="textImport">Ou cole o treino em texto</label><textarea id="textImport" placeholder="TREINO A – Peito + Bíceps&#10;• Supino reto barra — 4×10"></textarea></div>
+    <div class="row" style="margin-top:12px"><button type="button" class="btn ok" id="previewTextBtn">Pré-visualizar texto</button><button type="button" class="btn primary" id="importTextBtn">Importar texto</button></div>
+    <div class="note" style="margin-top:10px">Modelo: treino;exercicio;series;repeticoes;observacoes. A importação substitui somente a ficha atual, preservando o histórico.</div>
     <div id="textImportStatus" class="muted" style="margin-top:10px"></div>
+    <div id="fileConfirmArea" class="hidden row" style="margin-top:12px"><button type="button" class="btn ok" id="confirmWorkoutFileBtn">Confirmar importação</button><button type="button" class="btn" id="cancelWorkoutFileBtn">Cancelar</button></div>
     <div id="previewArea" class="hidden"></div>
   </div>
 </section>
@@ -152,10 +156,10 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
       <div class="stat"><small>Treino atual</small><strong id="resCurrentWorkout">A</strong></div>
       <div class="stat"><small>Próximo treino sugerido</small><strong id="resNextWorkout">B</strong></div>
       <div class="stat"><small>Sessões concluídas na semana</small><strong id="resCyclePct">0%</strong></div>
-      <div class="stat"><small>Sessões acumuladas por semana</small><strong id="resWeekCount">0</strong></div>
+      <div class="stat"><small>Frequência nos últimos 30 dias</small><strong id="resWeekCount">0</strong></div>
       
     </div>
-    <div style="margin-top:12px"><div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso do ciclo</div><div id="cyclePctLabel" class="muted">0%</div></div><div class="progress"><div class="bar" id="cycleBar"></div></div></div>
+    <div style="margin-top:12px"><div class="row" style="justify-content:space-between; margin-bottom:6px"><div class="muted">Progresso da meta móvel (30 dias)</div><div id="cyclePctLabel" class="muted">0%</div></div><div class="progress"><div class="bar" id="cycleBar"></div></div></div>
   </div>
 
   <div class="card">
@@ -174,11 +178,11 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
         <tbody id="progressBody"></tbody>
       </table>
     </div>
-    <div class="tiny" style="margin-top:8px">A variação usa a fórmula (séries × repetições × carga) / 100.</div>
+    <div class="tiny" style="margin-top:8px">Novas sessões: volume real = soma de repetições realizadas × carga (kg) em cada série concluída. Sessões antigas sem repetições continuam com indicador estimado (séries × carga); não compare diretamente as duas escalas.</div>
   </div>
 
   <div class="card">
-    <div class="subtitle">Gráfico de progressão</div>
+    <div class="subtitle">Gráfico de progressão — carga × séries</div><div class="tiny" style="margin-bottom:8px">Escala ajustada aos dados disponíveis. Selecione uma série na legenda para destacar um treino.</div>
     <div class="input-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:10px">
       <div class="field">
         <label for="rangeSessions">Sessões</label>
@@ -260,8 +264,8 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 8px;border-top:1px
 <script>
 if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
 
-const STORAGE_KEY = "controle-treinos-v53";
-const LEGACY_KEYS = ["controle-treinos-v41","controle-treinos-v40","controle-treinos-v39","controle-treinos-v38","controle-treinos-v37","controle-treinos-v36","controle-treinos-v35","controle-treinos-v34","controle-treinos-v33","controle-treinos-v32","controle-treinos-v31","controle-treinos-v30"];
+const STORAGE_KEY = "controle-treinos-v54";
+const LEGACY_KEYS = ["controle-treinos-v53","controle-treinos-v52","controle-treinos-v51","controle-treinos-v41","controle-treinos-v40","controle-treinos-v39","controle-treinos-v38","controle-treinos-v37","controle-treinos-v36","controle-treinos-v35","controle-treinos-v34","controle-treinos-v33","controle-treinos-v32","controle-treinos-v31","controle-treinos-v30"];
 
 function loadState(){
   try{
@@ -305,13 +309,15 @@ function normalizeState(){
   if(!state.checks) state.checks={};
   if(!state.history) state.history=[];
   if(!state.goals) state.goals={weeklyGoal:4,cycleWeeks:8,cycleStart:new Date().toISOString().slice(0,10)};
+  if(state.goals.monthlyGoal==null || !Number.isFinite(Number(state.goals.monthlyGoal))) state.goals.monthlyGoal=Math.round((Number(state.goals.weeklyGoal)||4)*30/7);
   if(!state.activeScreen) state.activeScreen="meta";
   if(!state.lastLoads) state.lastLoads={};
   if(!state.sessionLoads) state.sessionLoads={};
+  if(!state.sessionReps) state.sessionReps={};
   if(!state.graphFilters) state.graphFilters={mode:"sessions",value:"8"};
   if(!state.graphFilters) state.graphFilters={mode:"sessions",value:"8"};
   Object.keys(state.workouts).forEach(w=> state.workouts[w]=(state.workouts[w]||[]).map(ex=>({id:ex.id||uid(),name:ex.name||"",meta:ex.meta||"",note:ex.note||""})));
-  state.history = state.history.map(h=>({id:h.id||uid(),date:h.date||new Date().toISOString(),workout:h.workout||"A",done:h.done??0,total:h.total??0,percent:h.percent??0,volumeScore:h.volumeScore ?? h.avgLoad ?? null,details:Array.isArray(h.details)?h.details:[]}));
+  state.history = state.history.map(h=>({id:h.id||uid(),date:h.date||new Date().toISOString(),workout:h.workout||"A",done:h.done??0,total:h.total??0,percent:h.percent??0,volumeScore:h.volumeScore ?? h.avgLoad ?? null,volumeActual:h.volumeActual??null,details:Array.isArray(h.details)?h.details:[]}));
 }
 normalizeState();
 
@@ -330,7 +336,9 @@ function getNextSuggestedWorkout(){ const order=getWorkoutOrder(); if(!order.len
 function getLoadKey(workout, ex){ return workout + "|" + (ex.id || ex.name); }
 function getSeriesTargetFromMeta(meta){ const s=String(meta||""); const m=s.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*[x×]/i); return m?parseInt(m[1],10):3; }
 function getRepsTargetFromMeta(meta){ const s=String(meta||""); const m=s.match(/(?:\d+)(?:\s*[–-]\s*(?:\d+))?\s*[x×]\s*(\d+(?:\s*[–-]\s*\d+)?)/i); return m?m[1].replace(/\s+/g,""):""; }
-function calculateWorkoutVolume(workout){ const list=state.workouts[workout]||[]; const checks=state.checks[workout]||{}; const sessionLoads=state.sessionLoads[workout]||{}; let total=0; list.forEach((ex,i)=>{ const seriesDone=Array.isArray(checks[String(i)+"_seriesDone"])?checks[String(i)+"_seriesDone"].filter(Boolean).length:0; const targetSeries=getSeriesTargetFromMeta(ex.meta); const effectiveSeries=Math.min(seriesDone,targetSeries); const repsString=getRepsTargetFromMeta(ex.meta); const repsVal=parseFloat(String(repsString).split(/\s*[–-]\s*/)[0].replace(",", ".")); const loadRaw=String(sessionLoads[ex.id] ?? state.lastLoads[getLoadKey(workout, ex)] ?? "").replace(",", ".").replace(/[^\d.]/g,""); const load=parseFloat(loadRaw); if(effectiveSeries>0 && !isNaN(repsVal) && !isNaN(load)) total += (effectiveSeries * repsVal * load) / 100; }); return total>0?total:null; }
+function repsForSet(workout, ex, setIndex){ const raw=state.sessionReps?.[workout]?.[ex.id]?.[setIndex]; const n=Number(raw); return raw!==undefined && raw!==null && String(raw).trim()!=="" && Number.isFinite(n) && n>=0 ? n : null; }
+function actualWorkoutVolume(workout){ let sum=0, count=0; const checks=state.checks[workout]||{}; (state.workouts[workout]||[]).forEach((ex,i)=>{ const raw=state.sessionLoads[workout]?.[ex.id] ?? state.lastLoads[getLoadKey(workout,ex)] ?? ""; const load=Number(String(raw).replace(",",".")); if(String(raw).trim()===""||!Number.isFinite(load))return; (checks[String(i)+"_seriesDone"]||[]).forEach((done,j)=>{const reps=repsForSet(workout,ex,j);if(done && reps!==null){sum+=load*reps;count++;}}); }); return count?sum:null; }
+function calculateWorkoutVolume(workout){ const list=state.workouts[workout]||[], checks=state.checks[workout]||{}, loads=state.sessionLoads[workout]||{};let sum=0;list.forEach((ex,i)=>{const sets=(checks[String(i)+"_seriesDone"]||[]).filter(Boolean).length;const raw=loads[ex.id]??state.lastLoads[getLoadKey(workout,ex)]??"";const load=Number(String(raw).replace(",","."));if(sets>0&&String(raw).trim()!==""&&Number.isFinite(load))sum+=sets*load;});return sum||null; }
 
 function switchScreen(name){
   state.activeScreen=name;
@@ -354,11 +362,11 @@ function renderExercises(){
     const doneSeries=Array.isArray(checks[key+"_seriesDone"])?checks[key+"_seriesDone"]:[];
     const doneCount=doneSeries.filter(Boolean).length, done=doneCount>=seriesTarget;
     const loadKey=getLoadKey(state.currentWorkout, ex), loadVal=(sessionLoads[ex.id] ?? state.lastLoads[loadKey] ?? "");
-    let seriesHtml=""; for(let i=0;i<seriesTarget;i++){ const active=!!doneSeries[i]; seriesHtml += "<button type='button' class='series-chip "+(active?"active":"")+"' data-series-idx='"+idx+"' data-series-num='"+i+"'>"+(i+1)+"</button>"; }
+    let seriesHtml=""; for(let i=0;i<seriesTarget;i++){ const active=!!doneSeries[i]; const reps=repsForSet(state.currentWorkout,ex,i); seriesHtml += "<div style='display:flex;flex-direction:column;align-items:center;gap:4px'><button type='button' class='series-chip "+(active?"active":"")+"' data-series-idx='"+idx+"' data-series-num='"+i+"'>"+(i+1)+"</button><input aria-label='Repetições realizadas na série "+(i+1)+"' title='Repetições realizadas' type='number' inputmode='numeric' min='0' step='1' data-reps-ex='"+idx+"' data-reps-set='"+i+"' value='"+(reps===null?"":reps)+"' placeholder='reps' style='width:58px;padding:7px 3px;border:1px solid var(--line);border-radius:9px;text-align:center;background:var(--surface);color:var(--text)'></div>"; }
     const row=document.createElement("div"); row.className="exercise";
     row.innerHTML = "<div><div class='ename'>"+esc(ex.name)+"</div><div class='emeta'>"+(repsTarget?("Reps por série: "+esc(repsTarget)):"")+"</div></div>"+
       "<div class='exercise-grid'>"+
-      "<div class='field'><label>Concluir séries</label><div class='series-boxes'>"+seriesHtml+"</div></div>"+
+      "<div class='field'><label>Séries concluídas e repetições reais (por série)</label><div class='series-boxes'>"+seriesHtml+"</div></div>"+
       "<div class='field'><label>Carga</label><div class='input-with-suffix'><input class='input-plain-number' type='number' min='0' step='0.1' inputmode='decimal' value='"+esc(loadVal)+"' data-load='"+idx+"' placeholder='0'><span class='suffix'>kg</span></div></div>"+
       "<div class='field'><label>Status</label><div class='pill' style='align-self:flex-start'>"+(done?"✅ Concluído":("⏳ "+doneCount+"/"+seriesTarget))+"</div></div>"+
       "<div class='field' style='grid-column:1/-1'><label>Observação</label><input type='text' value='"+esc(ex.note||"")+"' data-note='"+idx+"' placeholder='carga, sensação...'></div>"+
@@ -367,18 +375,19 @@ function renderExercises(){
     wrap.appendChild(row);
   });
   wrap.querySelectorAll("button[data-series-idx]").forEach(btn=>btn.addEventListener("click", e=>{ e.preventDefault(); e.stopPropagation(); const savedScroll=window.scrollY; const idx=e.currentTarget.dataset.seriesIdx; const num=Number(e.currentTarget.dataset.seriesNum); const key=String(idx)+"_seriesDone"; const arr=Array.isArray(checks[key])?checks[key].slice():[]; arr[num]=!arr[num]; checks[key]=arr; saveState(); renderAll({keepScroll:true}); window.scrollTo(0,savedScroll); }));
+  wrap.querySelectorAll("input[data-reps-ex]").forEach(el=>el.addEventListener("input",e=>{ const ex=list[Number(e.target.dataset.repsEx)]; const j=Number(e.target.dataset.repsSet); if(!state.sessionReps[state.currentWorkout])state.sessionReps[state.currentWorkout]={}; if(!state.sessionReps[state.currentWorkout][ex.id])state.sessionReps[state.currentWorkout][ex.id]=[]; state.sessionReps[state.currentWorkout][ex.id][j]=e.target.value; saveState(); }));
   wrap.querySelectorAll("input[data-note]").forEach(el=>el.addEventListener("input", e=>{ const idx=Number(e.target.dataset.note); list[idx].note=e.target.value; saveState(); }));
   wrap.querySelectorAll("input[data-load]").forEach(el=>el.addEventListener("input", e=>{ const ex=list[Number(e.target.dataset.load)]; const loadKey=getLoadKey(state.currentWorkout, ex); const value=e.target.value; currentSessionLoads()[ex.id]=value; state.lastLoads[loadKey]=value; saveState(); updateStats(); }));
   wrap.querySelectorAll("[data-edit]").forEach(btn=>btn.addEventListener("click", e=>{ const idx=Number(e.target.dataset.edit); const ex=list[idx]; const seriesCurrent=String(getSeriesTargetFromMeta(ex.meta)); const repsCurrent=String(getRepsTargetFromMeta(ex.meta)||"10"); const newName=prompt("Nome do exercício:", ex.name); if(newName===null) return; const newSeries=prompt("Quantidade de séries:", seriesCurrent); if(newSeries===null) return; const newReps=prompt("Repetições por série:", repsCurrent); if(newReps===null) return; ex.name=(newName||ex.name).trim(); ex.meta=String(newSeries||seriesCurrent).trim()+"×"+String(newReps||repsCurrent).trim(); const target=Math.max(1, parseInt(String(newSeries||seriesCurrent),10)||3); const key=String(idx)+"_seriesDone"; const arr=Array.isArray(checks[key])?checks[key].slice(0,target):[]; while(arr.length<target) arr.push(false); checks[key]=arr; saveState(); renderAll({keepScroll:true}); }));
-  wrap.querySelectorAll("[data-delete]").forEach(btn=>btn.addEventListener("click", e=>{ const idx=Number(e.target.dataset.delete); if(!confirm("Apagar esse exercício?")) return; const ex=list[idx]; delete currentSessionLoads()[ex.id]; list.splice(idx,1); saveState(); renderAll({keepScroll:true}); }));
+  wrap.querySelectorAll("[data-delete]").forEach(btn=>btn.addEventListener("click", e=>{ const idx=Number(e.target.dataset.delete); if(!confirm("Apagar esse exercício?")) return; const ex=list[idx]; delete currentSessionLoads()[ex.id]; if(state.sessionReps[state.currentWorkout])delete state.sessionReps[state.currentWorkout][ex.id]; list.splice(idx,1); saveState(); renderAll({keepScroll:true}); }));
 }
 
-function renderProgressTable(){ const body=document.getElementById("progressBody"); body.innerHTML=""; Object.keys(state.workouts).forEach(w=>{ const sessions=state.history.filter(h=>h.workout===w && typeof h.volumeScore==="number"); let previous="-", current="-", diff="-", accumulated="-"; if(sessions.length){ const latest=sessions[sessions.length-1].volumeScore; current=latest.toFixed(1); if(sessions.length>=2){ const prev=sessions[sessions.length-2].volumeScore; previous=prev.toFixed(1); const delta=latest-prev; diff=(delta>0?"+":"")+delta.toFixed(1); } const first=sessions[0].volumeScore; const acc=latest-first; accumulated=(acc>0?"+":"")+acc.toFixed(1); } const tr=document.createElement("tr"); tr.innerHTML="<td>Treino "+esc(w)+"</td><td>"+previous+"</td><td>"+current+"</td><td>"+diff+"</td><td>"+accumulated+"</td>"; body.appendChild(tr); }); }
+function renderProgressTable(){ const body=document.getElementById("progressBody"); body.innerHTML=""; Object.keys(state.workouts).forEach(w=>{ const sessions=state.history.filter(h=>h.workout===w && historicalLoadScore(h)!==null); let previous="-", current="-", diff="-", accumulated="-"; if(sessions.length){ const latest=historicalLoadScore(sessions[sessions.length-1]); current=latest.toFixed(1); if(sessions.length>=2){ const prev=historicalLoadScore(sessions[sessions.length-2]); previous=prev.toFixed(1); const delta=latest-prev; diff=(delta>0?"+":"")+delta.toFixed(1); } const first=historicalLoadScore(sessions[0]); const acc=latest-first; accumulated=(acc>0?"+":"")+acc.toFixed(1); } const tr=document.createElement("tr"); tr.innerHTML="<td>Treino "+esc(w)+"</td><td>"+previous+"</td><td>"+current+"</td><td>"+diff+"</td><td>"+accumulated+"</td>"; body.appendChild(tr); }); }
 
 
 
 function getFilteredHistory(){
-  const all = [...state.history].filter(h => typeof h.volumeScore === "number").sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const all = [...state.history].filter(h => historicalLoadScore(h)!==null).sort((a,b)=>new Date(a.date)-new Date(b.date));
   const filters = state.graphFilters || {mode:"sessions", value:"8"};
   const now = new Date();
 
@@ -407,6 +416,15 @@ function getFilteredHistory(){
   return all;
 }
 
+function historicalLoadScore(h){
+  if(h.volumeActual!==undefined && h.volumeActual!==null && Number.isFinite(Number(h.volumeActual))) return Number(h.volumeActual);
+  if(Array.isArray(h.details)&&h.details.length){
+    let sum=0,seen=false;
+    h.details.forEach(d=>{const sets=Number(d.seriesDone)||0;const load=Number(String(d.load??"").replace(",","."));if(sets>0&&String(d.load??"").trim()!==""&&Number.isFinite(load)){sum+=sets*load;seen=true;}});
+    if(seen)return sum;
+  }
+  return null;
+}
 function getGraphBuckets(){
   const filters = state.graphFilters || {mode:"sessions", value:"8"};
   const filtered = getFilteredHistory();
@@ -415,9 +433,9 @@ function getGraphBuckets(){
     const series = {};
     Object.keys(state.workouts).forEach(wk=>{
       let count = 0;
-      series[wk] = filtered.filter(h=>h.workout===wk).map(h=>({x:++count,y:h.volumeScore,label:h.workout}));
+      series[wk] = filtered.filter(h=>h.workout===wk).map(h=>({x:++count,y:historicalLoadScore(h),label:h.workout}));
     });
-    return {series, maxX: Math.max(1, parseInt(filters.value || "8", 10) || 8)};
+    return {series, maxX: Math.max(1,...Object.values(series).map(a=>a.length))};
   }
 
   const buckets = {};
@@ -435,11 +453,11 @@ function getGraphBuckets(){
       key = String(d.getFullYear());
     }
     if(!buckets[key]) buckets[key] = [];
-    buckets[key].push(h.volumeScore);
+    const score=historicalLoadScore(h);if(score!==null)buckets[key].push(score);
   });
 
   const keys = Object.keys(buckets).sort();
-  const series = {"Volume": keys.map((k,i)=>({x:i+1,y:buckets[k].reduce((a,b)=>a+b,0)/buckets[k].length,label:k}))};
+  const series = {"Volume": keys.map((k,i)=>({x:i+1,y:(buckets[k].length?buckets[k].reduce((a,b)=>a+b,0)/buckets[k].length:null),label:k}))};
   return {series, maxX: Math.max(1, keys.length)};
 }
 
@@ -453,7 +471,7 @@ function drawProgressChart(){
   const palette=['#38bdf8','#22c55e','#f59e0b','#ef4444'], lineColor=getComputedStyle(document.documentElement).getPropertyValue('--line').trim(), textColor=getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
 
   const {series, maxX} = getGraphBuckets();
-  const all = Object.values(series).flat();
+  const all = Object.values(series).flat().filter(p=>p.y!==null&&Number.isFinite(p.y));
   legend.innerHTML="";
 
   const rs = document.getElementById("rangeSessions"), rw = document.getElementById("rangeWeeks"), rm = document.getElementById("rangeMonths"), ry = document.getElementById("rangeYears");
@@ -467,14 +485,14 @@ function drawProgressChart(){
   if(!all.length){
     ctx.fillStyle=textColor; ctx.font="14px sans-serif"; ctx.fillText("Sem dados de volume ainda.",12,24); return;
   }
-  const minY=Math.min(...all.map(p=>p.y)), maxY=Math.max(...all.map(p=>p.y)), pad={l:34,r:10,t:12,b:24}, plotW=w-pad.l-pad.r, plotH=h-pad.t-pad.b, yMin=Math.floor(Math.max(0,minY-1)), yMax=Math.ceil(maxY+1);
+  const minY=Math.min(...all.map(p=>p.y)), maxY=Math.max(...all.map(p=>p.y)), pad={l:52,r:10,t:12,b:24}, plotW=w-pad.l-pad.r, plotH=h-pad.t-pad.b, margin=Math.max(1,(maxY-minY)*0.12), yMin=Math.max(0,minY-margin), yMax=maxY+margin;
   ctx.strokeStyle=lineColor; ctx.lineWidth=1;
   for(let i=0;i<4;i++){ const y=pad.t+(plotH/3)*i; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke(); }
   ctx.fillStyle=textColor; ctx.font="11px sans-serif";
   for(let i=0;i<4;i++){ const val=yMax-((yMax-yMin)/3)*i; const y=pad.t+(plotH/3)*i; ctx.fillText(String(val.toFixed(0)),4,y+4); }
 
   Object.keys(series).forEach((wk,idx)=>{
-    const pts=series[wk]; if(!pts.length) return;
+    const pts=series[wk].filter(p=>p.y!==null&&Number.isFinite(p.y)); if(!pts.length) return;
     const color=palette[idx%palette.length];
     legend.innerHTML += "<div style='display:flex;align-items:center;gap:6px'><span class='dot' style='background:"+color+"'></span>"+wk+"</div>";
     ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=2.5; ctx.beginPath();
@@ -491,10 +509,11 @@ function updateStats(){
     totalDone=state.history.length,
     cycleDone=sessionsInCycle().length,
     cycleGoal=totalCycleGoal(),
-    cyclePct=cycleGoal?Math.min(100,Math.round(cycleDone/cycleGoal*100)):0,
     today=new Date(),
-    weekIndexInCycle=Math.max(1, Math.ceil((((today - new Date(state.goals.cycleStart+"T00:00:00"))/86400000)+1)/7)),
-    accumulatedWeeklyGoal=state.goals.weeklyGoal * weekIndexInCycle;
+    start30=new Date(today.getFullYear(),today.getMonth(),today.getDate()-29),
+    uniqueDays=new Set(state.history.filter(h=>{const d=new Date(h.date);return d>=start30&&d<=today;}).map(h=>{const d=new Date(h.date);return [d.getFullYear(),d.getMonth()+1,d.getDate()].join("-");})).size,
+    monthGoal=Math.max(1,Math.min(30,Number(state.goals.monthlyGoal)||Math.round((Number(state.goals.weeklyGoal)||4)*30/7))),
+    cyclePct=Math.min(100,Math.round(uniqueDays/monthGoal*100));
   document.getElementById("execCurrentWorkout").textContent=state.currentWorkout;
   document.getElementById("execExercisesDone").textContent=done+"/"+list.length;
   document.getElementById("currentPct").textContent=pct+"%";
@@ -502,8 +521,8 @@ function updateStats(){
   document.getElementById("resCurrentWorkout").textContent=state.currentWorkout;
   document.getElementById("resNextWorkout").textContent=getNextSuggestedWorkout();
   document.getElementById("resCyclePct").textContent=weekDone+"/"+state.goals.weeklyGoal;
-  document.getElementById("resWeekCount").textContent=cycleDone+"/"+accumulatedWeeklyGoal;
-  document.getElementById("cyclePctLabel").textContent=cycleDone+"/"+cycleGoal+" ("+cyclePct+"%)";
+  document.getElementById("resWeekCount").textContent=uniqueDays+"/"+monthGoal+" dias ("+Math.round(uniqueDays/30*100)+"%)";
+  document.getElementById("cyclePctLabel").textContent=uniqueDays+"/"+monthGoal+" ("+cyclePct+"%)";
   document.getElementById("cycleBar").style.width=cyclePct+"%";
   document.getElementById("weekGoalInfo").textContent="Meta semanal: "+state.goals.weeklyGoal;
   document.getElementById("weekDoneInfo").textContent="Feitos na semana: "+weekDone;
@@ -563,6 +582,7 @@ function renderHistory(){
 }
 
 function renderGoals(){
+  document.getElementById("monthlyGoal").value=state.goals.monthlyGoal;
   document.getElementById("weeklyGoal").value=state.goals.weeklyGoal;
   document.getElementById("cycleStart").value=state.goals.cycleStart;
   document.getElementById("cycleWeeks").value=state.goals.cycleWeeks;
@@ -590,8 +610,66 @@ function renderPreview(parsed){ const area=document.getElementById("previewArea"
 async function extractPdfText(file){ const buf=await file.arrayBuffer(); const pdf=await pdfjsLib.getDocument({data:buf}).promise; let fullText=""; for(let p=1;p<=pdf.numPages;p++){ const page=await pdf.getPage(p); const content=await page.getTextContent(); fullText += content.items.map(item=>item.str).join(" ") + "\n"; } return fullText; }
 async function importPdf(){ const file=document.getElementById("pdfFile").files[0], status=document.getElementById("importStatus"); if(!file) return alert("Escolha um PDF primeiro."); status.textContent="Lendo PDF..."; try{ const text=await extractPdfText(file), parsed=parseWorkoutText(text), keys=Object.keys(parsed); renderPreview(parsed); if(!keys.length){ status.textContent="Não consegui reconhecer os treinos nesse PDF."; return; } const previousHistory=state.history||[], previousLastLoads=state.lastLoads||{}; state.workouts=parsed; ["A","B","C","D"].forEach(k=>{ if(!state.workouts[k]) state.workouts[k]=[]; }); state.currentWorkout=keys.includes("A")?"A":keys[0]; state.checks={}; state.sessionLoads={}; state.history=previousHistory; state.lastLoads=previousLastLoads; saveState(); renderAll(); status.textContent="PDF importado com sucesso. Treinos encontrados: "+keys.join(", ")+"."; switchScreen("execucao"); }catch(err){ console.error(err); status.textContent="Falha ao ler esse PDF."; } }
 function importText(){ const txt=document.getElementById("textImport").value||"", status=document.getElementById("textImportStatus"), parsed=parseWorkoutText(txt), keys=Object.keys(parsed); renderPreview(parsed); if(!keys.length){ status.textContent="Não consegui reconhecer treinos no texto. Use títulos como TREINO A, TREINO B..."; return; } const previousHistory=state.history||[], previousLastLoads=state.lastLoads||{}; state.workouts=parsed; ["A","B","C","D"].forEach(k=>{ if(!state.workouts[k]) state.workouts[k]=[]; }); state.currentWorkout=keys.includes("A")?"A":keys[0]; state.checks={}; state.sessionLoads={}; state.history=previousHistory; state.lastLoads=previousLastLoads; saveState(); renderAll(); status.textContent="Texto importado com sucesso. Treinos encontrados: "+keys.join(", ")+"."; switchScreen("execucao"); }
+
+let pendingWorkoutImport=null;
+function splitDelimitedLine(line,sep){const arr=[];let cur="",quoted=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'){if(quoted&&line[i+1]==='"'){cur+='"';i++;}else quoted=!quoted;}else if(ch===sep&&!quoted){arr.push(cur.trim());cur="";}else cur+=ch;}arr.push(cur.trim());return arr;}
+function tableToWorkouts(rows){
+ if(!rows.length)throw Error("Arquivo vazio.");
+ const clean=v=>String(v??"").trim();
+ const headers=rows[0].map(v=>clean(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,""));
+ const col=(...names)=>headers.findIndex(h=>names.includes(h));
+ const iTreino=col("treino","tipo","tipotreino"),iNome=col("exercicio","nomedoexercicio","nome"),iSeries=col("series","quantidadedeseries"),iReps=col("repeticoes","reps","repeticoesporserie"),iObs=col("observacoes","observacao","nota");
+ if([iTreino,iNome,iSeries,iReps].some(i=>i<0))throw Error("Colunas obrigatórias: treino, exercicio, series, repeticoes.");
+ const parsed={};let valid=0;
+ rows.slice(1).forEach((r,idx)=>{if(!r.some(v=>clean(v)))return;
+  const raw=clean(r[iTreino]).toUpperCase().replace(/^TREINO\s*/,""),wk=raw.trim(),name=clean(r[iNome]),series=Number(clean(r[iSeries]).replace(",",".")),reps=clean(r[iReps]).replace(/\s/g,"");
+  if(!/^[A-D]$/.test(wk)||!name||!Number.isInteger(series)||series<1||series>30||!/^\d+(?:[-–]\d+)?$/.test(reps))throw Error("Linha "+(idx+2)+": verifique treino A–D, exercício, séries e repetições.");
+  (parsed[wk]??=[]).push({id:uid(),name,meta:series+"×"+reps,note:iObs<0?"":clean(r[iObs])});valid++;
+ });
+ if(!valid)throw Error("Nenhum exercício válido encontrado.");
+ return parsed;
+}
+function parseDelimitedWorkouts(text,ext){
+ const lines=text.replace(/^\uFEFF/,"").replace(/\r\n?/g,"\n").split("\n").filter(l=>l.trim());
+ if(ext==="txt" && !/^[^\n]*[;\t,]/.test(lines[0]||""))return parseWorkoutText(text);
+ const sep=(lines[0].match(/;/g)||[]).length >= (lines[0].match(/,/g)||[]).length?";":",";
+ return tableToWorkouts(lines.map(l=>splitDelimitedLine(l,l.includes("\t")?"\t":sep)));
+}
+function applyImportedWorkout(parsed){
+ const keys=Object.keys(parsed);if(!keys.length)throw Error("Nenhum treino encontrado.");
+ state.workouts={A:[],B:[],C:[],D:[],...parsed};state.currentWorkout=keys.includes("A")?"A":keys[0];
+ state.checks={};state.sessionLoads={};state.sessionReps={};
+ saveState();renderAll();switchScreen("execucao");
+}
+async function previewWorkoutFile(){
+ const status=document.getElementById("importStatus"),file=document.getElementById("workoutFile").files[0];
+ if(!file)return alert("Selecione um arquivo.");
+ pendingWorkoutImport=null;document.getElementById("fileConfirmArea").classList.add("hidden");
+ try{
+  const ext=file.name.split(".").pop().toLowerCase();let parsed;
+  if(ext==="xlsx"){
+   if(typeof XLSX==="undefined")throw Error("Leitor XLSX indisponível. Conecte à internet ou salve a planilha como CSV.");
+   const data=await file.arrayBuffer(),wb=XLSX.read(data,{type:"array"}),ws=wb.Sheets[wb.SheetNames[0]];
+   parsed=tableToWorkouts(XLSX.utils.sheet_to_json(ws,{header:1,defval:""}));
+  }else if(ext==="csv"||ext==="txt"){parsed=parseDelimitedWorkouts(await file.text(),ext);}
+  else throw Error("Formato inválido. Use CSV, TXT ou XLSX.");
+  if(!Object.keys(parsed).length)throw Error("Nenhum treino reconhecido.");
+  pendingWorkoutImport=parsed;renderPreview(parsed);
+  document.getElementById("fileConfirmArea").classList.remove("hidden");
+  status.textContent="Arquivo lido: "+Object.values(parsed).reduce((a,v)=>a+v.length,0)+" exercícios. Confira a prévia e confirme.";
+ }catch(e){status.textContent="Erro: "+e.message;console.error(e);}
+}
+function downloadWorkoutTemplate(){
+ const rows=[["treino","exercicio","series","repeticoes","observacoes"],["A","Supino reto barra","4","6-8","Descanso 90 segundos"],["A","Rosca inclinada","3","10-12",""],["B","Puxada aberta","4","8-10",""],["C","Leg press","3","10",""],["D","Elevação lateral","4","12-15",""]];
+ const csv="\uFEFF"+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(";")).join("\r\n");
+ downloadBlob(new Blob([csv],{type:"text/csv;charset=utf-8"}),"modelo_importacao_treinos.csv");
+}
+document.getElementById("importWorkoutFileBtn").addEventListener("click",previewWorkoutFile);
+document.getElementById("downloadWorkoutTemplateBtn").addEventListener("click",downloadWorkoutTemplate);
+document.getElementById("confirmWorkoutFileBtn").addEventListener("click",()=>{if(!pendingWorkoutImport)return;applyImportedWorkout(pendingWorkoutImport);pendingWorkoutImport=null;});
+document.getElementById("cancelWorkoutFileBtn").addEventListener("click",()=>{pendingWorkoutImport=null;document.getElementById("fileConfirmArea").classList.add("hidden");document.getElementById("previewArea").classList.add("hidden");});
 function addExercise(){ const name=prompt("Nome do exercício:"); if(!name) return; const series=prompt("Quantidade de séries:","3"); if(series===null) return; const reps=prompt("Repetições por série:","10"); if(reps===null) return; if(!state.workouts[state.currentWorkout]) state.workouts[state.currentWorkout]=[]; state.workouts[state.currentWorkout].push({id:uid(), name:name.trim(), meta:String(series||"3").trim()+"×"+String(reps||"10").trim(), note:""}); saveState(); renderAll({keepScroll:true}); }
-function completeWorkout(){ const list=state.workouts[state.currentWorkout]||[], checks=currentChecks(); const done=list.filter((ex,i)=>{ const target=getSeriesTargetFromMeta(ex.meta); const arr=Array.isArray(checks[String(i)+"_seriesDone"])?checks[String(i)+"_seriesDone"]:[]; return arr.filter(Boolean).length>=target; }).length; if(!list.length) return alert("Não há exercícios carregados nesse treino."); if(done===0) return alert("Conclua todas as séries de pelo menos um exercício antes de concluir o treino."); const volumeScore=calculateWorkoutVolume(state.currentWorkout); const details=list.map((ex,i)=>{ const arr=Array.isArray(checks[String(i)+"_seriesDone"])?checks[String(i)+"_seriesDone"]:[]; return {name:ex.name,meta:ex.meta,note:ex.note||"",load:state.sessionLoads[state.currentWorkout]?.[ex.id] ?? state.lastLoads[getLoadKey(state.currentWorkout, ex)] ?? "",seriesDone:arr.filter(Boolean).length,seriesTarget:getSeriesTargetFromMeta(ex.meta),repsTarget:getRepsTargetFromMeta(ex.meta)}; }); state.history.push({id:String(Date.now()),date:new Date().toISOString(),workout:state.currentWorkout,done:done,total:list.length,percent:Math.round(done/list.length*100),volumeScore:volumeScore,details:details}); state.checks[state.currentWorkout]={}; state.sessionLoads[state.currentWorkout]={}; state.currentWorkout=getNextSuggestedWorkout(); saveState(); renderAll(); switchScreen("execucao"); alert("Treino concluído."); }
+function completeWorkout(){ const list=state.workouts[state.currentWorkout]||[], checks=currentChecks(); const done=list.filter((ex,i)=>{ const target=getSeriesTargetFromMeta(ex.meta); const arr=Array.isArray(checks[String(i)+"_seriesDone"])?checks[String(i)+"_seriesDone"]:[]; return arr.filter(Boolean).length>=target; }).length; if(!list.length) return alert("Não há exercícios carregados nesse treino."); if(done===0) return alert("Conclua todas as séries de pelo menos um exercício antes de concluir o treino."); const volumeScore=calculateWorkoutVolume(state.currentWorkout); const volumeActual=actualWorkoutVolume(state.currentWorkout); const details=list.map((ex,i)=>{ const arr=Array.isArray(checks[String(i)+"_seriesDone"])?checks[String(i)+"_seriesDone"]:[]; return {name:ex.name,meta:ex.meta,note:ex.note||"",load:state.sessionLoads[state.currentWorkout]?.[ex.id] ?? state.lastLoads[getLoadKey(state.currentWorkout, ex)] ?? "",seriesDone:arr.filter(Boolean).length,seriesTarget:getSeriesTargetFromMeta(ex.meta),repsTarget:getRepsTargetFromMeta(ex.meta),repsActual:(state.sessionReps[state.currentWorkout]?.[ex.id]||[]).map(v=>v===""?null:Number(v))}; }); state.history.push({id:String(Date.now()),date:new Date().toISOString(),workout:state.currentWorkout,done:done,total:list.length,percent:Math.round(done/list.length*100),volumeScore:volumeScore,volumeActual:volumeActual,details:details}); state.checks[state.currentWorkout]={}; state.sessionLoads[state.currentWorkout]={}; state.sessionReps[state.currentWorkout]={}; state.currentWorkout=getNextSuggestedWorkout(); saveState(); renderAll(); switchScreen("execucao"); alert("Treino concluído."); }
 function clearToday(){ state.checks[state.currentWorkout]={}; state.sessionLoads[state.currentWorkout]={}; saveState(); renderAll(); }
 
 function showToast(message){
@@ -676,6 +754,7 @@ function openHistoryDeleteConfirm(itemId){
   };
 }
 function saveGoals(){
+  state.goals.monthlyGoal=Math.max(1,Math.min(30,parseInt(document.getElementById("monthlyGoal").value||"17",10)));
   state.goals.weeklyGoal=parseInt(document.getElementById("weeklyGoal").value||"4",10);
   state.goals.cycleStart=document.getElementById("cycleStart").value||new Date().toISOString().slice(0,10);
   state.goals.cycleWeeks=parseInt(document.getElementById("cycleWeeks").value||"8",10);
@@ -783,9 +862,9 @@ async function exportPdf(){
     const sessions=state.history.filter(h=>h.workout===w && typeof h.volumeScore==="number");
     let previous="-", current="-", diff="-", accumulated="-";
     if(sessions.length){
-      const latest=sessions[sessions.length-1].volumeScore; current=latest.toFixed(1);
-      if(sessions.length>=2){ const prev=sessions[sessions.length-2].volumeScore; previous=prev.toFixed(1); diff=((latest-prev)>0?"+":"")+(latest-prev).toFixed(1); }
-      const first=sessions[0].volumeScore; const acc=latest-first; accumulated=(acc>0?"+":"")+acc.toFixed(1);
+      const latest=historicalLoadScore(sessions[sessions.length-1]); current=latest.toFixed(1);
+      if(sessions.length>=2){ const prev=historicalLoadScore(sessions[sessions.length-2]); previous=prev.toFixed(1); diff=((latest-prev)>0?"+":"")+(latest-prev).toFixed(1); }
+      const first=historicalLoadScore(sessions[0]); const acc=latest-first; accumulated=(acc>0?"+":"")+acc.toFixed(1);
     }
     const line=`Treino ${w} | ant ${previous} | atual ${current} | var ${diff} | acum ${accumulated}`;
     if(y>280){ doc.addPage(); y=14; }
@@ -799,7 +878,7 @@ function exportBackup(){ downloadBlob(new Blob([JSON.stringify(state,null,2)], {
 function importBackupFile(file){ const reader=new FileReader(); reader.onload=()=>{ try{ state=JSON.parse(reader.result); normalizeState(); saveState(); renderAll(); alert("Backup importado com sucesso."); }catch(e){ alert("Não foi possível importar esse backup."); } }; reader.readAsText(file); }
 function resetHistory(){ if(!confirm("Apagar histórico?")) return; state.history=[]; saveState(); renderAll(); }
 
-document.getElementById("importPdfBtn").addEventListener("click", importPdf);
+
 document.getElementById("previewTextBtn").addEventListener("click", ()=>renderPreview(parseWorkoutText(document.getElementById("textImport").value || "")));
 document.getElementById("importTextBtn").addEventListener("click", importText);
 document.getElementById("saveGoalsBtn").addEventListener("click", saveGoals);
